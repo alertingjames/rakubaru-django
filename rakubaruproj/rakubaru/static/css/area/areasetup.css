@@ -1,0 +1,250 @@
+html, body{
+  background: #BDB76B no-repeat center center fixed;  // #0495af
+  background-size:cover;
+}
+
+#form {
+  border-radius: 8px;
+  min-width:200px;
+  width:auto;
+  height:auto;
+  position:fixed;
+  margin:80px 10px 10px 5px;
+  z-index:100;
+  background-color:white;
+  border:1px solid #eee;
+}
+
+input {
+  margin-bottom: 15px;
+  margin-right:auto;
+  width: 100%;
+  height: 36px;
+  opacity:0.95;
+  float: middle;
+  padding: 0px 15px;
+  color:black;
+  text-align:left;
+  border: none;
+  border: 2px solid gray;
+  border-radius: 50px;
+}
+
+input:focus {
+  border:0;
+}
+
+.form-group {
+  overflow: hidden;
+  width:100%;
+}
+
+.contentform {
+  padding: 15px;
+  margin:auto;
+}
+
+
+.formcontent {
+  width:100%;
+  float:middle;
+  margin:auto;
+  box-sizing: border-box;
+}
+
+.bouton-update{
+  background-color:#0077b3;
+  color: #FFF;
+  text-align: center;
+  width: 100%;
+  border:0;
+  opacity:0.95;
+  padding: 12px 18px;
+  border-radius: 50px 50px 50px 50px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+#backgroundOverlay{
+  background-color:rgba(0,0,0,0.6);
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:200;
+  display:none;
+}
+
+#map_canvas { width:100%; height:100%; }
+
+#color-palette {
+    clear: both;
+    float:left;
+}
+
+.color-button {
+    width: 28px;
+    height: 28px;
+    border-radius:50px;
+    font-size: 0;
+    margin: 3px;
+    float: left;
+    cursor: pointer;
+}
+
+.draw-btn {
+    background-color:green;
+    color:white;
+    font-size:14px;
+    padding:8px 16px;
+    float:left;
+    border:0;
+    border-radius:50px;
+    margin-left:10px;
+}
+
+.edit-btn {
+    background-color:green;
+    color:white;
+    font-size:14px;
+    padding:8px 16px;
+    border:0;
+    border-radius:50px;
+}
+
+#reg-button, #submit-button {
+    margin-top: 15px;
+    background-color:#0077b3;
+    color:white;
+    font-size:14px;
+    padding:12px 18px;
+    width:100%;
+    border-radius:50px;
+    border:0;
+}
+
+#locationList {
+  position:fixed;
+  top:8%;
+  right:0;
+  width: 300px;
+  height: 90%;
+  padding: 5px;
+  color:black;
+  z-index:100;
+  overflow-y:auto;
+}
+
+@media (min-width: 300px) {
+    #locationList {
+      top:6%;
+    }
+}
+@media (min-width: 1200px) {
+    #locationList {
+      top:8%;
+    }
+}
+
+#locationList::-webkit-scrollbar {
+  display: none;
+}
+
+div#list {
+  width: 100%;
+  height: auto;
+}
+
+div#list > div {
+  background:white;
+  background-size:cover;
+  margin-bottom:5px;
+  border-radius:5px;
+  cursor:pointer;
+}
+
+div#list > div:hover {
+    background-color:black;
+}
+
+div#list > div > div {
+  width: auto;
+  height: auto;
+  padding: 5px 12px 5px 12px;
+  margin-bottom: 5px;
+  color: black;
+  cursor:pointer;
+  word-wrap: break-word;      /* IE */
+}
+
+div#list > div > div > span {
+  font-size:20px;
+  color:#eee;
+  float:right;
+  cursor:pointer;
+}
+
+div#list > div > div > span:hover {
+  color:white;
+}
+
+p span {
+  color: #F00;
+}
+
+p {
+  margin: 0px;
+  font-weight: 520;
+  font-size:14px;
+}
+
+#regform {
+    font-size:16px; font-weight:300; color: black; z-index:99999; box-shadow: 0px 0px 100px rgba(0, 0, 0, 1.0);
+	position:fixed; left:50%; float:middle; background-color:white; border-radius:10px; padding: 8px 15px 15px 15px;
+	transform:translate(-50%, -50%); min-width:500px; max-width:600px; width:auto; top:450px;
+}
+
+@media (max-width: 900px) {
+    #regform {
+        width:90vw; min-width:300px; } }
+
+.subloc_name {
+    font-size: 14px;
+    margin-left: 10px;
+    list-style-type: square;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

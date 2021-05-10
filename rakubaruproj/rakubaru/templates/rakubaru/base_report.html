@@ -1,0 +1,204 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}らくばるポスティング{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link href='https://fonts.googleapis.com/css?family=Satisfy' rel="stylesheet" type="text/css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/style.css"/>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.1/css/all.css">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="shortcut icon" href="/static/images/rakubaru/appicon.jpg" type="image/jpg">
+
+<style>
+
+.dropdown-menu{
+    background-color: #fff;
+    padding:10px;
+    width:220px;
+}
+
+#m{
+    background-color: #fff;
+    padding:15px;
+    width:300px;
+}
+
+.menu{
+    color: black;
+}
+
+.menu:hover{
+    background-color:#eee;
+    color:red;
+}
+
+.menu a{
+    color:black;
+}
+
+h4{
+    color:white;
+}
+
+h4:hover{
+    color:white;
+    text-decoration:underline;
+}
+
+</style>
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js"></script>-->
+</head>
+
+<body>
+
+<nav id="navbar" class="navbar navbar-inverse" style="background:rgba(0,0,0,0.7);">
+
+    <div class="container-fluid">
+
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar" aria-expanded="false" aria-label="Toggle navigation" onclick="javascript:changeNavbarBackgroundColor();">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+        </div>
+
+        <div class="collapse navbar-collapse" id="topNavBar" style="border:0;">
+            <ul class="nav navbar-nav">
+                <li style="margin-right:30px;">
+                    <a href="/rakubaru/rahome">
+                        <h4 style=""><span class="fa fa-home" aria-hidden="true" style="margin-right:10px;"></span>ホーム</h4>
+                    </a>
+                </li>
+                {% if member %}
+                <li style="margin-right:30px;">
+                    <a href="/rakubaru/raallreports">
+                        <h4 style=""><span class="fas fa-route" aria-hidden="true" style="margin-right:10px;"></span>レポート</h4>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+
+                <li style="margin-right:30px;">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false" style="background-color:transparent;">
+                        <h4><span class="fa fa-search" aria-hidden="true" style="margin-right:10px;"></span>日付で検索</h4>
+                    </a>
+                    <ul class="dropdown-menu" role="menu" id="m">
+
+                        <link rel="stylesheet" href="/static/css/jquery.datetimepicker.min.css">
+                        <script src="/static/js/jquery.datetimepicker.full.js"></script>
+
+                        <li>
+                            <form role="search" method="POST" enctype="multipart/form-data"
+                                action="{% if member %}/rakubaru/rasearchreportbydate?option=user&member_id={{member.pk}}{% else %}/rakubaru/rasearchreportbydate?option=all{% endif %}">
+                                {% csrf_token %}
+                                <div class="input-group" id="datetimebox" onchange="updatedatetime();">
+                                    <input type="text" class="form-control" value="" placeholder="日付を入力してください..." required id="fromdateBox" autocomplete="off">
+                                    <span class="input-group-btn">
+                                        <button type="submit" class="btn btn-success"><i class="fa fa-search" style="color:white; font-size:18px; padding:1.5px;"></i></button>
+                                    </span>
+                                </div>
+                                <input type="hidden" name="q" id="fromdate">
+                                <input hidden name="opt" value="{{opt}}"/>
+                                <script>
+                                     jQuery('#datetimebox').datetimepicker({
+                                        timepicker: false,
+		                                datepicker: true,
+                                     });
+                                     function updatedatetime(){
+                                          var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                                          var datetime = document.getElementById("datetimebox").value;
+                                          var year = datetime.substring(0, 4);
+                                          var month = datetime.substring(5, 7);
+                                          var day = datetime.substring(8, 10);
+                                          var hour = datetime.substring(11, 13);
+                                          var minute = datetime.substring(14, 16);
+                                          var ap = '';
+                                          if (parseInt(hour) > 12) {
+                                               hour = String(parseInt(hour) - 12);
+                                               ap = 'PM';
+                                          }else ap = 'AM';
+                                          var monthindex = parseInt(month);
+                                          month = months[monthindex - 1];
+                                          document.getElementById("fromdateBox").value = month + ' ' + day + ', ' + year;
+                                          document.getElementById("fromdate").value = new Date(datetime).getTime();
+                                     }
+                                </script>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+
+            </ul>
+
+        </div>
+
+    </div>
+</nav>
+
+
+<script>
+
+    var openF = false;
+
+    function changeNavbarBackgroundColor(){
+        console.log("Clicked on nav button");
+        var navbar = document.getElementById('navbar');
+        if(!openF) {
+            navbar.style.backgroundColor = "rgba(0,0,0,0.7)";
+            openF = true;
+        }else{
+            // navbar.style.backgroundColor = "transparent";
+            openF = false;
+        }
+    }
+
+    function showPostCreateForm(){
+        document.getElementById('postcreateform').style.display='inline-block';
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+    }
+
+</script>
+
+<script>
+    $(document).click(function(){
+        // hideMenuBar();
+    });
+
+    function hideMenuBar(){
+        // $(".dropdown-menu").hide();
+        $('.navbar-collapse').collapse('hide');
+    }
+
+</script>
+
+{% block body %}
+{% endblock %}
+
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

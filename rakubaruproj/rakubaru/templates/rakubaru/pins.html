@@ -1,0 +1,240 @@
+{% extends 'rakubaru/base_back.html' %}
+{% block title %}{% if member %}{{member.name}} ピン{% else %}すべてのピン{% endif %}{% endblock %}
+{% block body %}
+
+<script src="https://maps.googleapis.com/maps/api/js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?libraries=places"></script>
+
+<style>
+
+html, body{
+  background: #BDB76B no-repeat center center fixed;
+  background-size:cover;
+}
+
+.form {
+  border-radius: 8px;
+  min-width:350px;
+  max-width:600px;
+  width:auto;
+  height:auto;
+  overflow: hidden;
+  background-color:rgba(0,0,0,0.8);
+}
+
+#form:hover {
+
+}
+
+p span {
+  color: #F00;
+}
+
+p {
+  margin: 0px;
+  font-weight: 600;
+  line-height: 2;
+  color:#fff;
+}
+
+h1 {
+  text-align:center;
+  color: #666;
+  text-shadow: 1px 1px 0px #FFF;
+  margin:50px 0px 0px 0px
+}
+
+input {
+  border-radius: 50px;
+  border: 1px solid #eee;
+  margin-bottom: 15px;
+  margin-right:auto;
+  width: 100%;
+  height: 42px;
+  opacity:0.95;
+  float: middle;
+  padding: 0px 15px;
+  color:black;
+  text-align:left;
+}
+
+.form-group {
+  overflow: hidden;
+  width:100%;
+}
+
+.contentform {
+  padding: 20px;
+  float:middle;
+  margin:auto;
+}
+
+
+.formcontent {
+  width:100%;
+  float:middle;
+  margin:auto;
+  box-sizing: border-box;
+}
+
+.bouton-update{
+  background-color: #0077b3;
+  color: #FFF;
+  text-align: center;
+  width: 100%;
+  border:0;
+  opacity:0.95;
+  padding: 12px 18px;
+  border-radius: 50px 50px 50px 50px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+#backgroundOverlay{
+  background-color:rgba(0,0,0,0.6);
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:200;
+  display:none;
+}
+
+.item{
+    color:black;
+    background-color:#eee;
+    text-align:center;
+    padding:3px;
+    font-size:12px;
+    border:1px solid white;
+    text-decoration:none;
+}
+
+.item:hover {
+    color:white;
+    background-color:blue;
+}
+
+</style>
+
+<div id="map_canvas" style="width:100%; height:100%; display:block;"><noscript><p>GoogleマップをレンダリングするにはJavaScriptが必要です</p></noscript></div>
+
+<script>
+  function initMap() {
+    // map options
+    var options = {
+        zoom: 5,
+        center: {
+          lat: 39.74608499,
+          lng: -90.26048664
+        },
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        mapTypeControl: true,
+        mapTypeControlOptions: {
+            style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+            position: google.maps.ControlPosition.LEFT_BOTTOM
+        },
+        scaleControl: true,
+        fullscreenControl: true,
+        fullscreenControlOptions: {
+            position: google.maps.ControlPosition.RIGHT_CENTER
+        }
+    }
+    var map = new google.maps.Map(document.getElementById('map_canvas'), options);
+
+    var bounds = new google.maps.LatLngBounds();
+
+    {% if pins %}
+    {% for pin in pins %}
+        {% if pin.lat != None %}
+            var position = new google.maps.LatLng( {{pin.lat}}, {{pin.lng}} );
+            // add position to bounds
+        	bounds.extend( position );
+        {% endif %}
+    {% endfor %}
+    {% else %}
+    alert('No pin data...');
+    {% endif %}
+
+    map.fitBounds( bounds );
+
+    //Add marker
+    var markers = [
+
+        {% for pin in pins %}
+            {% if pin.lat != None %}
+                {
+                    coords: {
+                      lat: {{ pin.lat }},
+                      lng: {{ pin.lng }}
+                    },
+                    content: '<label style="font-weight:500;">{{pin.comment}}</label><div style="font-weight:300; font-size:14px;">{{pin.time}}</div>',
+                },
+            {% endif %}
+        {% endfor %}
+
+    ];
+
+    // Loop through markers
+    var gmarkers = [];
+    for (var i = 0; i < markers.length; i++) {
+      gmarkers.push(addMarker(markers[i]));
+
+    }
+
+    //Add MArker function
+    function addMarker(props) {
+      var marker = new google.maps.Marker({
+        position: props.coords,
+        map: map,
+
+      });
+
+      /* if(props.iconImage){
+        marker.setIcon(props.iconImage);
+      } */
+
+      //Check content
+      if (props.content) {
+        var infoWindow = new google.maps.InfoWindow({
+          content: props.content
+        });
+        marker.addListener('click', function() {
+          infoWindow.open(map, marker);
+        });
+      }
+      return marker;
+    }
+
+  }
+</script>
+
+<script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAD08ggeOQbSPf8_w-8KvqKhqeXWH3GM8s&callback=initMap">
+</script>
+
+<meta charset="UTF-8">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<div id="backgroundOverlay" onclick="javascript:dismissLayouts();">
+</div>
+
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

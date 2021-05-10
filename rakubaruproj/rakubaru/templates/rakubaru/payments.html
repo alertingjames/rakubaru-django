@@ -1,0 +1,441 @@
+{% extends 'rakubaru/base_back.html' %}
+{% block title %}管理者の支払い{% endblock %}
+{% block body %}
+<br>
+<br>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<meta charset="utf-8">
+<meta content="stuff, to, help, search, engines, not" name="keywords">
+<meta content="What this page is about." name="description">
+<style>
+
+html, body{
+  background: #BDB76B no-repeat center center fixed;
+  background-size:cover;
+}
+
+#myBtn {
+  display: none;
+  position: fixed;
+  bottom: 20%;
+  right: 15px;
+  z-index: 99;
+  border: none;
+  outline: none;
+  background-color: rgba(0,0,0,0.3);
+  color: white;
+  cursor: pointer;
+  padding: 15px;
+  border-radius: 50%;
+}
+
+#myBtn:hover {
+  background-color: orange;
+}
+
+#admin{
+    display:none;
+}
+
+.action-menu {
+    position:absolute;
+    top:0;
+    bottom:0;
+    left:0;
+    right:0;
+    padding-left:20%;
+    padding-right:20%;
+    border-radius: 5px;
+    background-color:rgba(255, 255, 204, 0.6);
+    /*padding:20px;*/
+    text-align:center;
+    display:none;
+}
+
+form h1 {
+  font-size: 21px;
+  background: #327a81 none repeat scroll 0% 0%;
+  color: rgb(255, 255, 255);
+  padding: 19px 22px;
+  border-radius: 5px 5px 0px 0px;
+  margin: auto;
+  text-shadow: none;
+  text-align:left
+}
+
+.report-form {
+  max-width:600px;
+  width:auto;
+  margin:auto;
+  border-radius:5px;
+  margin-bottom:3px;
+  background:white;
+  background-size:cover;
+  overflow: hidden;
+}
+
+.report-form:hover {
+  background:#ffffe6;
+  background-size:cover;
+}
+
+.report-form:hover .action-menu{
+    display:block;
+}
+
+p span {
+  color: #F00;
+}
+
+p {
+  margin: 0px;
+  font-weight: 200;
+  line-height: 2;
+  color:#fff;
+}
+
+a {
+  text-decoration:inherit
+}
+
+.form-group {
+  overflow: hidden;
+  width:100%;
+}
+
+.contentform {
+  padding: 10px 10px;
+}
+
+.bouton-update{
+  background-color: #008CBA;
+  color: #FFF;
+  text-align: center;
+  width: 100%;
+  border:0;
+  padding: 12px 18px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+#search::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+  color: white;
+  opacity: 0.7; /* Firefox */
+}
+
+#search:-ms-input-placeholder { /* Internet Explorer 10-11 */
+  color: white;
+  opacity: 0.7;
+}
+
+#search::-ms-input-placeholder { /* Microsoft Edge */
+  color: white;
+  opacity: 0.7;
+}
+
+#backgroundOverlay{
+  background-color:rgba(0,0,0,0.5);
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:10000;
+  display:none;
+}
+
+#snackbar {
+    visibility: hidden;
+    min-width: 200px;
+    margin-left: -125px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 2px;
+    padding: 12px;
+    position: fixed;
+    z-index: 1;
+    left: 50%;
+    bottom: 30px;
+    font-size: 17px;
+}
+
+#snackbar.show {
+    visibility: visible;
+    -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+@-webkit-keyframes fadein {
+    from {bottom: 0; opacity: 0;}
+    to {bottom: 30px; opacity: 1;}
+}
+
+@keyframes fadein {
+    from {bottom: 0; opacity: 0;}
+    to {bottom: 30px; opacity: 1;}
+}
+
+@-webkit-keyframes fadeout {
+    from {bottom: 30px; opacity: 1;}
+    to {bottom: 0; opacity: 0;}
+}
+
+@keyframes fadeout {
+    from {bottom: 30px; opacity: 1;}
+    to {bottom: 0; opacity: 0;}
+}
+
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 100000; /* Sit on top */
+  padding-top: 150px; /* Location of the box
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  background-color: rgba(0,0,0,0.8); /* Black w/ opacity */
+}
+
+/* Modal Content (image) */
+.modal-content {
+  margin: auto;
+  display: block;
+  width: 400px;
+}
+
+/* Add Animation */
+.modal-content {
+  -webkit-animation-name: zoom;
+  -webkit-animation-duration: 0.6s;
+  animation-name: zoom;
+  animation-duration: 0.6s;
+}
+
+@-webkit-keyframes zoom {
+  from {-webkit-transform:scale(0)}
+  to {-webkit-transform:scale(1)}
+}
+
+@keyframes zoom {
+  from {transform:scale(0)}
+  to {transform:scale(1)}
+}
+
+/* The Close Button */
+.close {
+  position: absolute;
+  top: 5px;
+  right: 15px;
+  color: gray;
+  font-size: 40px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* 100% Image Width on Smaller Screens */
+@media only screen and (max-width: 500px){
+  .modal-content {
+    width: 100%;
+  }
+}
+
+</style>
+
+<!--<script>-->
+<!--	history.pushState(null, null, location.href);-->
+<!--    history.back();-->
+<!--    history.forward();-->
+<!--    window.onpopstate = function () { history.go(1); };-->
+<!--</script>-->
+
+<meta charset="UTF-8">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../lib/w3.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<div id="title" style="font-size:25px; font-weight:800; color: #F7D479; text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.7); text-align:center;
+	position:fixed; left:50%; float:middle; transform:translate(-50%, -50%); width:350px; z-index:100; top:92px; display:none;">
+    管理者の支払い
+</div>
+
+{% if payments %}
+<div style="width:100%; height:auto; padding-bottom:20px;">
+    <div style="font-size:25px; font-weight:800;
+        color: #F7D479; text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.7); text-align:center; width:100%; margin-top:40px;">管理者の支払い<br>
+    </div>
+    <br>
+    <div style="width:100%; text-align:center; display:inline-block;">
+        <div style="width:400px; display:inline-block;">
+            <div style="width:100%;">
+                <i class="fa fa-search" style="font-size:20px; float:left; color:white; margin-top:3px;"></i>
+                <input type="text" placeholder="探す..." autocomplete="off" style="float:left; margin-left:10px; width:90%; background:transparent; border:0; padding:3px 6px; font-size:20px;
+                    color:white; height:auto;" id="search" onkeyup="filter()" onchange="clear()">
+            </div><br>
+            <div style="background:white; width:400px; height:2px; margin-top:10px;"></div>
+        </div>
+    </div>
+    <br>
+    <br>
+    <div id="list">
+        {% for payment in payments %}
+        <div class="report-form" style="position:relative;">
+            <div class="contentform">
+                <div style="width:100%; display:flex;" >
+                    <div style="padding:10px; float:left; position:relative;">
+                        <a href="#">
+                            <img src="{% if payment.member.picture_url %}{{payment.member.picture_url}}{% else %}/static/images/rakubaru/profile.png{% endif %}"
+                                style="width:60px; height:60px; border-radius:50%; object-fit:cover;">
+                        </a>
+                    </div>
+                    <div style="padding-left:8px; margin-top:5px; flex-grow:1;">
+                        <div style="color:black; font-size:20px; font-weight:600; text-align:left; word-wrap: break-word;">{{payment.member.name}}</div>
+                        <div style="font-size:16px; margin-top:5px;">
+                            <i class="fa fa-clock-o" style="color:orange; font-size:25px; margin-right:5px; vertical-align:middle;"></i>
+                            {{payment.payment.paid_time}}
+                        </div>
+                        <div style="color:orange; font-size:25px;">
+                            <i class="fa fa-credit-card" style="color:orange; font-size:20px; margin-right:3px; vertical-align:middle;"></i>
+                            計画: {{payment.payment.plan}}</div>
+                        <div style="font-size:16px; color:black;" id="desc">
+                            <i class="fa fa-user" style="color:orange; font-size:20px; margin-left:2px; margin-right:5px; vertical-align:middle;"></i>
+                            予定メンバー: <label style="color:orange; font-size:22px;">{{payment.member.planned_members}}</label>
+                        </div>
+                        <div style="font-size:16px; color:black;" id="desc">
+                            <i class="fa fa-percent" style="color:orange; font-size:20px; margin-left:2px; margin-right:5px; vertical-align:middle;"></i>
+                            ディスカウント: <label style="color:orange; font-size:22px; margin-right:20px;">{{payment.payment.discount}}</label>
+                            割引額: <label style="color:orange; font-size:22px;">{{payment.payment.discount_amount}} 円</label>
+                        </div>
+                    </div>
+                    <label style="color:orange; font-size:45px; font-weight:800; float:right; width:80px; height:80px;
+                        text-align:center; border-radius:50%; border:6px solid orange;">{{payment.month}}</label>
+                </div>
+            </div>
+
+            <input hidden id="adminname" value="{{payment.member.name}}">
+            <input hidden id="paidtime" value="{{payment.payment.paid_time}}">
+            <input hidden id="plan" value="{{payment.payment.plan}}">
+            <input hidden id="plannedmembers" value="{{payment.member.planned_members}}">
+
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    var list = document.getElementById("list");
+    var lis = list.querySelectorAll( "#list > div" );
+    var prods = [];
+    var prods2 = [];
+    for(var i=0; i<lis.length; i++){
+       prods.push(lis[i]);
+       prods2.push(lis[i]);
+    }
+    function filter(){
+        var keyword = document.getElementById("search").value;
+        if(keyword.length > 0){
+            list.innerHTML = "";
+            for(var i=0; i<prods.length; i++){
+                var adminname = prods[i].querySelector("input[id='adminname']");
+                if(adminname.value.toLowerCase().includes(keyword.toLowerCase())){
+                    list.appendChild(prods[i]);
+                }
+                else {
+                    var paidtime = prods[i].querySelector("input[id='paidtime']");
+                    if(paidtime.value.toLowerCase().includes(keyword.toLowerCase())){
+                        list.appendChild(prods[i]);
+                    }else {
+                        var plan = prods[i].querySelector("input[id='plan']");
+                        if(plan.value.toLowerCase().includes(keyword.toLowerCase())){
+                            list.appendChild(prods[i]);
+                        }else {
+                            var plannedmembers = prods[i].querySelector("input[id='plannedmembers']");
+                            if(plannedmembers.value.toLowerCase().includes(keyword.toLowerCase())){
+                                list.appendChild(prods[i]);
+                            }
+                        }
+                    }
+                }
+            }
+        }else{
+            list.innerHTML = "";
+            for(var i=0; i<prods2.length; i++){
+                list.appendChild(prods2[i]);
+            }
+        }
+    }
+
+    function clear(){
+        var keyword = document.getElementById("search").value;
+        if(keyword.length == 0){
+            // alert('clear?');
+            list.innerHTML = "";
+            for(var i=0; i<prods2.length; i++){
+                list.appendChild(prods2[i]);
+            }
+        }
+    }
+</script>
+
+<meta charset="UTF-8">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+
+<button onclick="topFunction()" id="myBtn" title="Go to top"><i class="glyphicon glyphicon-menu-up" style="color:white; font-size:14px;"></i></button>
+
+<script>
+// When the user scrolls down 20px from the top of the document, show the button
+window.onscroll = function() {scrollFunction()};
+
+function scrollFunction() {
+    if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+        document.getElementById("myBtn").style.display = "block";
+        document.getElementById("title").style.display = "block";
+    } else {
+        document.getElementById("myBtn").style.display = "none";
+        document.getElementById("title").style.display = "none";
+    }
+}
+
+// When the user clicks on the button, scroll to the top of the document
+function topFunction() {
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+}
+
+</script>
+
+{%else %}
+        <center>
+            <h3 class="my_items col-sm-offset-1" style="color:white; margin-top:150px;">支払いは存在しません</h3></center>
+
+{% endif %}
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

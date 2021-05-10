@@ -1,0 +1,1043 @@
+{% extends 'rakubaru/base_back.html' %}
+{% block title %}エリアの設定{% endblock %}
+
+{% block body %}
+
+<link rel="stylesheet" type="text/css" href="/static/css/area/areasetup.css"/>
+
+<script src="https://apis.google.com/js/api.js"></script>
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?key=AIzaSyAD08ggeOQbSPf8_w-8KvqKhqeXWH3GM8s&sensor=false&libraries=drawing,places"></script>
+
+
+<div id="form">
+    <div class="contentform">
+        <center><h4 style="color:black; font-weight:600;">エリアを追加</h4></center>
+        <label>エリアを検索する</label>
+        <br>
+        <div style="display:flex;">
+            <input type="text" id="region-name-box" placeholder="地域名を入力してください" style="flex-grow:1;">
+            <button class="draw-btn" style="width:90px;" onclick="searchArea()">検索</button>
+        </div>
+        <br>
+        <label>エリアを描く</label>
+        <br>
+        <div style="w-100">
+            <div id="color-palette"></div>
+            <button id="draw-button" class="draw-btn">ドロー</button><button id="delete-button" class="draw-btn">削除</button>
+        </div>
+        <br>
+        <button id="reg-button">エリアを追加</button>
+        <br>
+    </div>
+</div>
+
+<div id="locationList">
+    <div id="list"></div>
+</div>
+
+<div id="regform" class="col-sm-12" style="display:none;">
+    {% csrf_token %}
+    <img src="/static/images/rakubaru/cancel.png" style="width:25px; height:25px; float:right;"
+        onclick="javascript:document.getElementById('regform').style.display='none';document.getElementById('backgroundOverlay').style.display='none';">
+    <div style="width:100%; display:inline-block;">
+        <div style="font-size:18px; font-weight:600; color:black; text-align:center;" id="wellbox_title">新しいエリアを登録する</div>
+        <br>
+        <div class="col-sm-12">
+            <form action="/rakubaru/postarea" method="post" enctype="multipart/form-data" style="width:100%;" id="afm">
+                {% csrf_token %}
+                <div class="form-group">
+                    <p>エリア名 <span>*</span></p>
+                    <div style="text-align:center; width:100%;">
+                        <input type="text" name="area_name" id="area_name" placeholder="エリア名...">
+                    </div>
+                </div>
+                <div class="form-group" id="subloc-frame" style="display:none;">
+                    <p>サブローカリティ</p>
+                    <ul id="subloc">
+
+                    </ul>
+                </div>
+                <div class="form-group">
+                    <p>配布部数</p>
+                    <div style="text-align:center; width:100%;">
+                        <input type="number" name="copies" id="copies" placeholder="配布部数..." oninput="entercopies()">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <p>配布単価</p>
+                    <div style="text-align:center; width:100%;">
+                        <input type="number" step="any" name="unit_price" id="uprice" placeholder="配布単価..." oninput="enteruprice()">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <p>手当</p>
+                    <div style="text-align:center; width:100%;">
+                        <input type="number" step="any" name="allowance" id="allowance" placeholder="手当..." oninput="enterallowance()">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <p>金額</p>
+                    <div style="text-align:center; width:100%;">
+                        <input type="number" step="any" name="amount" id="amount" placeholder="金額..." readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <p>配布に必要な移動距離 </p>
+                    <div style="text-align:center; width:100%;">
+                        <input type="number" step="any" name="distance" id="distance" placeholder="距離 (km)...">
+                    </div>
+                </div>
+                <input hidden name="sublocalities" id="sublocalities">
+                <input hidden name="locarr" id="locarr">
+                <center><img src="/static/images/rakubaru/progressbar.gif" style="width:30px; height:30px; display:none;" id="gif"></center>
+                <center>
+                    <button type="button" id="submit-button" onclick="uploadAreaInfo()">エリアを追加</button>
+                </center>
+                <br>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="map_canvas"><noscript><p>GoogleマップをレンダリングするにはJavaScriptが必要です</p></noscript></div>
+
+<script>
+
+var geocoder;
+var map;
+var marker;
+var infowindow;
+var addr;
+var latLng;
+
+var drawingManager;
+var selectedShape;
+var colors = ['#1E90FF', '#FF1493', '#32CD32', '#FF8C00', '#4B0082'];
+var selectedColor;
+var colorButtons = {};
+var overlays = new Array();
+
+function clearSelection () {
+    if (selectedShape) {
+        selectedShape.setEditable(false);
+        selectedShape.setDraggable(false);
+        selectedShape = null;
+    }
+}
+
+function setSelection (overlay) {
+    clearAllSelection();
+    selectedShape = overlay.shape;
+    selectedShape.setEditable(true);
+    selectedShape.setDraggable(true);
+
+    var vertices = selectedShape.getPath();
+    var locarray = new Array();
+    for (var i=0; i<vertices.length; i++) {
+        const xy = vertices.getAt(i);
+        locarray.push({ lat: xy.lat(), lng: xy.lng() });
+    }
+    var color;
+    if(shapeObjArray.filter(obj => obj.id === overlay.id).length > 0) {
+        color = shapeObjArray.filter(obj => obj.id === overlay.id)[0].color;
+    }else {
+        color = selectedColor;
+    }
+    getAreaName(locarray, overlay, color);
+
+}
+
+function clearAllSelection() {
+    for(var i=0; i<overlays.length; i++) {
+        if (overlays[i].shape) {
+            overlays[i].shape.setEditable(false);
+            overlays[i].shape.setDraggable(false);
+        }
+    }
+    selectedShape = null;
+}
+
+function deleteSelectedShape () {
+    if (selectedShape) {
+        if(shapeObjArray.filter(obj => obj.shape === selectedShape).length > 0) {
+            ul.removeChild(shapeObjArray.filter(obj => obj.shape === selectedShape)[0].layout);
+            shapeObjArray.splice(shapeObjArray.indexOf(shapeObjArray.filter(obj => obj.shape === selectedShape)[0]), 1);
+        }
+        selectedShape.setMap(null);
+    }
+    drawingManager.setDrawingMode(null);
+}
+
+function resetShapeVals() {
+    overlays = new Array();
+    shapeObjArray = new Array();
+    selectedShape = null;
+    ul.innerHTML = "";
+}
+
+function selectColor (color) {
+    selectedColor = color;
+    for (var i = 0; i < colors.length; ++i) {
+        var currColor = colors[i];
+        colorButtons[currColor].style.border = currColor == color ? '2px solid #789' : '2px solid #fff';
+    }
+    // Retrieves the current options from the drawing manager and replaces the
+    // stroke or fill color as appropriate.
+    var polylineOptions = drawingManager.get('polylineOptions');
+    polylineOptions.strokeColor = color;
+    drawingManager.set('polylineOptions', polylineOptions);
+
+    var rectangleOptions = drawingManager.get('rectangleOptions');
+    rectangleOptions.fillColor = color;
+    drawingManager.set('rectangleOptions', rectangleOptions);
+
+    var circleOptions = drawingManager.get('circleOptions');
+    circleOptions.fillColor = color;
+    drawingManager.set('circleOptions', circleOptions);
+
+    var polygonOptions = drawingManager.get('polygonOptions');
+    polygonOptions.fillColor = color;
+    drawingManager.set('polygonOptions', polygonOptions);
+
+    if (selectedShape) {
+        if(shapeObjArray.filter(obj => obj.shape === selectedShape).length > 0) {
+            shapeObjArray.filter(obj => obj.shape === selectedShape)[0].layout.style.backgroundColor = color;
+            shapeObjArray.filter(obj => obj.shape === selectedShape)[0].color = color;
+        }
+    }
+}
+
+function setSelectedShapeColor (color) {
+    if (selectedShape) {
+        if (selectedShape.type == google.maps.drawing.OverlayType.POLYLINE) {
+            selectedShape.set('strokeColor', color);
+        } else {
+            selectedShape.set('fillColor', color);
+        }
+    }
+}
+
+function makeColorButton (color) {
+    var button = document.createElement('span');
+    button.className = 'color-button';
+    button.style.backgroundColor = color;
+    google.maps.event.addDomListener(button, 'click', function () {
+        selectColor(color);
+        setSelectedShapeColor(color);
+    });
+
+    return button;
+}
+
+var colorPalette = document.getElementById('color-palette');
+
+function buildColorPalette () {
+    for (var i = 0; i < colors.length; ++i) {
+        var currColor = colors[i];
+        var colorButton = makeColorButton(currColor);
+        colorPalette.appendChild(colorButton);
+        colorButtons[currColor] = colorButton;
+    }
+    selectColor(colors[0]);
+}
+
+function initialize(){
+
+    geocoder = new google.maps.Geocoder();
+    infowindow = new google.maps.InfoWindow;
+    latLng = new google.maps.LatLng(33.434389, 130.5351511);
+    var mapOptions = {
+        zoom: 8,
+        center: latLng,
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        disableDefaultUI: true,
+        zoomControl: true
+    }
+    map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function (p) {
+            latLng = new google.maps.LatLng(p.coords.latitude, p.coords.longitude);
+            var mapOptions = {
+                center: latLng,
+                zoom: 10,
+                mapTypeId: google.maps.MapTypeId.ROADMAP,
+                mapTypeControl: true,
+                mapTypeControlOptions: {
+                    style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+                    position: google.maps.ControlPosition.LEFT_BOTTOM
+                }
+            };
+            map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
+            marker = new google.maps.Marker({
+                position: latLng,
+                map: map,
+                title: "<div style='font-size:16px; font-weight:520;'>Your location:</div><div style='font-size:13px;'>Lat: " + p.coords.latitude
+                    + "</div><div style='font-size:13px;'>Lon: " + p.coords.longitude + "</div>"
+            });
+            google.maps.event.addListener(marker, "click", function (e) {
+                var infoWindow = new google.maps.InfoWindow();
+                infoWindow.setContent(marker.title);
+                infoWindow.open(map, marker);
+            });
+
+            enableDrawing();
+            drawingManager.setDrawingMode(null);
+
+            var autocomplete = new google.maps.places.Autocomplete(document.getElementById("region-name-box"));
+            google.maps.event.addListener(autocomplete, 'place_changed', function (event) {
+                var place = autocomplete.getPlace();
+                console.log(place.name)
+            });
+
+        });
+    } else {
+        alert('Geo Location feature is not supported in this browser.');
+    }
+
+}
+
+google.maps.event.addDomListener(window, 'load', initialize);
+
+
+</script>
+
+<!--<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAD08ggeOQbSPf8_w-8KvqKhqeXWH3GM8s&libraries=places&callback=initialize" async defer></script>-->
+
+<meta charset="UTF-8">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<div id="backgroundOverlay" onclick="javascript:dismissLayouts();">
+</div>
+
+
+<script>
+
+var areaName = "";
+var coords = new Array();
+
+var input = document.getElementById("region-name-box");
+input.addEventListener("keyup", function(event) {
+    event.preventDefault();
+    if (event.keyCode === 13) {
+        searchArea();
+    }
+});
+
+
+
+function searchArea() {
+    if(input.value == ""){
+        alert("エリア名を入力してください。");
+        return;
+    }
+    getRegionCoordinates(input.value);
+}
+
+
+function getRegionCoordinates(region_name) {
+    areaName = region_name;
+    resetShapeVals();
+
+    function trans(){
+        gapi.client.init({
+            'apiKey': 'AIzaSyAD08ggeOQbSPf8_w-8KvqKhqeXWH3GM8s',
+            'discoveryDocs': ['https://www.googleapis.com/discovery/v1/apis/translate/v2/rest'],
+        }).then(function() {
+            return gapi.client.language.translations.list({
+                q: region_name,
+                source: 'ja',
+                target: 'en',
+            });
+        }).then(function(response) {
+            console.log(response.result.data.translations[0].translatedText);
+            region_name = response.result.data.translations[0].translatedText;
+
+            coords = new Array();
+
+            var url = 'https://nominatim.openstreetmap.org/search.php?q=' + region_name + '&polygon_geojson=1&format=json'
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    var jsondata = JSON.parse(xhr.responseText);
+                    // console.log(JSON.stringify(jsondata));
+                    if(Array.isArray(jsondata) && jsondata.length > 0) {
+                        var coordjsonarr = jsondata[0].geojson.coordinates;
+                        var loc = { lat: Number(jsondata[0].lat), lng: Number(jsondata[0].lon) };
+                        var mapOptions = {
+                            center: loc,
+                            zoom: 10,
+                            mapTypeId: google.maps.MapTypeId.ROADMAP,
+                            mapTypeControl: true,
+                            mapTypeControlOptions: {
+                                style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+                                position: google.maps.ControlPosition.LEFT_BOTTOM
+                            }
+                        };
+                        map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
+                        var ne = new google.maps.LatLng(Number(jsondata[0].boundingbox[0]), Number(jsondata[0].boundingbox[2]));
+                        var sw = new google.maps.LatLng(Number(jsondata[0].boundingbox[1]), Number(jsondata[0].boundingbox[3]));
+                        var bounds = new google.maps.LatLngBounds();
+                        bounds.extend(ne);
+                        bounds.extend(sw);
+                        map.fitBounds(bounds);
+                        marker = new google.maps.Marker({
+                            position: loc,
+                            map: map,
+                            title: "<iframe width='600' height='450' style='border:0; margin-bottom:10px;' loading='lazy' allowfullscreen src='https://www.google.com/maps/embed/v1/place?key=AIzaSyAD08ggeOQbSPf8_w-8KvqKhqeXWH3GM8s&q="
+                                    + jsondata[0].display_name + "'></iframe>" + "<div style='font-size:16px; font-weight:520;'>" + jsondata[0].display_name + ":</div><div style='font-size:13px;'>Lat: " + jsondata[0].lat
+                                    + "</div><div style='font-size:13px;'>Lon: " + jsondata[0].lon + "</div>"
+                        });
+                        google.maps.event.addListener(marker, "click", function (e) {
+                            var infoWindow = new google.maps.InfoWindow();
+                            infoWindow.setContent(marker.title);
+                            infoWindow.open(map, marker);
+                        });
+                        if(coordjsonarr.length == 2 && !Array.isArray(coordjsonarr[0])) {
+                            var rectangle = new google.maps.Rectangle({
+                                bounds: bounds,
+                                strokeColor: "#FF0000",
+                                strokeOpacity: 0.8,
+                                strokeWeight: 1,
+                                fillColor: "#FF0000",
+                                fillOpacity: 0.15,
+                            });
+                            rectangle.setMap(map);
+                            coords.push({ lng: Number(jsondata[0].boundingbox[2]),  lat: Number(jsondata[0].boundingbox[0]) })
+                            coords.push({ lng: Number(jsondata[0].boundingbox[2]),  lat: Number(jsondata[0].boundingbox[1]) })
+                            coords.push({ lng: Number(jsondata[0].boundingbox[3]),  lat: Number(jsondata[0].boundingbox[1]) })
+                            coords.push({ lng: Number(jsondata[0].boundingbox[3]),  lat: Number(jsondata[0].boundingbox[0]) })
+                            // enableDrawing();
+                            return;
+                        }
+                        for(var i=0; i<coordjsonarr.length; i++){
+                            coords = new Array();
+                            var ibounds = new google.maps.LatLngBounds();
+                            for(var j=0; j<coordjsonarr[i].length; j++){
+                                if(coordjsonarr[i][j].length == 2) {
+                                    coords.push({ lng: coordjsonarr[i][j][0],  lat: coordjsonarr[i][j][1] });
+                                    var iloc = new google.maps.LatLng(coordjsonarr[i][j][1], coordjsonarr[i][j][0]);
+                                    ibounds.extend(iloc);
+                                }
+                                else if(Array.isArray(coordjsonarr[i][j][0])) {
+                                    coords = new Array();
+                                    var jbounds = new google.maps.LatLngBounds();
+                                    for(var k=0; k<coordjsonarr[i][j].length; k++) {
+                                        if(coordjsonarr[i][j][k].length == 2) {
+                                            coords.push({ lng: coordjsonarr[i][j][k][0],  lat: coordjsonarr[i][j][k][1] });
+                                            var jloc = new google.maps.LatLng(coordjsonarr[i][j][k][1], coordjsonarr[i][j][k][0]);
+                                            jbounds.extend(jloc);
+                                        }
+                                    }
+                                    if(coords.length > 0 && jbounds.contains(new google.maps.LatLng(Number(jsondata[0].lat), Number(jsondata[0].lon)))) {
+                                        var polygon = new google.maps.Polygon({
+                                            paths: coords,
+                                            strokeColor: '#FF0000',
+                                            strokeOpacity: 0.8,
+                                            strokeWeight: 1,
+                                            fillColor: '#FF0000',
+                                            fillOpacity: 0.15
+                                        });
+                                        // Draw the polygon on the desired map instance
+                                        if(map != null){
+                                            polygon.setMap(map);
+                                        }
+                                        return;
+                                    }
+                                }
+                            }
+                            if(coords.length > 0 && ibounds.contains(new google.maps.LatLng(Number(jsondata[0].lat), Number(jsondata[0].lon)))) {
+                                var polygon = new google.maps.Polygon({
+                                    paths: coords,
+                                    strokeColor: '#FF0000',
+                                    strokeOpacity: 0.8,
+                                    strokeWeight: 1,
+                                    fillColor: '#FF0000',
+                                    fillOpacity: 0.15
+                                });
+                                // Draw the polygon on the desired map instance
+                                if(map != null){
+                                    polygon.setMap(map);
+                                }
+                            }
+                        }
+
+                        // enableDrawing();
+
+                    }else {
+                        geocodeAddress(region_name);
+                    }
+                }
+            };
+            xhr.open('GET', url, true);
+            xhr.send('');
+
+        }, function(reason) {
+            console.log('Error: ' + reason.result.error.message);
+        });
+    }
+    gapi.load('client', trans);
+
+}
+
+
+function enableDrawing() {
+
+    clearAllSelection();
+
+    var polyOptions = {
+        strokeWeight: 0,
+        fillOpacity: 0.45,
+        editable: true,
+        draggable: true
+    };
+    // Creates a drawing manager attached to the map that allows the user to draw
+    // markers, lines, and shapes.
+    drawingManager = new google.maps.drawing.DrawingManager({
+        drawingMode: google.maps.drawing.OverlayType.POLYGON,
+        drawingControl: false,
+        markerOptions: {
+            draggable: true
+        },
+        polylineOptions: {
+            editable: true,
+            draggable: true
+        },
+        rectangleOptions: polyOptions,
+        circleOptions: polyOptions,
+        polygonOptions: polyOptions,
+        drawingControlOptions: {
+            position: google.maps.ControlPosition.TOP_CENTER,
+            drawingModes: [
+                google.maps.drawing.OverlayType.POLYGON,
+            ],
+        },
+        map: map
+    });
+
+    google.maps.event.addListener(drawingManager, 'overlaycomplete', function (e) {
+        var newShape = e.overlay;
+
+        newShape.type = e.type;
+
+        var overlay = {
+            id: overlays.length,
+            shape: newShape
+        }
+
+        overlays.push(overlay);
+
+        // addAreaToList(marker.formatted_address, marker.getPosition().lat(), marker.getPosition().lng());
+
+        // Switch back to non-drawing mode after drawing a shape.
+        drawingManager.setDrawingMode(null);
+
+        // Add an event listener that selects the newly-drawn shape when the user
+        // mouses down on it.
+        google.maps.event.addListener(newShape, 'click', function (e) {
+            if (e.vertex !== undefined) {
+                if (newShape.type === google.maps.drawing.OverlayType.POLYGON) {
+                    var path = newShape.getPaths().getAt(e.path);
+                    path.removeAt(e.vertex);
+                    if (path.length < 3) {
+                        newShape.setMap(null);
+                    }
+                }
+                if (newShape.type === google.maps.drawing.OverlayType.POLYLINE) {
+                    var path = newShape.getPath();
+                    path.removeAt(e.vertex);
+                    if (path.length < 2) {
+                        newShape.setMap(null);
+                    }
+                }
+            }
+            console.log("Selected Shape ID: " + String(overlays.filter(obj => obj.shape == newShape)[0].id));
+            setSelection(overlay);
+        });
+        console.log("New Shape ID: " + String(overlays.filter(obj => obj.shape == newShape)[0].id));
+        setSelection(overlay);
+    });
+
+    // Clear the current selection when the drawing mode is changed, or when the
+    // map is clicked.
+    google.maps.event.addListener(drawingManager, 'drawingmode_changed', clearSelection);
+    google.maps.event.addListener(map, 'click', clearSelection);
+    google.maps.event.addDomListener(document.getElementById('draw-button'), 'click', enableDrawing);
+    google.maps.event.addDomListener(document.getElementById('delete-button'), 'click', deleteSelectedShape);
+    google.maps.event.addDomListener(document.getElementById('reg-button'), 'click', openRegBox);
+
+    if(colorPalette.children.length == 0) {
+        buildColorPalette();
+    }else {
+        selectColor(colors[0]);
+    }
+
+}
+
+
+function geocodeAddress(loc_name) {
+  var address = loc_name;
+  var addr;
+  infowindow = new google.maps.InfoWindow();
+
+  geocoder.geocode({
+    'address': address
+  }, function(results, status) {
+    if (status == google.maps.GeocoderStatus.OK) {
+
+        var mapOptions = {
+            center: results[0].geometry.location,
+            zoom: 10,
+            mapTypeId: google.maps.MapTypeId.ROADMAP,
+            mapTypeControl: true,
+            mapTypeControlOptions: {
+                style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+                position: google.maps.ControlPosition.LEFT_BOTTOM
+            }
+        };
+
+        map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
+
+        if (marker) {
+            marker.setMap(null);
+            if (infowindow) infowindow.close();
+        }
+
+        marker = new google.maps.Marker({
+            map: map,
+            draggable: false,
+            animation: google.maps.Animation.DROP,
+            position: results[0].geometry.location
+        });
+        google.maps.event.addListener(marker, 'click', function() {
+            if (marker.formatted_address) {
+                addr = marker.formatted_address;
+                var mapframe = "<iframe width='600' height='450' style='border:0; margin-bottom:10px;' loading='lazy' allowfullscreen src='https://www.google.com/maps/embed/v1/place?key=AIzaSyAD08ggeOQbSPf8_w-8KvqKhqeXWH3GM8s&q="
+                            + addr + "'></iframe>";
+                infowindow.setContent(mapframe + marker.formatted_address + "<br>coordinates: " + marker.getPosition().toUrlValue(6));
+            } else {
+                addr = address;
+                var mapframe = "<iframe width='600' height='450' style='border:0; margin-bottom:10px;' loading='lazy' allowfullscreen src='https://www.google.com/maps/embed/v1/place?key=AIzaSyAD08ggeOQbSPf8_w-8KvqKhqeXWH3GM8s&q="
+                            + addr + "'></iframe>";
+                infowindow.setContent(mapframe + address + "<br>coordinates: " + marker.getPosition().toUrlValue(6));
+            }
+
+            infowindow.open(map, marker);
+
+        });
+
+        google.maps.event.trigger(marker, 'click');
+
+    } else {
+        alert('Geocode was not successful for the following reason: ' + status);
+    }
+  });
+}
+
+function getAreaName(locarr, overlay, color) {
+    var locdata = locarr[Math.floor(locarr.length/2)];
+    return processAreaName(locarr, locdata.lat, locdata.lng, overlay, color);
+}
+
+var cityName = "";
+
+function processAreaName(locarr, lat, lng, overlay, color) {
+    var latlng = new google.maps.LatLng(lat, lng);
+    geocoder.geocode({'latLng': latlng}, function(results, status) {
+        if (status == google.maps.GeocoderStatus.OK) {
+            var res = parseGeoLocationResults(results[0]);
+            var locality = "";
+            if(res['sublocality_level_1'] != null) locality += res['sublocality_level_1'] + " ";
+            if(res['sublocality_level_2'] != null) locality += res['sublocality_level_2'] + " ";
+            if(res['sublocality_level_3'] != null) locality += res['sublocality_level_3'];
+            var city = "";
+            var zip = "";
+            if(res['city'] != null) city = ", " + res["city"];
+            if(res['zip'] != null) zip = ", " + res["zip"];
+            console.log(locality + city + zip);
+            addAreaToList(locarr, locality + city + zip, overlay, color, lat, lng);
+        }else {
+            alert("Geocoder failed due to: " + status);
+        }
+    });
+}
+
+function parseGeoLocationResults(result) {
+    const parsedResult = {}
+    const {address_components} = result;
+
+    for (var i = 0; i < address_components.length; i++) {
+        for (var b = 0; b < address_components[i].types.length; b++) {
+            if (address_components[i].types[b] == "street_number") {
+                //this is the object you are looking for
+                parsedResult.street_number = address_components[i].long_name;
+                break;
+            }
+            else if (address_components[i].types[b] == "route") {
+                //this is the object you are looking for
+                parsedResult.street_name = address_components[i].long_name;
+                break;
+            }
+            else if (address_components[i].types[b] == "sublocality_level_1") {
+                //this is the object you are looking for
+                parsedResult.sublocality_level_1 = address_components[i].long_name;
+                break;
+            }
+            else if (address_components[i].types[b] == "sublocality_level_2") {
+                //this is the object you are looking for
+                parsedResult.sublocality_level_2 = address_components[i].long_name;
+                break;
+            }
+            else if (address_components[i].types[b] == "sublocality_level_3") {
+                //this is the object you are looking for
+                parsedResult.sublocality_level_3 = address_components[i].long_name;
+                break;
+            }
+            else if (address_components[i].types[b] == "neighborhood") {
+                //this is the object you are looking for
+                parsedResult.neighborhood = address_components[i].long_name;
+                break;
+            }
+            else if (address_components[i].types[b] == "locality") {
+                //this is the object you are looking for
+                parsedResult.city = address_components[i].long_name;
+                break;
+            }
+            else if (address_components[i].types[b] == "administrative_area_level_1") {
+                //this is the object you are looking for
+                parsedResult.state = address_components[i].long_name;
+                break;
+            }
+
+            else if (address_components[i].types[b] == "postal_code") {
+                //this is the object you are looking for
+                parsedResult.zip = address_components[i].long_name;
+                break;
+            }
+            else if (address_components[i].types[b] == "country") {
+                //this is the object you are looking for
+                parsedResult.country = address_components[i].long_name;
+                break;
+            }
+        }
+    }
+    return parsedResult;
+}
+
+
+var locList = document.getElementById("locationList");
+var ul = document.getElementById("list");
+
+var shapeObjArray = new Array();
+
+function addAreaToList(locarr, loc_name, overlay, color, lat, lng){
+    var shapeObjs = shapeObjArray.filter(obj => obj.id === overlay.id);
+    if(shapeObjs.length > 0) {
+        var shapeObj = shapeObjs[0];
+        shapeObj.shape = overlay.shape;
+        shapeObj.color = color;
+        shapeObj.lat = lat;
+        shapeObj.lng = lng;
+        shapeObj.loc_name = loc_name;
+
+        var layout = shapeObj.layout;
+        layout.innerHTML = "";
+        var li = document.createElement("div");
+        li.style.backgroundColor = "transparent";
+        li.style.color = 'white';
+        li.style.fontSize = '14';
+        li.style.maxWidth = "auto";
+        li.style.width = "auto";
+        li.innerHTML = "<label style='font-size:14px; font-weight:600; margin-top:-5px;'>" + loc_name + "</label>" + "<br>" + "<div style='font-style:italic; color:white; margin-bottom:5px; font-size:12px;'>" + lat + ', ' + lng + "</div>";
+        li.style.textAlign = 'left';
+        if(shapeObj.color != color) layout.style.backgroundColor = color;
+        var div = document.createElement("div");
+        div.style.width = "100%";
+        div.style.backgroundColor = "transparent";
+        div.innerHTML = "<span class='fa fa-close'></span>";
+        layout.appendChild(div);
+        layout.append(li);
+        div.querySelector("span").addEventListener('click', function (event) {
+            ul.removeChild(layout);
+            removeShape(overlay);
+        });
+        li.addEventListener('click', function (event) {
+            selShape(overlay);
+        });
+        shapeObj.layout = layout;
+
+    }else {
+        var li = document.createElement("div");
+        li.style.backgroundColor = "transparent";
+        li.style.color = 'white';
+        li.style.fontSize = '14';
+        li.style.maxWidth = "auto";
+        li.style.width = "auto";
+        li.innerHTML = "<label style='font-size:14px; font-weight:600; margin-top:-5px;'>" + loc_name + "</label>" + "<br>" + "<div style='font-style:italic; color:white; margin-bottom:5px; font-size:12px;'>" + lat + ', ' + lng + "</div>";
+        li.style.textAlign = 'left';
+        var ul2 = document.createElement("div");
+        ul2.style.backgroundColor = color;
+        var div = document.createElement("div");
+        div.style.width = "100%";
+        div.style.backgroundColor = "transparent";
+        div.innerHTML = "<span class='fa fa-close'></span>";
+        ul2.appendChild(div);
+        ul2.append(li);
+        div.querySelector("span").addEventListener('click', function (event) {
+            ul.removeChild(ul2);
+            removeShape(overlay);
+        });
+        li.addEventListener('click', function (event) {
+            selShape(overlay);
+        });
+        ul.insertBefore(ul2, ul.childNodes[0]);
+        locList.scrollTop = 0;
+        var shapeObj = {
+            id:overlay.id,
+            shape:overlay.shape,
+            color:color,
+            layout:ul2,
+            lat:lat,
+            lng:lng,
+            loc_name:loc_name,
+            coords:locarr
+        };
+        shapeObjArray.push(shapeObj);
+    }
+
+}
+
+function removeShape(overlay) {
+    selectedShape = overlay.shape;
+    deleteSelectedShape();
+}
+
+function selShape(overlay) {
+    setSelection(overlay);
+}
+
+var regform = document.getElementById('regform');
+var darkbg = document.getElementById('backgroundOverlay');
+
+var areanamebox = document.getElementById('area_name');
+var sublocframe = document.getElementById('subloc-frame');
+var sublocbox = document.getElementById('subloc');
+var copiesbox = document.getElementById('copies');
+var upricebox = document.getElementById('uprice');
+var allowancebox = document.getElementById('allowance');
+var amountbox = document.getElementById('amount');
+var distancebox = document.getElementById('distance');
+
+function openRegBox() {
+    regform.style.display='block';
+    darkbg.style.display='block';
+    areanamebox.value = areaName;
+    sublocbox.innerHTML = "";
+    if(shapeObjArray.length > 0) {
+        for(var i=0; i<shapeObjArray.length; i++) {
+            var li = document.createElement("li");
+            li.innerHTML = shapeObjArray[i].loc_name;
+            li.setAttribute("class", "subloc_name");
+            sublocbox.append(li);
+        }
+        sublocframe.style.display = "block";
+    }else {
+        sublocframe.style.display = "none";
+    }
+}
+
+var amount = 0;
+var copies = 0;
+var uprice = 0;
+var allowance = 0;
+
+function entercopies() {
+    if(copiesbox.value == "") {
+        copies = 0;
+    }
+    copies = parseInt(copiesbox.value);
+    amount = copies * parseFloat(uprice) + parseFloat(allowance);
+    amountbox.value = amount;
+}
+
+function enteruprice() {
+    if(upricebox.value == "") {
+        uprice = 0;
+    }
+    uprice = parseFloat(upricebox.value);
+    amount = parseInt(copies) * uprice + parseFloat(allowance);
+    amountbox.value = amount;
+}
+
+function enterallowance() {
+    if(allowancebox.value == "") {
+        allowance = 0;
+    }
+    allowance = parseFloat(allowancebox.value);
+    amount = parseInt(copies) * parseFloat(uprice) + parseFloat(allowance);
+    amountbox.value = amount;
+}
+
+
+function createLocationsJsonStr(){
+    if(shapeObjArray.length > 0) {
+        var arr = new Array();
+        for (var i = 0; i < shapeObjArray.length; i++ ) {
+            shapeObj = shapeObjArray[i];
+            var jsonObj = new Object();
+            var arr1 = new Array();
+            for(var j = 0; j < shapeObj.coords.length; j++) {
+                coord = shapeObj.coords[j];
+                var obj = new Object();
+                obj.lat = coord.lat;
+                obj.lng = coord.lng;
+                arr1.push(obj);
+            }
+            jsonObj.loc_name = shapeObj.loc_name;
+            jsonObj.lat = shapeObj.lat;
+            jsonObj.lng = shapeObj.lng;
+            jsonObj.color = shapeObj.color;
+            jsonObj.locarr = arr1;
+
+            arr.push(jsonObj);
+        }
+
+        var jsonObject = {'sublocalities':JSON.parse(JSON.stringify(arr))}
+        console.log(JSON.stringify(jsonObject));
+        document.getElementById('sublocalities').value = JSON.stringify(jsonObject);
+    }
+
+}
+
+function uploadAreaInfo() {
+    if(areanamebox.value == "") {
+        alert("エリア名を入力してください。");
+        return;
+    }
+    if(copiesbox.value == "") {
+        alert("配布部数を入力してください。");
+        return;
+    }
+    if(upricebox.value == "") {
+        alert("配布単価を入力してください。");
+        return;
+    }
+    if(allowancebox.value == "") {
+        alert("許容値を入力してください。");
+        return;
+    }
+    if(amountbox.value == "") {
+        alert("金額を入力してください。");
+        return;
+    }
+    createLocationsJsonStr();
+    if(coords.length > 0){
+        document.getElementById('locarr').value = JSON.stringify(coords);
+    }else{
+        document.getElementById('locarr').value = "";
+    }
+    formSubmit(document.getElementById('afm'), document.getElementById('gif'));
+}
+
+
+function formSubmit(form, gif){
+    gif.style.display = "block";
+    var formData = new FormData(form);
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var result = xhr.responseText;
+            var res = JSON.parse(result);
+            if(res["result"] == "success") {
+                window.location.href = "/rakubaru/toareas";
+            }else {
+                alert("エリア情報のアップロードに失敗しました。");
+            }
+            gif.style.display = "none";
+            document.getElementById('regform').style.display = "none";
+            document.getElementById('backgroundOverlay').style.display = "none";
+        }
+    };
+    xhr.open('POST', form.getAttribute('action'), true);
+    xhr.send(formData);
+}
+
+
+</script>
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

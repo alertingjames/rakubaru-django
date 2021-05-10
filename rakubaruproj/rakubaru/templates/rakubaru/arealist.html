@@ -1,0 +1,688 @@
+{% extends 'rakubaru/base_area.html' %}
+{% block title %}登録エリア{% endblock %}
+
+{% block body %}
+
+<link rel="stylesheet" type="text/css" href="/static/css/area/arealist.css"/>
+
+<script>
+	history.pushState(null, null, location.href);
+    history.back();
+    history.forward();
+    window.onpopstate = function () { history.go(1); };
+</script>
+
+<meta charset="UTF-8">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+<link rel="stylesheet" href="../lib/w3.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<div id="no_result" style="font-size:16px; font-weight:300; color:white; text-align:center;
+	position:fixed; left:50%; float:middle; padding: 10px 15px 10px 15px;
+	transform:translate(-50%, -50%); width:auto; z-index:100; top:450px; display:none;">
+    登録されたエリアはありません ...
+</div>
+
+<div id="title0" style="font-size:40px; font-weight:800; color:white; text-align:center;
+	position:fixed; left:50%; float:middle; padding: 10px 15px 10px 15px;
+	transform:translate(-50%, -50%); width:auto; top:130px; display:block;">
+    登録エリア
+</div>
+
+{% if areas %}
+
+<div id="title" style="font-size:20px; font-weight:600; color:white; text-align:center; border-radius:50px; padding:8px 20px 8px 20px; background-color:black; display:none;
+	        position:fixed; left:50%; float:middle; transform:translate(-50%, -50%); width:auto; z-index:100000; top:35px;">登録エリア</div>
+
+<button onclick="topFunction()" id="top-scroll"><i class="glyphicon glyphicon-menu-up" style="color:white; font-size:14px;"></i></button>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<div class="table-owner1" id="header" style="z-index:1; position:relative; background:transparent;" align="top">
+    <div class="header" id="header"></div>
+    <table cellspacing="0" class="table table-fit">
+        <tr>
+            <th style="width:3%;">id</th>
+            <th style="width:9%;">エリア名</th>
+            <th style="width:15%;">サブエリア</th>
+            <th style="width:5%;">配布部数</th>
+            <th style="width:5%;">配布単価</th>
+            <th style="width:5%;">手当</th>
+            <th style="width:5%;">金額</th>
+            <th style="width:5%;">全体距離</th>
+            <th style="width:5%;">配布距離</th>
+            <th style="width:5%;">配布員</th>
+            <th style="width:6%;">作成日</th>
+            <th style="width:3%;">割当</th>
+            <th style="width:3%;">編集</th>
+            <th style="width:4%;">削除する</th>
+        </tr>
+    </table>
+</div>
+
+<div class="table-owner">
+    <div class="header1" id="header1" style="position:relative;"></div>
+    <form action="/message_to_selected_members/" method="post" enctype="multipart/form-data" id="form">
+        {% csrf_token %}
+    <table cellspacing="0" class="table table-fit" style="background-color:white;">
+        <tr>
+            <th style="width:3%;">id</th>
+            <th style="width:9%;">エリア名</th>
+            <th style="width:15%;">サブエリア</th>
+            <th style="width:5%;">配布部数</th>
+            <th style="width:5%;">配布単価</th>
+            <th style="width:5%;">手当</th>
+            <th style="width:5%;">金額</th>
+            <th style="width:5%;">全体距離</th>
+            <th style="width:5%;">配布距離</th>
+            <th style="width:5%;">配布員</th>
+            <th style="width:6%;">作成日</th>
+            <th style="width:3%;">割当</th>
+            <th style="width:3%;">編集</th>
+            <th style="width:4%;">削除する</th>
+        </tr>
+
+            {% for area in areas %}
+
+            <tr class="test" id="{{area.area.id}}">
+                <td><label>{{forloop.counter}}</label></td>
+                <td>
+                    <div class="text-left">
+                        <a href="/rakubaru/editarea?area_id={{area.area.pk}}">
+                            <div style="display:flex; display:table-cell; vertical-align:middle;">
+                                <img src="/static/images/rakubaru/area.png" style="width:60px; height:60px;">
+                                <label style="flex-grow:1; font-size:16px;">{{area.area.area_name}}</label>
+                            </div>
+                        </a>
+                    </div>
+                </td>
+                <td>
+                    <a href="/rakubaru/editarea?area_id={{area.area.pk}}">
+                        <ul class="text-left" style="padding:5px;">
+                            {% for subloc in area.sublocs %}
+                            <li class="subloc_name">{{subloc.loc_name}}</li>
+                            {% endfor %}
+                        </ul>
+                    </a>
+                </td>
+                <td>{{area.area.copies}}</td>
+                <td>{{area.area.unit_price}}</td>
+                <td>{{area.area.allowance}}</td>
+                <td>{{area.area.amount}}</td>
+                <td><label style="color:#0033cc; font-size:20px;">{{area.area.distance}}</label>km</td>
+                <td><label style="color:#0033cc; font-size:20px;">{{area.area.client_dist}}</label>km</td>
+                <td>
+                    <a href="/rakubaru/getallassigns?area_id={{area.area.pk}}">
+                        <div class="hyperlink">
+                            <div style="font-size:25px; color:#cc33ff; font-weight:600;">{{area.area.clients}}</div>
+                            <div class="hint">進捗状況を表示</div>
+                        </div>
+                    </a>
+                </td>
+                <td>{{area.area.posted_time}}</td>
+                <td>
+                    <a href="javascript:void(0)" role="button" onclick="openMembersBox(this);" id="{{area.area.id}}">
+                        <img src="/static/images/rakubaru/assign.png" class="manage-btn">
+                        <input hidden id="area-copies" value="{{area.area.copies}}">
+                        <input hidden id="area-unit-price" value="{{area.area.unit_price}}">
+                        <input hidden id="area-allowance" value="{{area.area.allowance}}">
+                        <input hidden id="area-amount" value="{{area.area.amount}}">
+                        <input hidden id="area-distance" value="{{area.area.distance}}">
+                    </a>
+                </td>
+                <td>
+                    <a href="/rakubaru/editarea?area_id={{area.area.pk}}">
+                        <img src="/static/images/rakubaru/edit.png" class="manage-btn">
+                    </a>
+                </td>
+                <td>
+                    <center><img src="/static/images/rakubaru/progressbar.gif" style="width:30px; height:30px; display:none;" id="gif"></center>
+                    <a href="javascript:void(0)" role="button" onclick="deleteArea('/rakubaru/delarea?area_id={{area.area.pk}}', document.getElementById('gif'))">
+                        <img src="/static/images/rakubaru/ic_remove.png" class="manage-btn">
+                    </a>
+                </td>
+            </tr>
+
+            {% endfor %}
+
+        </table>
+
+    </form>
+</div>
+
+
+<div class="table-business" id="memberListBox" style="position:fixed; float:bottom; z-index:1000; bottom:0; width:100%; height:83%; display:none; background:white;">
+    <div class="header2">
+        チームメンバー
+        <img src="/static/images/rakubaru/cancel.png" style="width:25px; height:25px; float:right;" onclick="javascript:closeMembersBox();">
+        <div style="font-size:12px; margin-right:25px;">エリアを割り当てるメンバーを選択します</div>
+    </div>
+    <form action="/rakubaru/assignarea" method="post" id="memberlistform" style=" height:90%; overflow:auto;">
+        {% csrf_token %}
+        <table cellspacing="0" class="table table-fit">
+        <tr>
+            <th style="width:3%;">id</th>
+            <th style="width:5%;">画像</th>
+            <th style="width:8%;">名前</th>
+            <th style="width:16%;">Eメール</th>
+            <th style="width:12%;">電話番号</th>
+            <th style="width:12%;">以来のメンバー</th>
+            <th style="width:8%;">選択する</th>
+            <th style="width:20%;">割当</th>
+        </tr>
+        {% if members %}
+            {% for member in members %}
+            <tr class="test" id="{{member.id}}">
+                <td><div>{{forloop.counter}}</div></td>
+                <td>
+                    <img class="centered-and-cropped" src="{% if member.picture_url %}{{member.picture_url}}{% else %}/static/images/rakubaru/profile.png{% endif %}"
+                        style="width:50px; height:50px; border-radius:50%;"/>
+                </td>
+                <td>{{member.name}}</td>
+                <td>{{member.email}}</td>
+                <td>{{member.phone_number}}</td>
+                <td><div style="color:black; font-size:14px;">{{member.registered_time}}</div></td>
+                <td>
+                    <div>
+                        <a href="javascript:void(0)" style="display:inline-block; border-radius:50px; background-color:#e6f2ff;">
+                            <label style="margin-left:10px; color: #04a2be;">
+                                <input type="checkbox" name="users[]" value="{{member.id}}" class="chx" style="width:10px; height:10px;" onchange="highlight(this)">
+                                <span></span><i class="fa fa-user-plus" style="color: gray; font-size:18px; margin-right:10px;"></i>
+                            </label>
+                        </a>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+
+            {% endfor %}
+        {%else %}
+
+        {% endif %}
+        </table>
+
+        <input hidden name="area_id" id="area_id">
+        <input hidden name="title" id="dist_title">
+        <input hidden name="customer" id="dist_customer">
+        <input hidden name="copies" id="dist_copies">
+        <input hidden name="unit_price" id="dist_uprice">
+        <input hidden name="allowance" id="dist_allowance">
+        <input hidden name="amount" id="dist_amount">
+        <input hidden name="distance" id="dist_distance">
+        <input hidden name="distribution" id="dist_distribution">
+        <input hidden name="start_time" id="dist_start_time">
+        <input hidden name="end_time" id="dist_end_time">
+
+        <button type="button" class="bouton-update" id="btn-assign" onclick="openRegBox()">それらに割り当てます</button>
+
+    </form>
+</div>
+
+<script>
+
+var memberArray = new Array();
+
+{% for member in members %}
+    var memberObj = {
+        id: {{member.id}},
+        name: '{{member.name}}',
+        email: '{{member.email}}'
+    }
+    memberArray.push(memberObj);
+{% endfor %}
+
+</script>
+
+
+<div id="regform" class="col-sm-12" style="display:none;">
+    {% csrf_token %}
+    <img src="/static/images/rakubaru/cancel.png" style="width:25px; height:25px; float:right;"
+        onclick="javascript:dismissLayouts()">
+    <div style="width:100%; display:inline-block;">
+        <div style="font-size:18px; font-weight:600; color:black; text-align:center;" id="wellbox_title">それらにエリアを割り当てます</div>
+        <br>
+        <div class="col-sm-12">
+            <form action="#" method="post" enctype="multipart/form-data" style="width:100%;" id="afm">
+                {% csrf_token %}
+                <div class="form-group">
+                    <p>タイトル </p>
+                    <div style="text-align:center; width:100%;">
+                        <input type="text" name="title" id="atitle" placeholder="タイトル...">
+                    </div>
+                </div>
+                <div class="form-group" id="selusers-frame" style="display:none;">
+                    <p>選ばれたメンバー</p>
+                    <div id="selusers">
+
+                    </div>
+                </div>
+                <div class="form-group">
+                    <p>顧客名 </p>
+                    <div style="text-align:center; width:100%;">
+                        <input type="text" name="customer" id="customer" placeholder="顧客名...">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <p>配布部数</p>
+                    <div style="text-align:center; width:100%;">
+                        <input type="number" name="copies" id="copies" placeholder="配布部数..." oninput="entercopies()">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <p>配布単価</p>
+                    <div style="text-align:center; width:100%;">
+                        <input type="number" step="any" name="unit_price" id="uprice" placeholder="配布単価..." oninput="enteruprice()">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <p>手当</p>
+                    <div style="text-align:center; width:100%;">
+                        <input type="number" step="any" name="allowance" id="allowance" placeholder="手当..." oninput="enterallowance()">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <p>金額</p>
+                    <div style="text-align:center; width:100%;">
+                        <input type="number" step="any" name="amount" id="amount" placeholder="金額..." readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <p>配布に必要な移動距離 </p>
+                    <div style="text-align:center; width:100%;">
+                        <input type="number" step="any" name="distance" id="distance" placeholder="距離 (km)...">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <p>配布物</p>
+                    <div style="text-align:center; width:100%;">
+                        <input type="text" name="distribution" id="distribution" placeholder="配布物...">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <p>配布期間（開始日）</p>
+                    <div style="text-align:center; width:100%;">
+                        <input type="date" onchange="setValue1(this)">
+                    </div>
+                    <input type="hidden" name="start_time" id="start_time">
+                    <script>
+                        function setValue1(obj) {
+                            var st = obj.value;
+                            if(st.length > 0) {
+                                document.getElementById("start_time").value = new Date(st).getTime();
+                                console.log(st);
+                            }
+                        }
+                    </script>
+                </div>
+                <div class="form-group">
+                    <p>配布期間（終了日）</p>
+                    <div style="text-align:center; width:100%;">
+                        <input type="date" onchange="setValue2(this)">
+                    </div>
+                    <input type="hidden" name="end_time" id="end_time">
+                    <script>
+                        function setValue2(obj) {
+                            var et = obj.value;
+                            if(et.length > 0) {
+                                document.getElementById("end_time").value = new Date(et).getTime();
+                                console.log(et);
+                            }
+                        }
+                    </script>
+                </div>
+                <center><img src="/static/images/rakubaru/progressbar.gif" style="width:30px; height:30px; display:none;" id="gif2"></center>
+                <center>
+                    <button type="button" id="submit-button" onclick="assignArea()">送信</button>
+                </center>
+                <br>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<div id="backgroundOverlay" onclick="dismissLayouts();"></div>
+
+<div id="snackbar">Submited</div>
+
+{% else %}
+    <script>document.getElementById('no_result').style.display = 'block';</script>
+{% endif %}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script>
+    $(window).on('scroll', function () {
+
+  var $w = $(window);
+  $('.position-fixed-x').css('left', $w.scrollLeft());
+  $('.table-owner1').css('top', $w.scrollTop());
+
+});
+</script>
+
+<script>
+
+// When the user scrolls down 20px from the top of the document, show the button
+window.onscroll = function() {scrollFunction()};
+
+function scrollFunction() {
+    if (document.body.scrollTop > 150 || document.documentElement.scrollTop > 150) {
+        document.getElementById("header").style.display = "block";
+        document.getElementById("top-scroll").style.display = "block";
+        document.getElementById("title").style.display = "block";
+        document.getElementById("title0").style.display = "none";
+    }else {
+        document.getElementById("header").style.display = "none";
+        document.getElementById("top-scroll").style.display = "none";
+        document.getElementById("title").style.display = "none";
+        document.getElementById("title0").style.display = "block";
+    }
+}
+
+
+// When the user clicks on the button, scroll to the top of the document
+function topFunction() {
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+}
+
+</script>
+
+<script>
+
+{% if area %}
+ScrollTo({{area.pk}});
+{% endif %}
+
+function ScrollTo(name) {
+  //init thread
+  ScrollToResolver(document.getElementById(name));
+}
+
+function ScrollToResolver(elem) {
+  elem.style.backgroundColor = "#ffccff";
+  var jump = parseInt(elem.getBoundingClientRect().top * .2);
+  document.body.scrollTop += jump - 50;
+  document.documentElement.scrollTop += jump - 50;
+  //lastjump detects anchor unreachable, also manual scrolling to cancel animation if scroll > jump
+  if (!elem.lastjump || elem.lastjump > Math.abs(jump)) {
+    elem.lastjump = Math.abs(jump);
+    setTimeout(function() {
+      ScrollToResolver(elem);
+    }, "100");
+  } else {
+    elem.lastjump = null;
+  }
+}
+
+function showToast(text) {
+    var x = document.getElementById("snackbar");
+    x.innerHTML = text;
+    x.className = "show";
+    setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+}
+
+function assignArea(){
+    if(document.getElementById("atitle").value == "") {
+        alert("タイトルを入力してください。");
+        return;
+    }
+    if(document.getElementById("customer").value == "") {
+        alert("顧客名を入力してください。。");
+        return;
+    }
+    if(copiesbox.value == "") {
+        alert("配布部数を入力してください。");
+        return;
+    }
+    if(upricebox.value == "") {
+        alert("配布単価を入力してください。");
+        return;
+    }
+    if(allowancebox.value == "") {
+        alert("許容値を入力してください。");
+        return;
+    }
+    if(amountbox.value == "") {
+        alert("金額を入力してください。");
+        return;
+    }
+    if(document.getElementById("distribution").value == "") {
+        alert("配布名を入力してください。");
+        return;
+    }
+    if(document.getElementById("start_time").value == "") {
+        alert("配布開始時刻を入力してください。");
+        return;
+    }
+    if(document.getElementById("end_time").value == "") {
+        alert("配布終了時刻を入力してください。");
+        return;
+    }
+
+    console.log("///" + document.getElementById("area_id").value);
+
+    document.getElementById("dist_title").value = document.getElementById("atitle").value;
+    document.getElementById("dist_customer").value = document.getElementById("customer").value;
+    document.getElementById("dist_copies").value = copiesbox.value;
+    document.getElementById("dist_uprice").value = upricebox.value;
+    document.getElementById("dist_allowance").value = allowancebox.value;
+    document.getElementById("dist_amount").value = amountbox.value;
+    document.getElementById("dist_distance").value = document.getElementById("distance").value;
+    document.getElementById("dist_distribution").value = document.getElementById("distribution").value;
+    document.getElementById("dist_start_time").value = document.getElementById("start_time").value;
+    document.getElementById("dist_end_time").value = document.getElementById("end_time").value;
+
+    var form = document.getElementById("memberlistform");
+    var gif = document.getElementById("gif2");
+    gif.style.display = "block";
+    var formData = new FormData(form);
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var result = xhr.responseText;
+            console.log(result)
+            var res = JSON.parse(result);
+            if(res["result"] == "success") {
+                window.location.href = "/rakubaru/getallassigns";
+            }else {
+                alert("割り当てに失敗しました。");
+            }
+            gif.style.display = "none";
+            dismissLayouts();
+        }
+    };
+    xhr.open('POST', form.getAttribute('action'), true);
+    xhr.send(formData);
+}
+
+function deleteArea(url, gif){
+    if(confirm('この領域を削除してもよろしいですか？')) {
+        gif.style.display = "block";
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                var result = xhr.responseText;
+                var res = JSON.parse(result);
+                if(res["result"] == "no_exist") {
+                    alert("エリアは存在しません。");
+                }
+                gif.style.display = "none";
+                window.location.href = "/rakubaru/toareas";
+            }
+        };
+        xhr.open('GET', url, true);
+        xhr.send('');
+    }
+}
+
+var memberlistbox = document.getElementById("memberListBox");
+var regform = document.getElementById('regform');
+var darkbg = document.getElementById('backgroundOverlay');
+
+var copiesbox = document.getElementById('copies');
+var upricebox = document.getElementById('uprice');
+var allowancebox = document.getElementById('allowance');
+var amountbox = document.getElementById('amount');
+
+var amount = 0;
+var copies = 0;
+var uprice = 0;
+var allowance = 0;
+
+function openMembersBox(obj){
+    memberlistbox.innerHTML = userlist_backup;
+    document.getElementById("area_id").value = obj.id;
+    memberlistbox.setAttribute('class', 'slide-in');
+    memberlistbox.style.display='block';
+    darkbg.style.display='block';
+    document.getElementById("copies").value = obj.querySelector("#area-copies").value;
+    copies = obj.querySelector("#area-copies").value;
+    document.getElementById("uprice").value = obj.querySelector("#area-unit-price").value;
+    uprice = obj.querySelector("#area-unit-price").value;
+    document.getElementById("allowance").value = obj.querySelector("#area-allowance").value;
+    allowance = obj.querySelector("#area-allowance").value;
+    document.getElementById("amount").value = obj.querySelector("#area-amount").value;
+    amount = obj.querySelector("#area-amount").value;
+    document.getElementById("distance").value = obj.querySelector("#area-distance").value;
+}
+
+function entercopies() {
+    if(copiesbox.value == "") {
+        copies = 0;
+    }
+    copies = parseInt(copiesbox.value);
+    amount = copies * parseFloat(uprice) + parseFloat(allowance);
+    amountbox.value = amount;
+}
+
+function enteruprice() {
+    if(upricebox.value == "") {
+        uprice = 0;
+    }
+    uprice = parseFloat(upricebox.value);
+    amount = parseInt(copies) * uprice + parseFloat(allowance);
+    amountbox.value = amount;
+}
+
+function enterallowance() {
+    if(allowancebox.value == "") {
+        allowance = 0;
+    }
+    allowance = parseFloat(allowancebox.value);
+    amount = parseInt(copies) * parseFloat(uprice) + parseFloat(allowance);
+    amountbox.value = amount;
+}
+
+function closeMembersBox(){
+    darkbg.style.display='none';
+    memberlistbox.setAttribute('class', 'slide-out');
+    setTimeout(function() {
+        memberlistbox.style.display='none';
+    }, 500);
+}
+
+var m = 0;
+
+function highlight(obj){
+   if(obj.checked) {
+      $(obj).parent().parent().css("background","#ccccff");
+      m++;
+   }else{
+       $(obj).parent().parent().css("background","#e6f2ff");
+       if(m > 0) m--;
+   }
+   if(m > 0){
+       document.getElementById('btn-assign').style.display = 'block';
+   }else {
+       document.getElementById('btn-assign').style.display = 'none';
+   }
+}
+
+var selusersframe = document.getElementById('selusers-frame');
+var selusersbox = document.getElementById('selusers');
+
+function openRegBox() {
+
+    var userchxs =  document.getElementsByName("users[]");
+    var chxlength = userchxs.length;
+    var namestr = "";
+
+    for(k=0;k<chxlength;k++){
+        if(userchxs[k].checked) {
+            if(namestr.length > 0){
+                namestr += ", " + memberArray.find(obj => obj.id == userchxs[k].value).name;
+            }else {
+                namestr += memberArray.find(obj => obj.id == userchxs[k].value).name;
+            }
+        }
+    }
+    selusersbox.innerHTML = namestr;
+    if(namestr.length > 0){
+        closeMembersBox();
+        regform.style.display='block';
+        darkbg.style.display='block';
+        selusersframe.style.display = "block";
+    }else {
+        alert("エリアを割り当てるメンバーを選択してください。");
+        selusersframe.style.display = "none";
+    }
+
+}
+
+function dismissLayouts(){
+    closeMembersBox();
+    regform.style.display='none';
+    darkbg.style.display='none';
+}
+
+var userlist_backup = document.getElementById("memberListBox").innerHTML;
+
+
+</script>
+
+
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

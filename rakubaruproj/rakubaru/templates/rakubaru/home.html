@@ -1,0 +1,1046 @@
+{% extends 'rakubaru/base_home.html' %}
+{% block title %}社員一覧{% endblock %}
+{% block body %}
+
+<br>
+<br>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<meta charset="utf-8">
+
+<style>
+
+html, body{
+  background: #BDB76B no-repeat center center fixed;
+  background-size:cover;
+}
+
+#myBtn {
+  display: none;
+  position: fixed;
+  bottom: 20%;
+  right: 15px;
+  z-index: 99;
+  border: none;
+  outline: none;
+  background-color: rgba(0,0,0,0.3);
+  color: white;
+  cursor: pointer;
+  padding: 15px;
+  border-radius: 50%;
+}
+
+#myBtn:hover {
+  background-color: orange;
+}
+
+#admin{
+    display:none;
+}
+
+.userform {
+  border-radius: 15px;
+  max-width:550px;
+  width:auto;
+  margin:auto;
+  overflow: hidden;
+  text-align:center;
+}
+
+.action-menu {
+    position:absolute;
+    bottom:0;
+    left:15%;
+    right:15%;
+    height:auto;
+    border-radius: 50px;
+    background-color:rgba(255,255,255,0.6);
+    /*padding:20px;*/
+    text-align:center;
+    display:none;
+}
+
+.userform:hover .action-menu{
+    display:block;
+}
+
+p span {
+  color: #F00;
+}
+
+p {
+  margin: 0px;
+  font-weight: 200;
+  line-height: 2;
+}
+
+form h1 {
+  font-size: 21px;
+  background: #327a81 none repeat scroll 0% 0%;
+  color: rgb(255, 255, 255);
+  padding: 19px 22px;
+  border-radius: 5px 5px 0px 0px;
+  margin: auto;
+  text-shadow: none;
+  text-align:left
+}
+
+h1 {
+  text-align:center;
+  color: #666;
+  text-shadow: 1px 1px 0px #FFF;
+  margin:50px 0px 0px 0px
+}
+
+.form-group {
+  overflow: hidden;
+  width:100%;
+}
+
+.contentform {
+  padding: 10px 10px;
+}
+
+.centered-and-cropped { object-fit: cover }
+
+#backgroundOverlay{
+    background-color:rgba(0,0,0,0.8);
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+    z-index:10000;
+    display:none;
+}
+
+.bouton-update{
+  background-color: #008CBA;
+  color: #FFF;
+  text-align: center;
+  width: 100%;
+  border:0;
+  padding: 12px 18px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+input {
+  border-radius: 50px;
+  border: 1px solid #eee;
+  margin-bottom: 15px;
+  margin-right:auto;
+  width: 100%;
+  height: 42px;
+  opacity:0.95;
+  float: middle;
+  padding: 0px 15px;
+  color:black;
+  text-align:left;
+}
+
+textarea {
+  width:100%;
+  height:32px;
+  opacity:0.95;
+  color:black;
+  text-align:left;
+  border:0;
+  padding:5px 5px 0px 3px;
+}
+
+select {
+  width: 100%;
+  height: 42px;
+  border-radius: 50px;
+  border: 1px solid #eee;
+  padding: 0px 15px;
+  color:black;
+  text-align-last:center;
+}
+
+label input {
+  display: none;/* <-- hide the default checkbox */
+}
+label span {/* <-- style the artificial checkbox */
+  height: 25px;
+  width: 25px;
+  text-align:center;
+  /*padding-bottom:5px;*/
+  display: inline-block;
+  position: relative;
+  border:0;
+  border-radius:3px;
+}
+[type=checkbox]:checked + span:before {/* <-- style its checked state..with a ticked icon */
+  content: '\2714';
+  position: absolute;
+  top:-10px;
+  font-size:32px;
+  left: 2px;
+}
+
+[type=checkbox]:checked + span:after {/* <-- style its checked state..with a ticked icon */
+  content: '\2714';
+  position: absolute;
+  top:-10px;
+  left: 2px;
+  font-size:32px;
+  color:yellow;
+}
+
+#snackbar {
+    visibility: hidden;
+    min-width: 200px;
+    margin-left: -125px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 2px;
+    padding: 12px;
+    position: fixed;
+    z-index: 1;
+    left: 50%;
+    bottom: 30px;
+    font-size: 17px;
+}
+
+#snackbar.show {
+    visibility: visible;
+    -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+@-webkit-keyframes fadein {
+    from {bottom: 0; opacity: 0;}
+    to {bottom: 30px; opacity: 1;}
+}
+
+@keyframes fadein {
+    from {bottom: 0; opacity: 0;}
+    to {bottom: 30px; opacity: 1;}
+}
+
+@-webkit-keyframes fadeout {
+    from {bottom: 30px; opacity: 1;}
+    to {bottom: 0; opacity: 0;}
+}
+
+@keyframes fadeout {
+    from {bottom: 30px; opacity: 1;}
+    to {bottom: 0; opacity: 0;}
+}
+
+#search::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+  color: white;
+  opacity: 0.7; /* Firefox */
+}
+
+#search:-ms-input-placeholder { /* Internet Explorer 10-11 */
+  color: white;
+  opacity: 0.7;
+}
+
+#search::-ms-input-placeholder { /* Microsoft Edge */
+  color: white;
+  opacity: 0.7;
+}
+
+label.cameraButton {
+  display: inline-block;
+  /* Styles to make it look like a button */
+  padding: 10px;
+  border: 1.5px solid #666;
+  border-color: #EEE #CCC #CCC #EEE;
+  border-radius:50px;
+  font-size:14px;
+  color:white;
+  font-weight:300;
+  width:auto;
+  height:auto;
+  text-align:center;
+  background-color: green;
+}
+
+/* Look like a clicked/depressed button */
+label.cameraButton:active {
+  border-color: #CCC #EEE #EEE #CCC;
+}
+
+/* This is the part that actually hides the 'Choose file' text box for camera inputs */
+label.cameraButton input[accept*="image"] {
+  display: none;
+}
+
+
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 100000; /* Sit on top */
+  padding-top: 150px; /* Location of the box
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  background-color: rgba(0,0,0,0.8); /* Black w/ opacity */
+}
+
+/* Modal Content (image) */
+.modal-content {
+  margin: auto;
+  display: block;
+  width: 400px;
+}
+
+/* Add Animation */
+.modal-content {
+  -webkit-animation-name: zoom;
+  -webkit-animation-duration: 0.6s;
+  animation-name: zoom;
+  animation-duration: 0.6s;
+}
+
+@-webkit-keyframes zoom {
+  from {-webkit-transform:scale(0)}
+  to {-webkit-transform:scale(1)}
+}
+
+@keyframes zoom {
+  from {transform:scale(0)}
+  to {transform:scale(1)}
+}
+
+/* The Close Button */
+.close {
+  position: absolute;
+  top: 5px;
+  right: 15px;
+  color: gray;
+  font-size: 40px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* 100% Image Width on Smaller Screens */
+@media only screen and (max-width: 500px){
+  .modal-content {
+    width: 100%;
+  }
+}
+
+.profile_image {
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.profile_image:hover {opacity: 0.7;}
+
+
+</style>
+
+<script>
+	history.pushState(null, null, location.href);
+    history.back();
+    history.forward();
+    window.onpopstate = function () { history.go(1); };
+</script>
+
+<meta charset="UTF-8">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../lib/w3.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<div id="title" style="font-size:25px; font-weight:800; color: #F7D479; text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.7); text-align:center;
+	position:fixed; left:50%; float:middle; transform:translate(-50%, -50%); width:350px; z-index:100; top:92px; display:none;">社員一覧</div>
+
+
+{% if members %}
+<div style="width:100%; height:auto;">
+    {% csrf_token %}
+    <div style="font-size:25px; font-weight:800;
+        color: #F7D479; text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.7); text-align:center; width:100%; margin-top:40px;">社員一覧<br>
+    </div>
+    <br>
+    <div style="width:100%; text-align:center; display:inline-block;">
+        <div style="width:400px; display:inline-block;">
+            <div style="width:100%;">
+                <i class="fa fa-search" style="font-size:20px; float:left; color:white; margin-top:3px;"></i>
+                <input type="text" placeholder="探す..." autocomplete="off" style="float:left; margin-left:10px; width:90%; background:transparent; border:0; padding:3px 6px; font-size:20px;
+                    color:white; height:auto;" id="search" onkeyup="filter()" onchange="clear()">
+            </div><br>
+            <div style="background:white; width:400px; height:2px; margin-top:10px;"></div>
+        </div>
+    </div>
+    <br>
+    <br>
+    <div class="container-fluid">
+        <div class="row" id="list">
+            {% for member in members %}
+            <div class="col-sm-3" id="{{member.id}}">
+                <div style="width:100%;">
+                    <div class="userform" style="margin-top:30px; position:relative;">
+                        <div class="contentform">
+                            <div style="width:100%;" class="parent">
+                                <div class="form-group">
+                                    <center>
+                                        <div style="color:white; font-weight:600; font-size:25px; width:auto; display:inline-block;">
+                                            <div style="cursor:pointer;" onclick="openProfile(this)" id="{{member.pk}}">
+                                                <img src="{% if member.picture_url %}{{member.picture_url}}{% else %}/static/images/rakubaru/profile.png{% endif %}"
+                                                    style="width:180px; height:180px; object-fit:cover; border-radius:50%;" class="profile_image">
+                                                <input hidden id="mbname" value="{{member.name}}">
+                                                <input hidden id="mbemail" value="{{member.email}}">
+                                                <input hidden id="mbphone" value="{{member.phone_number}}">
+                                                <input hidden id="mbstatus" value="{{member.status}}">
+                                            </div>
+                                            <label style="cursor:pointer; margin-top:10px;">{{member.name}}</label>
+                                            <br>
+                                            {% if member.status == '' %}<div style="color:red; font-size:16px;">No logged in</div>
+                                            {% else %}
+                                            {% if me.email == 'alertingjames@gmail.com' or me.email == 'yamamoto_h@nac-om.com' %}
+                                            <span style="font-size:16px; font-weight:500;">累計 {{member.cumulative_distance}}㎞</span>
+                                            <!--<div style="color:red; font-size:16px; opacity:0;">Logged in</div>-->
+                                            {% endif %}
+                                            {% endif %}
+                                        </div>
+                                    </center>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="action-menu">
+                            <div class="form-group" style="display:flex; margin-top:15px;">
+                                <div style="flex-grow:1;">
+                                    <button class="bouton-update" style="width:60px; height:60px; text-align:center;"
+                                        onclick="javascript:window.location.href='/rakubaru/rauserreports?member_id={{member.pk}}';">
+                                        <i class="fas fa-route" style="color:white; font-size:22px;"></i>
+                                    </button>
+                                </div>
+                                <div style="flex-grow:1;">
+                                    <button class="bouton-update" style="width:60px; height:60px; text-align:center;"
+                                        onclick="javascript:window.location.href='/rakubaru/rapinmap?option=user&member_id={{member.pk}}';">
+                                        <i class="fa fa-map-pin" style="color:white; font-size:22px;"></i>
+                                    </button>
+                                </div>
+                                <div style="flex-grow:1; display:none;">
+                                    <button class="bouton-update" style="width:60px; height:60px; text-align:center;" onclick="javascript:openMessageBox(this);" id="{{member.pk}}">
+                                        <i class="fas fa-comment-alt" style="color:white; font-size:22px;"></i>
+                                        <input id="img" hidden value="{{member.picture_url}}">
+                                        <input id="eml" hidden value="{{member.email}}">
+                                        <input id="phn" hidden value="{{member.phone_number}}">
+                                    </button>
+                                </div>
+                                <div style="flex-grow:1;">
+                                    <button class="bouton-update" style="width:60px; height:60px; text-align:center;"
+                                        onclick="javascript: if(confirm('このメンバーを削除してもよろしいですか？')) window.location.href='/rakubaru/radelmember?member_id={{member.pk}}';">
+                                        <i class="fa fa-trash" style="color:white; font-size:22px;"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+                <br>
+            </div>
+            {% endfor %}
+
+        </div>
+    </div>
+</div>
+
+{%else %}
+    <center>
+        <br>
+        <br>
+        <br>
+        <h3 class="my_items col-sm-offset-1" style="color:#ccc; margin: 30px;">従業員なし...</h3>
+    </center>
+
+{% endif %}
+
+
+<div id="broadcastBox" style="font-size:16px; font-weight:300; color: black;
+	position:fixed; left:50%; float:middle; background-color:white; border-radius:10px; padding: 8px 15px 15px 15px; box-shadow: 0px 0px 100px rgba(0, 0, 0, 1.0);
+	transform:translate(-50%, -50%); min-width:300px; max-width:600px; width:auto; z-index:10100; top:40%; display:none;">
+    <img style="border-radius:50%; width:50px; height:50px; float:left;" class="centered-and-cropped" src="/static/images/rakubaru/appicon.jpg">
+    <span class="fa fa-close" style="font-size:20px; float:right; margin-top:5px;"
+        onclick="javascript:document.getElementById('broadcastBox').style.display='none'; document.getElementById('backgroundOverlay').style.display='none';"></span>
+    <div style="width:100%; display:inline-block;">
+        <div style="font-size:18px; font-weight:600; color:black; text-align:center; width:100%; margin-top:-20px;">ブロードキャストメッセージを送信する<br>すべてのメンバーに</div>
+        <form action="/rakubaru/broadcast" method="post" enctype="multipart/form-data" style="width:100%; margin-top:10px;" id="broadcastform">
+            {% csrf_token %}
+            <div class="form-group">
+                <input style="height:2px; opacity:0;">
+                <script src="https://rawgit.com/jackmoore/autosize/master/dist/autosize.min.js"></script>
+                <textarea rows="8" name="broadmessage" id="broadmessage" placeholder="ここにあなたのメッセージを書いてください..."
+                    style="width:100%; height:150px; min-height:150px; max-height:300px; border:1.5px solid gray; padding:15px; border-radius:5px;"></textarea>
+                <script>autosize(document.getElementById("message"));</script>
+            </div>
+            <center><img src="/static/images/rakubaru/progressbar.gif" style="width:30px; height:30px; display: none;" id="gif3"></center>
+            <center>
+                <button type="button" class="bouton-update" style="width:60%; margin-top:10px; margin-bottom:20px;"
+                    onclick="javascript:sendBroadcast(document.getElementById('broadcastform'), document.getElementById('gif3'), 'Message sent!');">Submit</button>
+            </center>
+        </form>
+    </div>
+</div>
+
+<script>
+
+function sendBroadcast(form, gif, text){
+    if(document.getElementById("broadmessage").value == ""){
+        alert("メッセージを書いてください...");
+        return;
+    }
+    gif.style.display = "block";
+    var formData = new FormData(form);
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var result = xhr.response;
+            console.log('Response: ' + result);
+            if(result == 'success') {
+                showToast(text);
+            }
+            gif.style.display = "none";
+            dismissLayouts();
+        }
+    };
+    xhr.open('POST', form.getAttribute('action'), true);
+    xhr.send(formData);
+}
+
+</script>
+
+
+<script>
+    var list = document.getElementById("list");
+    var lis = list.querySelectorAll( "#list > div" );
+    var prods = [];
+    var prods2 = [];
+    for(var i=0; i<lis.length; i++){
+       prods.push(lis[i]);
+       prods2.push(lis[i]);
+    }
+    function filter(){
+        var keyword = document.getElementById("search").value;
+        if(keyword.length > 0){
+            list.innerHTML = "";
+            for(var i=0; i<prods.length; i++){
+                var member_name = prods[i].querySelector("input[id='mbname']");
+                if(member_name.value.toLowerCase().includes(keyword.toLowerCase())){
+                    list.appendChild(prods[i]);
+                }
+                else {
+                    var member_email = prods[i].querySelector("input[id='mbemail']");
+                    if(member_email.value.toLowerCase().includes(keyword.toLowerCase())){
+                        list.appendChild(prods[i]);
+                    }
+                }
+            }
+        }else{
+            list.innerHTML = "";
+            for(var i=0; i<prods2.length; i++){
+                list.appendChild(prods2[i]);
+            }
+        }
+    }
+
+    function clear(){
+        var keyword = document.getElementById("search").value;
+        if(keyword.length == 0){
+            // alert('clear?');
+            list.innerHTML = "";
+            for(var i=0; i<prods2.length; i++){
+                list.appendChild(prods2[i]);
+            }
+        }
+    }
+</script>
+
+
+<form  action="/rakubaru/ranewemployee" method="post" enctype="multipart/form-data"
+    id="newMemberForm" style="font-size:16px; font-weight:300; box-shadow: 0px 0px 100px rgba(0, 0, 0, 1.0); display:none;
+	position:fixed; left:50%; float:middle; padding: 20px; background: white; border-radius:5px;
+	transform:translate(-50%, -50%); max-width:600px; width:auto; min-width:360px; z-index:10300; top:250px;">
+    <img src="/static/images/rakubaru/cancel.png" style="width:25px; height:25px; float:right;"
+        onclick="javascript:document.getElementById('newMemberForm').style.display='none'; document.getElementById('backgroundOverlay').style.display='none';">
+    {% csrf_token %}
+    <center>
+        <div id="title" style="font-size:20px; font-weight:500; color: black; text-align:center;">新入社員</div>
+        <input id="member_id" name="member_id" value="0" hidden>
+        <center>
+            <img src="/static/images/rakubaru/profile.png" class="centered-and-cropped" style="width:100px; height:100px; border-radius:50%; margin-top:10px;" id="output">
+        </center>
+        <label class="cameraButton" style="margin-top:-20px;"><i class="fa fa-camera-retro" style="font-size:15px;"></i>
+            <input type="file" name="picture" value="http://lorempixel.com/100/100/people/9" id="picture" accept="image/*"/>
+        </label>
+
+        <script>
+        function readFile() {
+			if (this.files && this.files[0]) {
+				var FR= new FileReader();
+				FR.addEventListener("load", function(e) {
+ 				    document.getElementById("output").src = e.target.result;
+			    });
+			    FR.readAsDataURL( this.files[0] );
+		    }
+        }
+        document.getElementById("picture").addEventListener("change", readFile);
+        </script>
+
+        <div class="form-group">
+			<input type="text" name="name" required id="name" style="border-radius:3px; border:1px solid #ccc; width:100%;" type="text" placeholder="名前"/>
+        </div>
+        <div class="form-group">
+            <input type="email" name="email" required id="email" style="border-radius:3px; border:1px solid #ccc; width:100%;" type="text" placeholder="メールアドレス"/>
+		</div>
+        <div class="form-group">
+            <input type="tel" name="phone" id="phone" style="border-radius:3px; border:1px solid #ccc; width:100%;" type="text" placeholder="電話番号（オプション）"/>
+		</div>
+		<center><img src="/static/images/rakubaru/progressbar.gif" style="width:30px; height:30px; display: none;" id="gif"></center>
+		<button type="button" style="background:#5c85d6; border-radius:5px; border:0; color:white; width:100%; font-size:16px; margin-bottom:10px; padding:10px;"
+		    onclick="javascript:formSubmit(document.getElementById('newMemberForm'), document.getElementById('gif'), '招待状が送られました', 'invite');">招待する</button>
+    </center>
+</form>
+
+
+<div id="messageBox" style="font-size:16px; font-weight:300; color: black;
+	position:fixed; left:50%; float:middle; background-color:white; border-radius:10px; padding: 8px 15px 15px 15px; box-shadow: 0px 0px 100px rgba(0, 0, 0, 1.0);
+	transform:translate(-50%, -50%); min-width:300px; max-width:600px; width:auto; z-index:10100; top:40%; display:none;">
+    <img style="border-radius:50%; width:50px; height:50px; float:left;" class="centered-and-cropped" id="seluser">
+    <span class="fa fa-close" style="font-size:20px; float:right; margin-top:5px;"
+        onclick="javascript:document.getElementById('messageBox').style.display='none'; document.getElementById('backgroundOverlay').style.display='none';"></span>
+    <div style="width:100%; display:inline-block;">
+        <div style="font-size:18px; font-weight:600; color:black; text-align:center; width:100%; margin-top:-20px;">メッセージを送る</div>
+        <div style="font-size:14px; color:#04a2be; text-align:center; width:100%; margin-top:10px;" id="msg-eml"></div>
+        <form action="#" method="post" enctype="multipart/form-data" style="width:100%; margin-top:10px;" id="memberMsgForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <input type="hidden" name="member_id" id="member_id" value="">
+                <input style="height:2px; opacity:0;">
+                <script src="https://rawgit.com/jackmoore/autosize/master/dist/autosize.min.js"></script>
+                <textarea rows="8" name="message" required id="textarea2" placeholder="ここに何か書いてください..."
+                    style="width:100%; height:150px; min-height:150px; max-height:300px; border:2px solid gray; padding:15px; border-radius:5px;"></textarea>
+                <script>autosize(document.getElementById("textarea2"));</script>
+            </div>
+            <center><img src="/static/images/rakubaru/progressbar.gif" style="width:30px; height:30px; display: none;" id="gif2"></center>
+            <center>
+                <button type="button" class="bouton-update" style="width:60%; margin-top:10px; margin-bottom:20px;"
+                    onclick="">参加する</button>
+            </center>
+            <!--<center>-->
+            <!--    <button type="button" class="bouton-update" style="width:60%; margin-top:10px; margin-bottom:20px;"-->
+            <!--        onclick="javascript:formSubmit(document.getElementById('memberMsgForm'), document.getElementById('gif2'), 'メッセージが送信されました', 'message');">参加する</button>-->
+            <!--</center>-->
+        </form>
+    </div>
+</div>
+
+<div id="backgroundOverlay" onclick="javascript:dismissLayouts();">
+</div>
+
+<div id="snackbar">Submited!</div>
+
+<input type="hidden" id="me_email" value="{{me.email}}">
+<input type="hidden" id="me_id" value="{{me.pk}}">
+
+<meta charset="UTF-8">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+
+<button onclick="topFunction()" id="myBtn" title="Go to top"><i class="glyphicon glyphicon-menu-up" style="color:white; font-size:14px;"></i></button>
+
+<script>
+// When the user scrolls down 20px from the top of the document, show the button
+window.onscroll = function() {scrollFunction()};
+
+function scrollFunction() {
+    if (document.body.scrollTop > 80 || document.documentElement.scrollTop > 80) {
+        document.getElementById("myBtn").style.display = "block";
+        document.getElementById("title").style.display = "block";
+    } else {
+        document.getElementById("myBtn").style.display = "none";
+        document.getElementById("title").style.display = "none";
+    }
+}
+
+// When the user clicks on the button, scroll to the top of the document
+function topFunction() {
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+}
+
+function openBroadcastBox(){
+    document.getElementById("broadmessage").value = "";
+    document.getElementById('backgroundOverlay').style.display='block';
+    setTimeout(function(){
+        document.getElementById('broadcastBox').style.display='block';
+    },300);
+}
+
+
+
+function openMessageBox(obj){
+    document.getElementById('member_id').value = obj.id;
+    document.getElementById('backgroundOverlay').style.display='block';
+    setTimeout(function(){
+        document.getElementById('messageBox').style.display='block';
+    },300);
+    var seluserpic = obj.querySelector("#img");
+    if(seluserpic.value.length > 0) document.getElementById('seluser').src = seluserpic.value;
+    else document.getElementById('seluser').src = '/static/images/rakubaru/profile.png';
+    var selusereml = obj.querySelector("#eml");
+    var seluserphn = obj.querySelector("#phn");
+    document.getElementById('msg-eml').innerHTML = selusereml.value;
+    if(seluserphn.length > 0)document.getElementById('msg-eml').innerHTML = selusereml.value + " - " + seluserphn.value;
+}
+
+function isValidForm(option){
+    if(option == 'invite'){
+        if(document.getElementById('name').value == ''){
+            alert('名前を入力してください');
+            return false;
+        }
+        if(document.getElementById('email').value == ''){
+            alert('メールアドレスを入力してください');
+            return false;
+        }
+        if(!isValidEmail(document.getElementById('email').value)){
+            alert('You have entered an invalid email address!');
+            return false;
+        }
+    }else if(option == 'reinvite'){
+        if(memberStatus != ''){
+            alert('このメンバーはすでにログインしています');
+            return false;
+        }
+        if(document.getElementById('membname').value == ''){
+            alert('名前を入力してください');
+            return false;
+        }
+    }if(option == 'profileedit'){
+        if(document.getElementById('membname').value == ''){
+            alert('名前を入力してください');
+            return false;
+        }
+    }
+    return true;
+}
+
+function formSubmit(form, gif, text, option){
+    if(!isValidForm(option)){
+        return;
+    }
+    document.getElementById('option').value = option;
+    gif.style.display = "block";
+    var formData = new FormData(form);
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var result = xhr.response;
+            console.log('Response: ' + result);
+            if(option == 'invite' || option == 'profileedit') {
+                if(result == 'success') {
+                    showToast(text);
+                    location.reload();
+                }
+                else if(result == 'existence') alert('誰かがすでに同じメールを使用しています');
+                else alert('エラー');
+            }else if(option == 'reinvite') {
+                if(result == 'success') {
+                    showToast(text);
+                }
+                else if(result == 'loggedin') alert('ユーザーはすでにログインしています。このページを更新してください。');
+                else alert('エラー');
+            }
+            gif.style.display = "none";
+            dismissLayouts();
+        }
+    };
+    xhr.open('POST', form.getAttribute('action'), true);
+    xhr.send(formData);
+}
+
+function isValidEmail(email) {
+    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
+}
+
+function collectionHas(a, b) { //helper function (see below)
+    for(var i = 0, len = a.length; i < len; i ++) {
+        if(a[i] == b) return true;
+    }
+    return false;
+}
+
+function findParentBySelector(elm, selector) {
+    var all = document.querySelectorAll(selector);
+    var cur = elm.parentNode;
+    while(cur && !collectionHas(all, cur)) { //keep going up until you find a match
+        cur = cur.parentNode; //go up
+    }
+    return cur; //will return null if not found
+}
+
+
+function dismissLayouts(){
+    document.getElementById('newMemberForm').style.display='none';
+    document.getElementById('broadcastBox').style.display='none';
+    document.getElementById('messageBox').style.display='none';
+    document.getElementById('backgroundOverlay').style.display='none';
+    modal.style.display = "none";
+}
+
+var selectedObj;
+
+function deleteCode(obj){
+    if(confirm('Are you sure you want to delete this code?')){
+        selectedObj = obj;
+        processDeleting(document.getElementById('gif2'), 'Code deleted!');
+    }
+}
+
+function processDeleting(gif, text){
+    gif.style.display = "block";
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var result = xhr.response;
+            if(result == 'success') {
+                showToast(text);
+                var selector = ".parent";
+                var parent = findParentBySelector(selectedObj, selector);
+                var buttonFrame = parent.querySelector("#buttonFrame");
+                buttonFrame.style.opacity = '0';
+            }
+            else showToast('Error');
+            gif.style.display = "none";
+        }
+    };
+    xhr.open('GET', '/eadelcode?member_id=' + selectedObj.id, true);
+    xhr.send('');
+}
+
+
+{% if member %}
+    ScrollTo({{member.id}});
+{% endif %}
+
+function ScrollTo(name) {
+  //init thread
+  ScrollToResolver(document.getElementById(name));
+}
+
+function ScrollToResolver(elem) {
+  var jump = parseInt(elem.getBoundingClientRect().top * .2);
+  document.body.scrollTop += jump - 50;
+  document.documentElement.scrollTop += jump - 50;
+  //lastjump detects anchor unreachable, also manual scrolling to cancel animation if scroll > jump
+  if (!elem.lastjump || elem.lastjump > Math.abs(jump)) {
+    elem.lastjump = Math.abs(jump);
+    setTimeout(function() {
+      ScrollToResolver(elem);
+    }, "50");
+  } else {
+    elem.lastjump = null;
+  }
+}
+
+
+function showToast(text) {
+    var x = document.getElementById("snackbar");
+    x.innerHTML = text;
+    x.className = "show";
+    setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+}
+
+function getCookie(name) {
+    console.log('getCookie');
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                    }
+            }
+    }
+    console.log('cookie:' + cookieValue);
+    return cookieValue;
+}
+
+function post(path, params, method) {
+   method = method || "post"; // Set method to post by default if not specified.
+
+   // The rest of this code assumes you are not using a library.
+   // It can be made less wordy if you use one.
+   var form = document.createElement("form");
+   form.setAttribute("method", method);
+   form.setAttribute("action", path);
+
+   for(var key in params) {
+      if(params.hasOwnProperty(key)) {
+          var hiddenField = document.createElement("input");
+          hiddenField.setAttribute("type", "hidden");
+          hiddenField.setAttribute("name", key);
+          hiddenField.setAttribute("value", params[key]);
+
+          form.appendChild(hiddenField);
+      }
+   }
+
+   var hiddenField1 = document.createElement("input");
+   hiddenField1.setAttribute("type", "hidden");
+   hiddenField1.setAttribute("name", 'csrfmiddlewaretoken');
+   hiddenField1.setAttribute("value", getCookie('csrftoken'));
+   form.appendChild(hiddenField1);
+
+   document.body.appendChild(form);
+   form.submit();
+}
+
+</script>
+
+
+<!-- The Modal -->
+<div id="myModal" class="modal" onclick="javascript:modal.style.display='none';">
+  <div class="modal-content">
+      <span class="close" onclick="javascript:modal.style.display='none';">&times;</span>
+      <form action="/rakubaru/raemployeeprocess" method="post" enctype="multipart/form-data" id="editMemberForm"
+        style="font-size:16px; font-weight:300; padding:20px; background:white; width:100%; border-radius:5px;">
+        {% csrf_token %}
+        <center>
+            <div id="title" style="font-size:20px; font-weight:500; color: black; text-align:center;">プロフィール</div>
+            <input id="membid" name="member_id" hidden>
+            <input id="option" name="option" hidden>
+            <center>
+                <img src="/static/images/rakubaru/profile.png" class="centered-and-cropped" style="width:80px; height:80px; border-radius:50%; margin:10px;" id="membpicture">
+            </center>
+            <div class="form-group">
+    			<input type="text" name="name" required id="membname" style="border-radius:3px; border:1px solid #ccc; width:100%;" type="text" placeholder="名前"/>
+            </div>
+            <div class="form-group">
+                <input type="email" name="email" required id="membemail" style="border-radius:3px; border:1px solid #ccc; width:100%;" type="text" placeholder="メールアドレス" readonly/>
+    		</div>
+            <div class="form-group">
+                <input type="tel" name="phone" id="membphone" style="border-radius:3px; border:1px solid #ccc; width:100%;" type="text" placeholder="電話番号（オプション）"/>
+    		</div>
+    		<center><img src="/static/images/rakubaru/progressbar.gif" style="width:30px; height:30px; display: none;" id="gif3"></center>
+    		<button type="button" style="background:#5c85d6; border-radius:5px; border:0; color:white; width:100%; font-size:16px; margin-bottom:10px; padding:10px;"
+    		    onclick="javascript:formSubmit(document.getElementById('editMemberForm'), document.getElementById('gif3'), '変更が保存されました', 'profileedit');">変更内容を保存</button>
+
+    		<button type="button" style="background:#c1d0f0; border-radius:5px; border:0; color:#5c85d6; width:100%; font-size:16px; margin-bottom:10px; padding:10px;"
+    		    onclick="javascript:formSubmit(document.getElementById('editMemberForm'), document.getElementById('gif3'), '招待状が送られました', 'reinvite');">招待メール再送信</button>
+        </center>
+    </form>
+  </div>
+</div>
+
+<script>
+// Get the modal
+var modal = document.getElementById("myModal");
+var memberStatus = "";
+function openProfile(obj){
+    document.getElementById("membid").value = obj.id;
+    document.getElementById("membpicture").src = obj.querySelector("img").src;
+    document.getElementById("membname").value = obj.querySelector("#mbname").value;
+    document.getElementById("membemail").value = obj.querySelector("#mbemail").value;
+    document.getElementById("membphone").value = obj.querySelector("#mbphone").value;
+    memberStatus = obj.querySelector("#mbstatus").value;
+
+    modal.style.display = "block";
+}
+
+$("#myModal div").click(function(e) {
+   // Do something
+   e.stopPropagation();
+});
+
+</script>
+
+{% if note %}
+<script>alert("{{note}}");</script>
+{% endif %}
+
+
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

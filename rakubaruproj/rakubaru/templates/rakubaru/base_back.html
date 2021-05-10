@@ -1,0 +1,147 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}らくばるポスティング{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link href='https://fonts.googleapis.com/css?family=Satisfy' rel="stylesheet" type="text/css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/style.css"/>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.1/css/all.css">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="shortcut icon" href="/static/images/rakubaru/appicon.jpg" type="image/jpg">
+
+<style>
+
+.dropdown-menu{
+    background-color: #fff;
+    padding:10px;
+    width:220px;
+}
+
+#m{
+    background-color: #fff;
+    padding:15px;
+    width:300px;
+}
+
+.menu{
+    color: black;
+}
+
+.menu:hover{
+    background-color:#eee;
+    color:red;
+}
+
+.menu a{
+    color:black;
+}
+
+h4{
+    color:white;
+}
+
+h4:hover{
+    color:white;
+    text-decoration:underline;
+}
+
+</style>
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js"></script>-->
+</head>
+
+<body>
+
+<nav id="navbar" class="navbar navbar-inverse" style="background:rgba(0,0,0,0.7);">
+
+    <div class="container-fluid">
+
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar" aria-expanded="false" aria-label="Toggle navigation"
+                onclick="javascript:changeNavbarBackgroundColor();">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+        </div>
+
+        <div class="collapse navbar-collapse" id="topNavBar" style="border:0;">
+            <ul class="nav navbar-nav">
+                <li style="margin-right:30px;">
+                    <a href="javascript:void(0)" onclick="window.history.back();">
+                        <h4 style=""><span class="fa fa-arrow-left" aria-hidden="true" style="margin-right:10px;"></span>バック</h4>
+                    </a>
+                </li>
+                <!--<li style="margin-right:30px;">-->
+                <!--    <a href="/superadmin">-->
+                <!--        <h4 style=""><span class="fa fa-home" aria-hidden="true" style="margin-right:10px;"></span>ホーム</h4>-->
+                <!--    </a>-->
+                <!--</li>-->
+            </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+
+            </ul>
+
+        </div>
+
+    </div>
+</nav>
+
+
+<script>
+
+    var openF = false;
+
+    function changeNavbarBackgroundColor(){
+        console.log("Clicked on nav button");
+        var navbar = document.getElementById('navbar');
+        if(!openF) {
+            navbar.style.backgroundColor = "rgba(0,0,0,0.7)";
+            openF = true;
+        }else{
+            // navbar.style.backgroundColor = "transparent";
+            openF = false;
+        }
+    }
+
+</script>
+
+<script>
+    $(document).click(function(){
+        // hideMenuBar();
+    });
+
+    function hideMenuBar(){
+        // $(".dropdown-menu").hide();
+        $('.navbar-collapse').collapse('hide');
+    }
+
+</script>
+
+{% block body %}
+{% endblock %}
+
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,586 @@
+{% extends 'rakubaru/base_report.html' %}
+{% block title %}{% if assign %}{{assign.title}}{% else %}らくばる{% endif %} レポート{% endblock %}
+{% block body %}
+<br>
+<br>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<meta charset="utf-8">
+<meta content="stuff, to, help, search, engines, not" name="keywords">
+<meta content="What this page is about." name="description">
+<style>
+
+html, body{
+  background: #BDB76B no-repeat center center fixed;
+  background-size:cover;
+}
+
+#myBtn {
+  display: none;
+  position: fixed;
+  bottom: 20%;
+  right: 15px;
+  z-index: 99;
+  border: none;
+  outline: none;
+  background-color: rgba(0,0,0,0.3);
+  color: white;
+  cursor: pointer;
+  padding: 15px;
+  border-radius: 50%;
+}
+
+#myBtn:hover {
+  background-color: orange;
+}
+
+#admin{
+    display:none;
+}
+
+.action-menu {
+    position:absolute;
+    top:0;
+    bottom:0;
+    left:0;
+    right:0;
+    padding-left:20%;
+    padding-right:20%;
+    border-radius: 5px;
+    background-color:rgba(255, 255, 204, 0.6);
+    /*padding:20px;*/
+    text-align:center;
+    display:none;
+}
+
+form h1 {
+  font-size: 21px;
+  background: #327a81 none repeat scroll 0% 0%;
+  color: rgb(255, 255, 255);
+  padding: 19px 22px;
+  border-radius: 5px 5px 0px 0px;
+  margin: auto;
+  text-shadow: none;
+  text-align:left
+}
+
+.report-form {
+  max-width:600px;
+  width:auto;
+  margin:auto;
+  border-radius:5px;
+  margin-bottom:3px;
+  background:white;
+  background-size:cover;
+  overflow: hidden;
+}
+
+.report-form:hover {
+  background:#ffffcc;
+  background-size:cover;
+}
+
+.report-form:hover .action-menu{
+    display:block;
+}
+
+p span {
+  color: #F00;
+}
+
+p {
+  margin: 0px;
+  font-weight: 200;
+  line-height: 2;
+  color:#fff;
+}
+
+a {
+  text-decoration:inherit
+}
+
+.form-group {
+  overflow: hidden;
+  width:100%;
+}
+
+.contentform {
+  padding: 10px 10px;
+}
+
+.bouton-update{
+  background-color: #008CBA;
+  color: #FFF;
+  text-align: center;
+  width: 100%;
+  border:0;
+  padding: 12px 18px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+#search::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+  color: white;
+  opacity: 0.7; /* Firefox */
+}
+
+#search:-ms-input-placeholder { /* Internet Explorer 10-11 */
+  color: white;
+  opacity: 0.7;
+}
+
+#search::-ms-input-placeholder { /* Microsoft Edge */
+  color: white;
+  opacity: 0.7;
+}
+
+#backgroundOverlay{
+  background-color:rgba(0,0,0,0.5);
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:10000;
+  display:none;
+}
+
+#snackbar {
+    visibility: hidden;
+    min-width: 200px;
+    margin-left: -125px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 2px;
+    padding: 12px;
+    position: fixed;
+    z-index: 1;
+    left: 50%;
+    bottom: 30px;
+    font-size: 17px;
+}
+
+#snackbar.show {
+    visibility: visible;
+    -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+@-webkit-keyframes fadein {
+    from {bottom: 0; opacity: 0;}
+    to {bottom: 30px; opacity: 1;}
+}
+
+@keyframes fadein {
+    from {bottom: 0; opacity: 0;}
+    to {bottom: 30px; opacity: 1;}
+}
+
+@-webkit-keyframes fadeout {
+    from {bottom: 30px; opacity: 1;}
+    to {bottom: 0; opacity: 0;}
+}
+
+@keyframes fadeout {
+    from {bottom: 30px; opacity: 1;}
+    to {bottom: 0; opacity: 0;}
+}
+
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 100000; /* Sit on top */
+  padding-top: 150px; /* Location of the box
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  background-color: rgba(0,0,0,0.8); /* Black w/ opacity */
+}
+
+/* Modal Content (image) */
+.modal-content {
+  margin: auto;
+  display: block;
+  width: 400px;
+}
+
+/* Add Animation */
+.modal-content {
+  -webkit-animation-name: zoom;
+  -webkit-animation-duration: 0.6s;
+  animation-name: zoom;
+  animation-duration: 0.6s;
+}
+
+@-webkit-keyframes zoom {
+  from {-webkit-transform:scale(0)}
+  to {-webkit-transform:scale(1)}
+}
+
+@keyframes zoom {
+  from {transform:scale(0)}
+  to {transform:scale(1)}
+}
+
+/* The Close Button */
+.close {
+  position: absolute;
+  top: 5px;
+  right: 15px;
+  color: gray;
+  font-size: 40px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* 100% Image Width on Smaller Screens */
+@media only screen and (max-width: 500px){
+  .modal-content {
+    width: 100%;
+  }
+}
+
+</style>
+
+<!--<script>-->
+<!--	history.pushState(null, null, location.href);-->
+<!--    history.back();-->
+<!--    history.forward();-->
+<!--    window.onpopstate = function () { history.go(1); };-->
+<!--</script>-->
+
+<meta charset="UTF-8">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../lib/w3.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<div id="title" style="font-size:25px; font-weight:800; color: #F7D479; text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.7); text-align:center;
+	position:fixed; left:50%; float:middle; transform:translate(-50%, -50%); width:350px; z-index:100; top:92px; display:none;">
+    {% if assign %}{{assign.title}}{% else %}らくばる{% endif %} レポート
+</div>
+
+{% if reports %}
+<div style="width:100%; height:auto; padding-bottom:20px;">
+    <div style="font-size:25px; font-weight:800;
+        color: #F7D479; text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.7); text-align:center; width:100%; margin-top:40px;">{% if assign %}{{assign.title}}{% else %}らくばる{% endif %} レポート<br>
+    </div>
+    <br>
+    <div style="width:100%; text-align:center; display:inline-block;">
+        <div style="width:400px; display:inline-block;">
+            <div style="width:100%;">
+                <i class="fa fa-search" style="font-size:20px; float:left; color:white; margin-top:3px;"></i>
+                <input type="text" placeholder="探す..." autocomplete="off" style="float:left; margin-left:10px; width:90%; background:transparent; border:0; padding:3px 6px; font-size:20px;
+                    color:white; height:auto;" id="search" onkeyup="filter()" onchange="clear()">
+            </div><br>
+            <div style="background:white; width:400px; height:2px; margin-top:10px;"></div>
+        </div>
+    </div>
+    <br>
+    <br>
+    <div id="list">
+        {% for report in reports %}
+        <div class="report-form" style="position:relative;">
+            <div class="contentform">
+                <div style="width:100%; display:flex;" >
+                    <div style="padding:10px; float:left; position:relative;">
+                        <a href="#">
+                            <img src="{% if report.member.picture_url %}{{report.member.picture_url}}{% else %}/static/images/rakubaru/profile.png{% endif %}"
+                                style="width:60px; height:60px; border-radius:50%; object-fit:cover;">
+                        </a>
+                    </div>
+                    <a href="#" style="flex-grow:1;">
+                        <div style="padding-left:8px; float:left; margin-top:5px;">
+                            <div style="color:black; font-size:20px; font-weight:600; text-align:left; word-wrap: break-word;">{{report.route.name}}</div>
+                            <div style="font-size:16px; margin-top:5px;">
+                                <i class="fa fa-clock-o" style="color:orange; font-size:25px; margin-right:5px; vertical-align:middle;"></i>
+                                {{report.route.start_time}} ~ {{report.route.end_time}}
+                            </div>
+                            <div style="font-size:16px; margin-left:20px; color:orange;">{{report.route.duration}}</div>
+                            {% if report.route.description %}
+                            <div style="font-size:14px; margin-left:20px; color:black;" id="desc">{{report.route.admin_desc}}</div>
+                            {% else %}
+                            <div style="font-size:14px; margin-left:20px; color:black; display:none;" id="desc"></div>
+                            {% endif %}
+                        </div>
+                    </a>
+                    <div style="float:right; margin:5px;">
+                        <div style="font-size:16px;"><i class="fa fa-tachometer" style="color:orange; font-size:22px; margin-right:10px;"></i>{{report.route.speed}}km/h</div>
+                        <div style="font-size:16px;"><i class="fas fa-route" style="color:orange; font-size:22px; margin-right:10px;"></i>{{report.route.distance}}km</div>
+                    </div>
+                </div>
+                <div style="color:gray; float:right; font-size:12px; margin-right:5px; margin-bottom:6px;">{{report.route.reported_time}}</div>
+            </div>
+
+            <input hidden id="rtname" value="{{report.route.name}}">
+            <input hidden id="rtstartend" value="{{report.route.start_time}} ~ {{report.route.start_time}}">
+            <input hidden id="rtduration" value="{{report.route.duration}}">
+            <input hidden id="rtspeed" value="{{report.route.speed}}">
+            <input hidden id="rtdistance" value="{{report.route.distance}}">
+
+            <div class="action-menu">
+                <div class="form-group" style="margin-top:8px;">
+                    <label style="color:#008CBA; font-size:14px; font-weight:600; padding:3px 8px 3px 8px; background-color:white;">{{report.member.name}}</label>
+                </div>
+                <div class="form-group" style="display:flex;">
+                    <div style="flex-grow:1;">
+                        <button class="bouton-update" style="width:60px; height:60px; text-align:center;"
+                            onclick="javascript:window.location.href='/rakubaru/raopenroutemap?route_id={{report.route.pk}}';">
+                            <i class="fas fa-route" style="color:white; font-size:25px;"></i>
+                        </button>
+                    </div>
+
+                    <div style="flex-grow:1;">
+                        <button class="bouton-update" style="width:60px; height:60px; text-align:center;"
+                            onclick="showEditPanel(this);" id="{{report.route.pk}}">
+                            <i class="fa fa-pencil" style="color:white; font-size:25px;"></i>
+                            <input hidden id="route_name" value="{{report.route.name}}">
+                            <input hidden id="route_desc" value="{{report.route.description}}">
+                        </button>
+                    </div>
+
+                    <div style="flex-grow:1;">
+                        <button class="bouton-update" style="width:60px; height:60px; text-align:center;"
+                            onclick="javascript: if(confirm('このレポートを削除してもよろしいですか？')) {
+                                {% if member %} window.location.href='/rakubaru/radelroute?option=user&route_id={{report.route.pk}}&member_id={{member.pk}}';
+                                {% else %} window.location.href='/rakubaru/radelroute?option=all&route_id={{report.route.pk}}';
+                                {% endif %}
+                            }">
+                            <i class="fa fa-trash" style="color:white; font-size:25px;"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+
+<div id="editBox" class="modal" onclick="javascript:modal.style.display='none';">
+    <div class="modal-content">
+        <span class="close" onclick="javascript:modal.style.display='none';">&times;</span>
+        <form action="/rakubaru/raeditroute" method="post" enctype="multipart/form-data"
+            style="font-size:16px; font-weight:300; padding:20px; background:white; width:100%; border-radius:5px;" id="editForm">
+            {% csrf_token %}
+            <i class="fa fa-pencil-square" style="color:#008CBA; font-size:30px; float:left;"></i>
+            <div style="font-size:16px; text-align:center; width:100%;" id="rname"></div>
+            <div class="form-group">
+                <input type="hidden" name="route_id" id="rid">
+                <input style="height:0.1px; opacity:0;">
+                <script src="https://rawgit.com/jackmoore/autosize/master/dist/autosize.min.js"></script>
+                <textarea name="route_desc" required id="rdesc" placeholder="ここに何か書いてください..."
+                    style="width:100%; height:100px; min-height:100px; max-height:300px; padding:8px 15px; border-radius:5px; border:1px solid gray;"></textarea>
+                <script>autosize(document.getElementById("rdesc"));</script>
+            </div>
+            <center><img src="/static/images/rakubaru/progressbar.gif" style="width:30px; height:30px; display: none;" id="gif"></center>
+            <center>
+                <button type="button" style="width:200px; background-color:#008CBA; padding:8px 12px 8px 12px; border:0; border-radius:50px; color:white;"
+                    onclick="javascript:formSubmit(document.getElementById('editForm'), document.getElementById('gif'));">セーブ</button>
+            </center>
+        </form>
+    </div>
+</div>
+
+<div id="backgroundOverlay" onclick="javascript:dismissLayouts();">
+</div>
+
+<div id="snackbar">Submited!</div>
+
+<script>
+    var list = document.getElementById("list");
+    var lis = list.querySelectorAll( "#list > div" );
+    var prods = [];
+    var prods2 = [];
+    for(var i=0; i<lis.length; i++){
+       prods.push(lis[i]);
+       prods2.push(lis[i]);
+    }
+    function filter(){
+        var keyword = document.getElementById("search").value;
+        if(keyword.length > 0){
+            list.innerHTML = "";
+            for(var i=0; i<prods.length; i++){
+                var rtname = prods[i].querySelector("input[id='rtname']");
+                if(rtname.value.toLowerCase().includes(keyword.toLowerCase())){
+                    list.appendChild(prods[i]);
+                }
+                else {
+                    var rtstartend = prods[i].querySelector("input[id='rtstartend']");
+                    if(rtstartend.value.toLowerCase().includes(keyword.toLowerCase())){
+                        list.appendChild(prods[i]);
+                    }else {
+                        var rtdistance = prods[i].querySelector("input[id='rtdistance']");
+                        if(rtdistance.value.toLowerCase().includes(keyword.toLowerCase())){
+                            list.appendChild(prods[i]);
+                        }else {
+                            var rtspeed = prods[i].querySelector("input[id='rtspeed']");
+                            if(rtspeed.value.toLowerCase().includes(keyword.toLowerCase())){
+                                list.appendChild(prods[i]);
+                            }else {
+                                var rtduration = prods[i].querySelector("input[id='rtduration']");
+                                if(rtduration.value.toLowerCase().includes(keyword.toLowerCase())){
+                                    list.appendChild(prods[i]);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }else{
+            list.innerHTML = "";
+            for(var i=0; i<prods2.length; i++){
+                list.appendChild(prods2[i]);
+            }
+        }
+    }
+
+    function clear(){
+        var keyword = document.getElementById("search").value;
+        if(keyword.length == 0){
+            // alert('clear?');
+            list.innerHTML = "";
+            for(var i=0; i<prods2.length; i++){
+                list.appendChild(prods2[i]);
+            }
+        }
+    }
+</script>
+
+<meta charset="UTF-8">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+
+<button onclick="topFunction()" id="myBtn" title="Go to top"><i class="glyphicon glyphicon-menu-up" style="color:white; font-size:14px;"></i></button>
+
+<script>
+// When the user scrolls down 20px from the top of the document, show the button
+window.onscroll = function() {scrollFunction()};
+
+function scrollFunction() {
+    if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+        document.getElementById("myBtn").style.display = "block";
+        document.getElementById("title").style.display = "block";
+    } else {
+        document.getElementById("myBtn").style.display = "none";
+        document.getElementById("title").style.display = "none";
+    }
+}
+
+// When the user clicks on the button, scroll to the top of the document
+function topFunction() {
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+}
+
+var modal = document.getElementById("editBox");
+var selectedObj;
+
+function showEditPanel(obj) {
+    selectedObj = obj;
+    document.getElementById('rid').value = obj.id;
+    // document.getElementById('backgroundOverlay').style.display='block';
+    modal.style.display='block';
+    var route_name = obj.querySelector("#route_name");
+    var route_desc = obj.querySelector("#route_desc");
+    document.getElementById('rname').innerHTML = route_name.value;
+    document.getElementById('rdesc').innerHTML = route_desc.value;
+}
+
+$("#editBox div").click(function(e) {
+   // Do something
+   e.stopPropagation();
+});
+
+function dismissLayouts(){
+    modal.style.display = "none";
+}
+
+function formSubmit(form, gif){
+    if(document.getElementById('rdesc').value == ''){
+        return;
+    }
+    gif.style.display = "block";
+    var formData = new FormData(form);
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var result = xhr.response;
+            console.log('Edit Response: ' + result);
+            if(result == 'success') {
+                showToast('保存しました。');
+
+                var selector = ".report-form";
+                var parent = findParentBySelector(selectedObj, selector);
+                var desc = parent.querySelector("#desc");
+                desc.innerHTML = document.getElementById('rdesc').value;
+                desc.style.display = 'block';
+            }else alert('エラー');
+
+            gif.style.display = "none";
+            dismissLayouts();
+        }
+    };
+    xhr.open('POST', form.getAttribute('action'), true);
+    xhr.send(formData);
+}
+
+function collectionHas(a, b) { //helper function (see below)
+    for(var i = 0, len = a.length; i < len; i ++) {
+        if(a[i] == b) return true;
+    }
+    return false;
+}
+
+function findParentBySelector(elm, selector) {
+    var all = document.querySelectorAll(selector);
+    var cur = elm.parentNode;
+    while(cur && !collectionHas(all, cur)) { //keep going up until you find a match
+        cur = cur.parentNode; //go up
+    }
+    return cur; //will return null if not found
+}
+
+function showToast(text) {
+    var x = document.getElementById("snackbar");
+    x.innerHTML = text;
+    x.className = "show";
+    setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+}
+
+</script>
+
+{%else %}
+        <center>
+            <h3 class="my_items col-sm-offset-1" style="color:white; margin-top:150px;">レポートは存在しません</h3></center>
+
+{% endif %}
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

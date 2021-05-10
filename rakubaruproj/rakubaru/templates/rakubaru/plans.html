@@ -1,0 +1,888 @@
+{% extends 'rakubaru/base_back.html' %}
+{% block title %}会員プラン{% endblock %}
+{% block body %}
+
+<br>
+<br>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<meta charset="utf-8">
+
+<style>
+
+html, body{
+  background: #BDB76B no-repeat center center fixed;
+  background-size:cover;
+}
+
+#myBtn {
+  display: none;
+  position: fixed;
+  bottom: 20%;
+  right: 15px;
+  z-index: 99;
+  border: none;
+  outline: none;
+  background-color: rgba(0,0,0,0.3);
+  color: white;
+  cursor: pointer;
+  padding: 15px;
+  border-radius: 50%;
+}
+
+#myBtn:hover {
+  background-color: orange;
+}
+
+.planForm {
+  border-radius: 15px;
+  max-width:550px;
+  width:auto;
+  min-height:650px;
+  box-shadow:0 0 30px rgba(0,0,0,0.3);
+  margin:auto;
+  overflow: hidden;
+  text-align:center;
+  background-color: rgba(102, 0, 204, 0.5);
+}
+
+.planForm:hover {
+    box-shadow:0 0 50px rgba(0,0,0,0.5);
+    background-color: rgba(102, 0, 204, 0.8);
+}
+
+.frame:hover {
+    transform: scale(1.1);
+}
+
+form h1 {
+  font-size: 21px;
+  background: #327a81 none repeat scroll 0% 0%;
+  color: rgb(255, 255, 255);
+  padding: 19px 22px;
+  border-radius: 5px 5px 0px 0px;
+  margin: auto;
+  text-shadow: none;
+  text-align:left
+}
+
+h1 {
+  text-align:center;
+  color: #666;
+  text-shadow: 1px 1px 0px #FFF;
+  margin:50px 0px 0px 0px
+}
+
+.form-group {
+  overflow: hidden;
+  width:100%;
+}
+
+.contentform {
+  padding: 10px 10px;
+}
+
+#snackbar {
+    visibility: hidden;
+    min-width: 200px;
+    margin-left: -125px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 2px;
+    padding: 12px;
+    position: fixed;
+    z-index: 1;
+    left: 50%;
+    bottom: 30px;
+    font-size: 17px;
+}
+
+#snackbar.show {
+    visibility: visible;
+    -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+@-webkit-keyframes fadein {
+    from {bottom: 0; opacity: 0;}
+    to {bottom: 30px; opacity: 1;}
+}
+
+@keyframes fadein {
+    from {bottom: 0; opacity: 0;}
+    to {bottom: 30px; opacity: 1;}
+}
+
+@-webkit-keyframes fadeout {
+    from {bottom: 30px; opacity: 1;}
+    to {bottom: 0; opacity: 0;}
+}
+
+@keyframes fadeout {
+    from {bottom: 30px; opacity: 1;}
+    to {bottom: 0; opacity: 0;}
+}
+
+
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 100000; /* Sit on top */
+  padding-top: 150px; /* Location of the box
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  background-color: rgba(0,0,0,0.8); /* Black w/ opacity */
+}
+
+/* Modal Content (image) */
+.modal-content {
+  margin: auto;
+  display: block;
+  width: 400px;
+}
+
+/* Add Animation */
+.modal-content {
+  -webkit-animation-name: zoom;
+  -webkit-animation-duration: 0.6s;
+  animation-name: zoom;
+  animation-duration: 0.6s;
+}
+
+@-webkit-keyframes zoom {
+  from {-webkit-transform:scale(0)}
+  to {-webkit-transform:scale(1)}
+}
+
+@keyframes zoom {
+  from {transform:scale(0)}
+  to {transform:scale(1)}
+}
+
+/* The Close Button */
+.close {
+  position: absolute;
+  top: 5px;
+  right: 15px;
+  color: gray;
+  font-size: 40px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* 100% Image Width on Smaller Screens */
+@media only screen and (max-width: 500px){
+  .modal-content {
+    width: 100%;
+  }
+}
+
+.payBtn {
+    border-radius:50px;
+    border:0;
+    color:white;
+    width:60%;
+    position:absolute;
+    bottom:-25px;
+    left:20%;
+    font-size:16px;
+    font-size: 0.9vw;
+    padding:20px;
+}
+
+</style>
+
+<!--<script>-->
+<!--	history.pushState(null, null, location.href);-->
+<!--    history.back();-->
+<!--    history.forward();-->
+<!--    window.onpopstate = function () { history.go(1); };-->
+<!--</script>-->
+
+{% if note %}
+<script>alert("{{note}}");</script>
+{% endif %}
+
+<meta charset="UTF-8">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../lib/w3.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+<div id="title" style="font-size:25px; font-weight:800; color: #F7D479; text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.7); text-align:center;
+	position:fixed; left:50%; float:middle; transform:translate(-50%, -50%); width:350px; z-index:100; top:92px; display:none;">会員プラン</div>
+
+<img src="/static/images/rakubaru/progressbar.gif" class="glyphicon glyphicon-fire" aria-hidden="true" style="position:fixed; left:50%; float:middle;
+	transform:translate(-50%, -50%); width:80px; z-index:100; top:120px; display: none;" id="gif0">
+<div style="width:100%; height:auto;">
+    {% csrf_token %}
+    <div style="font-size:40px; font-weight:800;
+        color: #F7D479; text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.7); text-align:center; width:100%; margin-top:80px;">会員プラン<br>
+    </div>
+    <br>
+    <br>
+    <div class="container-fluid">
+        <div class="row">
+
+            <div class="col-sm-2">
+                <div style="width:100%; position:relative;" class="frame">
+                    <div class="planForm">
+                        <div class="contentform">
+                            <div style="width:100%;">
+                                <div class="form-group">
+                                    <center>
+                                        <div style="width:auto; display:inline-block;">
+                                            <br>
+                                            <br>
+                                            <label style="color:white; font-size:40px; font-size: 2vw;">
+                                                無料支払い
+                                            </label>
+                                            <br>
+                                            <label style="font-size:20px; color:white;">初期</label>
+                                            <br>
+                                            <label style="color:white; font-weight:600; font-size:25px; font-size: 1.3vw; background:#5c85d6; border-radius:5px; padding:10px 20px 10px 20px;">1人まで無料</label>
+                                            <br>
+                                        </div>
+                                    </center>
+                                </div>
+
+                                <br>
+
+                                <div class="form-group">
+                                    <center>
+                                        <div style="color:white; width:80%; font-size:16px; font-size: 0.9vw; margin-bottom:10px; padding:10px;" onclick="">このメンバーシップには最大1人の従業員を登録できます。</div>
+                                    </center>
+                                </div>
+
+                                <div style="color:#ff99ff; font-size:14px;">
+                                    <center>
+                                        {% if me.plan == '' or me.plan == '0' and status != '' %}期限切れ！ 従業員： {{memb_count}}{% endif %}
+                                    </center>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" style="{% if me.plan == '' or me.plan == '0' %}background:#b3b300;{% else %}background:#4d0099;{% endif %}" class="payBtn"
+                        onclick="{% if me.plan != '' and me.plan != '0' %}window.location.href='/rakubaru/ratopay?price=0&plan=0&members=1';{% endif %}">{% if me.plan == '' or me.plan == '0' %}現在の計画{% else %}今払う{% endif %}</button>
+
+                </div>
+                <br>
+            </div>
+
+
+            <div class="col-sm-2">
+                <div style="width:100%; position:relative;" class="frame">
+                    <div class="planForm">
+                        <div class="contentform">
+                            <div style="width:100%;">
+                                <div class="form-group">
+                                    <center>
+                                        <div style="width:auto; display:inline-block;">
+                                            <br>
+                                            <br>
+                                            <label style="color:white; font-size:40px; font-size: 2vw;">
+                                                5,000円
+                                            </label>
+                                            <br>
+                                            <label style="font-size:20px; color:white;">月額</label>
+                                            <br>
+
+                                            <label style="color:white; font-weight:600; font-size:25px; font-size: 1.3vw; background:#5c85d6; border-radius:5px; padding:10px 20px 10px 20px;">10人まで</label>
+                                            <br>
+
+                                        </div>
+                                    </center>
+                                </div>
+
+                                <br>
+
+                                <div class="form-group">
+                                    <center>
+                                        <div style="color:white; width:80%; font-size:16px; font-size: 0.9vw; margin-bottom:10px; padding:10px;" onclick="">このメンバーシップには最大10人の従業員を登録できます。</div>
+                                    </center>
+                                </div>
+
+                                <div style="color:#ff99ff; font-size:14px;">
+                                    <center>
+                                        {% if me.plan == '1' and status != '' %}期限切れ！ 従業員： {{memb_count}}{% endif %}
+                                    </center>
+                                </div>
+
+                                <div class="form-group">
+                                    <center>
+                                        <div style="color:white; width:80%; font-size:13px; font-size: 0.9vw; margin-bottom:10px; padding:10px;">お持ちの場合は、クーポンコードを入力してください。</div>
+                                        <input type="text" id="coupon1" style="color:white; width:150px; font-size:18px; margin-bottom:10px;
+                                            padding:10px; background:transparent; border-radius:5px; border:2px solid white; text-align:center;" value="">
+                                    </center>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" style="{% if me.plan == '1' %}background:#b3b300;{% else %}background:#4d0099;{% endif %}" class="payBtn"
+                        onclick="{% if me.plan != '1' %}openPaymentAlert(5000, 1, 10);{% endif %}">{% if me.plan == '1' %}現在の計画{% else %}今払う{% endif %}</button>
+
+                </div>
+                <br>
+            </div>
+
+
+            <div class="col-sm-2">
+                <div style="width:100%; position:relative;" class="frame">
+                    <div class="planForm">
+                        <div class="contentform">
+                            <div style="width:100%;">
+                                <div class="form-group">
+                                    <center>
+                                        <div style="width:auto; display:inline-block;">
+                                            <br>
+                                            <br>
+                                            <label style="color:white; font-size:40px; font-size: 2vw;">
+                                                14,000円
+                                            </label>
+                                            <br>
+                                            <label style="font-size:20px; color:white;">月額</label>
+                                            <br>
+
+                                            <label style="color:white; font-weight:600; font-size:25px; font-size: 1.3vw; background:#5c85d6; border-radius:5px; padding:10px 20px 10px 20px;">30人まで</label>
+                                            <br>
+                                        </div>
+                                    </center>
+                                </div>
+
+                                <br>
+
+                                <div class="form-group">
+                                    <center>
+                                        <div style="color:white; width:80%; font-size:16px; font-size: 0.9vw; margin-bottom:10px; padding:10px;" onclick="">このメンバーシップには最大30人の従業員を登録できます。</div>
+                                    </center>
+                                </div>
+
+                                <div style="color:#ff99ff; font-size:14px;">
+                                    <center>
+                                        {% if me.plan == '2' and status != '' %}期限切れ！ 従業員： {{memb_count}}{% endif %}
+                                    </center>
+                                </div>
+
+                                <div class="form-group">
+                                    <center>
+                                        <div style="color:white; width:80%; font-size:13px; font-size: 0.9vw; margin-bottom:10px; padding:10px;">お持ちの場合は、クーポンコードを入力してください。</div>
+                                        <input type="text" id="coupon2" style="color:white; width:150px; font-size:18px; margin-bottom:10px;
+                                            padding:10px; background:transparent; border-radius:5px; border:2px solid white; text-align:center;" value="">
+                                    </center>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" style="{% if me.plan == '2' %}background:#b3b300;{% else %}background:#4d0099;{% endif %}" class="payBtn"
+                        onclick="{% if me.plan != '2' %}openPaymentAlert(14000, 2, 30);{% endif %}">{% if me.plan == '2' %}現在の計画{% else %}今払う{% endif %}</button>
+
+                </div>
+                <br>
+            </div>
+
+
+            <div class="col-sm-2">
+                <div style="width:100%; position:relative;" class="frame">
+                    <div class="planForm">
+                        <div class="contentform">
+                            <div style="width:100%;">
+                                <div class="form-group">
+                                    <center>
+                                        <div style="width:auto; display:inline-block;">
+                                            <br>
+                                            <br>
+                                            <label style="color:white; font-size:40px; font-size: 2vw;">
+                                                23,000円
+                                            </label>
+                                            <br>
+                                            <label style="font-size:20px; color:white;">月額</label>
+                                            <br>
+
+                                            <label style="color:white; font-weight:600; font-size:25px; font-size: 1.3vw; background:#5c85d6; border-radius:5px; padding:10px 20px 10px 20px;">50人まで</label>
+                                            <br>
+                                        </div>
+                                    </center>
+                                </div>
+
+                                <br>
+
+                                <div class="form-group">
+                                    <center>
+                                        <div style="color:white; width:80%; font-size:16px; font-size: 0.9vw; margin-bottom:10px; padding:10px;" onclick="">このメンバーシップには最大50人の従業員を登録できます。</div>
+                                    </center>
+                                </div>
+
+                                <div style="color:#ff99ff; font-size:14px;">
+                                    <center>
+                                        {% if me.plan == '3' and status != '' %}期限切れ！ 従業員： {{memb_count}}{% endif %}
+                                    </center>
+                                </div>
+
+                                <div class="form-group">
+                                    <center>
+                                        <div style="color:white; width:80%; font-size:13px; font-size: 0.9vw; margin-bottom:10px; padding:10px;">お持ちの場合は、クーポンコードを入力してください。</div>
+                                        <input type="text" id="coupon3" style="color:white; width:150px; font-size:18px; margin-bottom:10px;
+                                            padding:10px; background:transparent; border-radius:5px; border:2px solid white; text-align:center;" value="">
+                                    </center>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" style="{% if me.plan == '3' %}background:#b3b300;{% else %}background:#4d0099;{% endif %}" class="payBtn"
+                        onclick="{% if me.plan != '3' %}openPaymentAlert(23000, 3, 50);{% endif %}">{% if me.plan == '3' %}現在の計画{% else %}今払う{% endif %}</button>
+
+                </div>
+                <br>
+            </div>
+
+
+            <div class="col-sm-2">
+                <div style="width:100%; position:relative;" class="frame">
+                    <div class="planForm">
+                        <div class="contentform">
+                            <div style="width:100%;">
+                                <div class="form-group">
+                                    <center>
+                                        <div style="width:auto; display:inline-block;">
+                                            <br>
+                                            <br>
+                                            <label style="color:white; font-size:40px; font-size: 2vw;">
+                                                45,000円
+                                            </label>
+                                            <br>
+                                            <label style="font-size:20px; color:white;">月額</label>
+                                            <br>
+
+                                            <label style="color:white; font-weight:600; font-size:25px; font-size: 1.3vw; background:#5c85d6; border-radius:5px; padding:10px 20px 10px 20px;">100人まで</label>
+                                            <br>
+                                        </div>
+                                    </center>
+                                </div>
+
+                                <br>
+
+                                <div class="form-group">
+                                    <center>
+                                        <div style="color:white; width:80%; font-size:16px; font-size: 0.9vw; margin-bottom:10px; padding:10px;" onclick="">このメンバーシップには最大100人の従業員を登録できます。</div>
+                                    </center>
+                                </div>
+
+                                <div style="color:#ff99ff; font-size:14px;">
+                                    <center>
+                                        {% if me.plan == '4' and status != '' %}期限切れ！ 従業員： {{memb_count}}{% endif %}
+                                    </center>
+                                </div>
+
+                                <div class="form-group">
+                                    <center>
+                                        <div style="color:white; width:80%; font-size:13px; font-size: 0.9vw; margin-bottom:10px; padding:10px;">お持ちの場合は、クーポンコードを入力してください。</div>
+                                        <input type="text" id="coupon4" style="color:white; width:150px; font-size:18px; margin-bottom:10px;
+                                            padding:10px; background:transparent; border-radius:5px; border:2px solid white; text-align:center;" value="">
+                                    </center>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" style="{% if me.plan == '4' %}background:#b3b300;{% else %}background:#4d0099;{% endif %}" class="payBtn"
+                        onclick="{% if me.plan != '4' %}openPaymentAlert(45000, 4, 100);{% endif %}">{% if me.plan == '4' %}現在の計画{% else %}今払う{% endif %}</button>
+
+                </div>
+                <br>
+            </div>
+
+            <div class="col-sm-2">
+                <div style="width:100%; position:relative;" class="frame">
+                    <div class="planForm">
+                        <div class="contentform">
+                            <div style="width:100%;">
+                                <div class="form-group">
+                                    <center>
+                                        <div style="width:auto; display:inline-block;">
+                                            <br>
+                                            <br>
+                                            <label style="color:white; font-size:40px; font-size: 2vw;">
+                                                45,000+円
+                                            </label>
+                                            <br>
+                                            <label style="font-size:20px; color:white;">月額</label>
+                                            <br>
+
+                                            <label style="color:white; font-weight:600; font-size:18px; font-size: 0.8vw; background:#5c85d6; border-radius:5px; padding:10px 20px 10px 20px;">
+                                                101人以降は1人追加ごとに<br>月額400円追加
+                                            </label>
+                                            <br>
+                                        </div>
+                                    </center>
+                                </div>
+
+                                <div class="form-group">
+                                    <center>
+                                        <div style="color:white; width:80%; font-size:16px; font-size: 0.9vw; margin-bottom:10px; padding:10px;">100人を超えるメンバーの数を入力してください（例：105人の場合は5）。</div>
+                                        <input type="number" id="count" style="color:white; width:150px; font-size:18px; margin-bottom:10px;
+                                            padding:10px; background:transparent; border-radius:5px; border:2px solid white; text-align:center;" value="0">
+                                    </center>
+                                </div>
+
+                                <div style="color:#ff99ff; font-size:14px;">
+                                    <center>
+                                        {% if me.plan == '5' and status != '' %}期限切れ！ 計画:{{me.planned_members}}, 従業員：{{memb_count}}{% elif me.plan == '5' and status == '' %}計画:{{me.planned_members}}, 従業員：{{memb_count}}{% endif %}
+                                    </center>
+                                </div>
+
+                                <div class="form-group">
+                                    <center>
+                                        <div style="color:white; width:80%; font-size:13px; font-size: 0.9vw; margin-bottom:10px; padding:10px;">お持ちの場合は、クーポンコードを入力してください。</div>
+                                        <input type="text" id="coupon5" style="color:white; width:150px; font-size:18px; margin-bottom:10px;
+                                            padding:10px; background:transparent; border-radius:5px; border:2px solid white; text-align:center;" value="">
+                                    </center>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" style="{% if me.plan == '5' %}background:#b3b300;{% else %}background:#4d0099;{% endif %}" class="payBtn" onclick="toPay()">
+                        {% if me.plan == '5' %}現在の計画:今払う{% else %}今払う{% endif %}
+                    </button>
+
+                </div>
+                <br>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="registered_membs_count" name="registered_membs_count" value="{{memb_count}}">
+
+<div id="snackbar">Submited!</div>
+
+<input type="hidden" id="me_email" value="{{me.email}}">
+<input type="hidden" id="me_id" value="{{me.pk}}">
+
+<meta charset="UTF-8">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+
+<button onclick="topFunction()" id="myBtn" title="Go to top"><i class="glyphicon glyphicon-menu-up" style="color:white; font-size:14px;"></i></button>
+
+<script>
+// When the user scrolls down 20px from the top of the document, show the button
+window.onscroll = function() {scrollFunction()};
+
+function scrollFunction() {
+    if (document.body.scrollTop > 80 || document.documentElement.scrollTop > 80) {
+        document.getElementById("myBtn").style.display = "block";
+        document.getElementById("title").style.display = "block";
+    } else {
+        document.getElementById("myBtn").style.display = "none";
+        document.getElementById("title").style.display = "none";
+    }
+}
+
+// When the user clicks on the button, scroll to the top of the document
+function topFunction() {
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+}
+
+function toPay() {
+    var count = document.getElementById('count').value;
+    if(count == 0 || count == '') {
+        alert('追加の従業員数を入力してください。');
+        return;
+    }
+
+    var additionalPrice = 45000 + 400 * parseInt(count);
+    {% if me.plan == '4' or me.plan == '5' %}
+    additionalPrice = 400 * parseInt(count);
+    {% endif %}
+    openPaymentAlert(additionalPrice, 5, parseInt(count));
+}
+
+
+function formSubmit(form, gif){
+    gif.style.display = "block";
+    var formData = new FormData(form);
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var result = xhr.response;
+            console.log('Payment Response: ' + result);
+            if(result == 'success') {
+                alert('支払いは成功しました。');
+                window.location.href = '/rakubaru/rahome';
+            }
+            gif.style.display = "none";
+        }
+    };
+    xhr.open('POST', form.getAttribute('action'), true);
+    xhr.send(formData);
+}
+
+function collectionHas(a, b) { //helper function (see below)
+    for(var i = 0, len = a.length; i < len; i ++) {
+        if(a[i] == b) return true;
+    }
+    return false;
+}
+
+function findParentBySelector(elm, selector) {
+    var all = document.querySelectorAll(selector);
+    var cur = elm.parentNode;
+    while(cur && !collectionHas(all, cur)) { //keep going up until you find a match
+        cur = cur.parentNode; //go up
+    }
+    return cur; //will return null if not found
+}
+
+
+function showToast(text) {
+    var x = document.getElementById("snackbar");
+    x.innerHTML = text;
+    x.className = "show";
+    setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+}
+
+function getCookie(name) {
+    console.log('getCookie');
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                    }
+            }
+    }
+    console.log('cookie:' + cookieValue);
+    return cookieValue;
+}
+
+function post(path, params, method) {
+   method = method || "post"; // Set method to post by default if not specified.
+
+   // The rest of this code assumes you are not using a library.
+   // It can be made less wordy if you use one.
+   var form = document.createElement("form");
+   form.setAttribute("method", method);
+   form.setAttribute("action", path);
+
+   for(var key in params) {
+      if(params.hasOwnProperty(key)) {
+          var hiddenField = document.createElement("input");
+          hiddenField.setAttribute("type", "hidden");
+          hiddenField.setAttribute("name", key);
+          hiddenField.setAttribute("value", params[key]);
+
+          form.appendChild(hiddenField);
+      }
+   }
+
+   var hiddenField1 = document.createElement("input");
+   hiddenField1.setAttribute("type", "hidden");
+   hiddenField1.setAttribute("name", 'csrfmiddlewaretoken');
+   hiddenField1.setAttribute("value", getCookie('csrftoken'));
+   form.appendChild(hiddenField1);
+
+   document.body.appendChild(form);
+   form.submit();
+}
+
+</script>
+
+<form style="display: none;" id="form" action="/rakubaru/rapay" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" id="token" name="token" value="">
+    <input type="hidden" id="price" name="price" value="0">
+    <input type="hidden" id="me_id" name="me_id" value="{{me.pk}}">
+    <input type="hidden" id="plan" name="plan" value="0">
+    <input type="hidden" id="members" name="members" value="1">
+    <input type="hidden" id="coupon_id" name="coupon_id" value="0">
+    <input type="hidden" id="discount" name="discount" value="0">
+</form>
+
+<script src="https://checkout.stripe.com/checkout.js"></script>
+<script>
+var handler = StripeCheckout.configure({
+  key: 'pk_live_51Hr8pdECq8YGopGg8KDcu5rS2vpS5u5K5d2eU9KL0OSlLGy5Nx2h5UIi2hRXlw2PCy8PYhyU1iT93vBXX02nq1yT00Q1UDxDUs',
+  // pk_test_51Hr8pdECq8YGopGgUx1FE1iUfberafsAxdiVFCoHBy7XflTnxYm28Gd2F8QrUBkVKtS4TmZ25twwL8ky2py6plMR00kwvysIGH
+  // pk_live_51Hr8pdECq8YGopGg8KDcu5rS2vpS5u5K5d2eU9KL0OSlLGy5Nx2h5UIi2hRXlw2PCy8PYhyU1iT93vBXX02nq1yT00Q1UDxDUs
+  image: '/static/images/rakubaru/appicon.jpg',        //     https://stripe.com/img/documentation/checkout/marketplace.png
+  locale: 'auto',
+  token: function(token) {
+    // You can access the token ID with `token.id`.
+    // Get the token ID to your server-side code for use.
+
+    document.getElementById('token').value = token.id;
+    formSubmit(document.getElementById('form'), document.getElementById('gif0'));
+  }
+});
+
+function openPaymentAlert(price, plan, membs){
+    console.log(membs + '///' + parseInt(document.getElementById('registered_membs_count').value));
+    if(membs < parseInt(document.getElementById('registered_membs_count').value)) {
+        alert('選択したプランの利用者上限が、現在の社員数を下回っています。登録社員を削除して選択しなおしてください。');
+        return;
+    }
+    c1 = document.getElementById('coupon1').value;
+    c2 = document.getElementById('coupon2').value;
+    c3 = document.getElementById('coupon3').value;
+    c4 = document.getElementById('coupon4').value;
+    c5 = document.getElementById('coupon5').value;
+
+    if (plan == 1 && c1.length > 0){
+        checkcoupon(price, plan, membs, c1);
+    }else if (plan == 2 && c2.length > 0){
+        checkcoupon(price, plan, membs, c2);
+    }else if (plan == 3 && c3.length > 0){
+        checkcoupon(price, plan, membs, c3);
+    }else if (plan == 4 && c4.length > 0){
+        checkcoupon(price, plan, membs, c4);
+    }else if (plan == 5 && c5.length > 0){
+        checkcoupon(price, plan, membs, c5);
+    }else {
+        document.getElementById('price').value = price;
+        document.getElementById('plan').value = plan;
+        document.getElementById('members').value = membs;
+        document.getElementById('discount').value = 0;
+        // Open Checkout with further options:
+        handler.open({
+            name: 'らくばる',
+            description: 'クレジットを取得する',
+            amount: price,
+            currency: 'jpy'
+        });
+    }
+
+}
+
+function checkcoupon(price, plan, membs, code) {
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        console.log(xhr.responseText);
+        if (this.readyState == 4 && this.status == 200) {
+            var data = JSON.parse(xhr.responseText);
+            var status = data["status"];
+            if(status == "0") {
+                var discount = data["discount"];
+                var coupon_id = data["coupon_id"];
+                alert('良い！ ' + String(discount) + '%割引が受けられます。');
+                price = price * (1 - parseFloat(discount) / 100)
+                document.getElementById('price').value = price;
+                document.getElementById('plan').value = plan;
+                document.getElementById('members').value = membs;
+                document.getElementById('coupon_id').value = coupon_id;
+                document.getElementById('discount').value = discount;
+                // Open Checkout with further options:
+                handler.open({
+                    name: 'らくばる',
+                    description: 'クレジットを取得する',
+                    amount: price,
+                    currency: 'jpy'
+                });
+            }else if(status == "1") {
+                alert("このクーポンはすでに有効期限が切れています。");
+            }else if(status == "2") {
+                alert("このクーポンは存在しません。");
+            }
+        }
+
+    };
+    xhr.open('POST', '/rakubaru/checkcoupon?coupon_code=' + code, true);
+    xhr.send('');
+}
+
+</script>
+
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
