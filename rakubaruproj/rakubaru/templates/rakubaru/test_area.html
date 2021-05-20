@@ -1,0 +1,195 @@
+{% extends 'rakubaru/base_back.html' %}
+{% block title %}エリアの設定{% endblock %}
+
+{% block body %}
+
+<link rel="stylesheet" type="text/css" href="/static/css/area/areasetup.css"/>
+
+<script src="https://apis.google.com/js/api.js"></script>
+
+<meta charset="UTF-8">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<div id="data" style="display:none;">{{data}}</div>
+
+<div id="map_canvas"><noscript><p>GoogleマップをレンダリングするにはJavaScriptが必要です</p></noscript></div>
+
+<script>
+
+var geocoder;
+var map;
+var latLng;
+
+function initialize(){
+
+    geocoder = new google.maps.Geocoder();
+    latLng = new google.maps.LatLng(33.434389, 130.5351511);
+    var mapOptions = {
+        zoom: 8,
+        center: latLng,
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        disableDefaultUI: true,
+        zoomControl: true
+    }
+    map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
+
+    displayRegions(decodeHtml(document.getElementById("data").innerHTML));
+
+}
+
+
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAD08ggeOQbSPf8_w-8KvqKhqeXWH3GM8s&libraries=places&callback=initialize" async defer></script>
+
+<script>
+
+function displayRegions(data_str) {
+    var jdata = JSON.parse(data_str);
+    var jsondata = jdata.features;
+    console.log(JSON.stringify(jsondata));
+    if(Array.isArray(jsondata) && jsondata.length > 0) {
+        var bounds = new google.maps.LatLngBounds();
+        for (var x=0; x<jsondata.length; x++) {
+            var properties = jsondata[x].properties;
+            var coordjsonarr = jsondata[x].geometry.coordinates;
+            var coords = new Array();
+            var locs = new Array();
+            for(var i=0; i<coordjsonarr.length; i++){
+                for(var j=0; j<coordjsonarr[i].length; j++){
+                    if(coordjsonarr[i][j].length == 2) {
+                        coords.push({ lng: coordjsonarr[i][j][0],  lat: coordjsonarr[i][j][1] });
+                        var iloc = new google.maps.LatLng(coordjsonarr[i][j][1], coordjsonarr[i][j][0]);
+                        bounds.extend(iloc);
+                        locs.push(iloc);
+                    }
+                }
+            }
+
+            if(coords.length > 0) {
+                var color = getColor();
+                var polygon = new google.maps.Polygon({
+                    paths: coords,
+                    strokeColor: "#0000e6",
+                    strokeOpacity: 1.0,
+                    strokeWeight: 3,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                });
+                // Draw the polygon on the desired map instance
+                polygon.setMap(map);
+            }
+
+            var marker = new google.maps.Marker({
+                position: locs[0],
+                map: map,
+                title: "<div style='font-size:16px; font-weight:520;'>" + properties.PREF_NAME + " : " + properties.CITY_NAME + properties.S_NAME + "</div>"
+            });
+
+            google.maps.event.addListener(marker, 'click', (function(marker, x) {
+                return function() {
+                    var infowindow = new google.maps.InfoWindow();
+                    infowindow.setContent(marker.title);
+                    infowindow.open(map, marker);
+                }
+            })(marker, x));
+
+        }
+
+        map.fitBounds(bounds);
+
+    }
+
+}
+
+function decodeHtml(html) {
+    let areaElement = document.createElement("textarea");
+    areaElement.innerHTML = html;
+
+    return areaElement.value;
+}
+
+function getColor() {
+    const randomColor = Math.floor(Math.random()*16777215).toString(16);
+    return "#" + randomColor;
+}
+
+</script>
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -422,13 +422,13 @@ label.cameraButton input[accept*="image"] {
                             <div class="form-group" style="display:flex; margin-top:15px;">
                                 <div style="flex-grow:1;">
                                     <button class="bouton-update" style="width:60px; height:60px; text-align:center;"
-                                        onclick="javascript:window.location.href='/rakubaru/rauserreports?member_id={{member.pk}}';">
+                                        onclick="{% if me.subscription_status == '' %}javascript:window.location.href='/rakubaru/rauserreports?member_id={{member.pk}}';{% else %}showAlertWarning();{% endif %}">
                                         <i class="fas fa-route" style="color:white; font-size:22px;"></i>
                                     </button>
                                 </div>
                                 <div style="flex-grow:1;">
                                     <button class="bouton-update" style="width:60px; height:60px; text-align:center;"
-                                        onclick="javascript:window.location.href='/rakubaru/rapinmap?option=user&member_id={{member.pk}}';">
+                                        onclick="{% if me.subscription_status == '' %}javascript:window.location.href='/rakubaru/rapinmap?option=user&member_id={{member.pk}}';{% else %}showAlertWarning();{% endif %}">
                                         <i class="fa fa-map-pin" style="color:white; font-size:22px;"></i>
                                     </button>
                                 </div>
@@ -442,7 +442,7 @@ label.cameraButton input[accept*="image"] {
                                 </div>
                                 <div style="flex-grow:1;">
                                     <button class="bouton-update" style="width:60px; height:60px; text-align:center;"
-                                        onclick="javascript: if(confirm('このメンバーを削除してもよろしいですか？')) window.location.href='/rakubaru/radelmember?member_id={{member.pk}}';">
+                                        onclick="{% if me.subscription_status == '' %}javascript:confirmUserDeletion('{{member.pk}}');{% else %}showAlertWarning();{% endif %}">
                                         <i class="fa fa-trash" style="color:white; font-size:22px;"></i>
                                     </button>
                                 </div>
@@ -831,6 +831,23 @@ function processDeleting(gif, text){
     };
     xhr.open('GET', '/eadelcode?member_id=' + selectedObj.id, true);
     xhr.send('');
+}
+
+
+function confirmUserDeletion(userid) {
+    swal({
+        title: "このメンバーを削除してもよろしいですか？",
+        text: "削除すると、このユーザーを回復することはできません。",
+        icon: "warning",
+        buttons: ["いいえ","はい"],
+        dangerMode: true,
+    })
+    .then((ok) => {
+        if (ok) {
+            window.location.href='/rakubaru/radelmember?member_id=' + userid;
+        }
+    });
+
 }
 
 

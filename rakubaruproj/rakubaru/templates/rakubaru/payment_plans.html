@@ -38,23 +38,26 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
 
-<div id="title" style="font-size:25px; font-weight:800; color: #F7D479; text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.7); text-align:center;
-	position:fixed; left:50%; float:middle; transform:translate(-50%, -50%); width:350px; z-index:100; top:92px; display:none;">会員プラン</div>
+<div id="title">会員プラン</div>
 
+<div id="bar" style="display:none;"></div>
 
-<div class="w-100" style="margin:auto; height:auto;">
+<script>
+var bar=new RadialProgress(document.getElementById("bar"),{colorBg:"rgba(0,0,0,0)",colorFg:"#0066ff",thick:8,round:true,indeterminate:true,animationSpeed:0.5});
+</script>
+
+<button type="button" class="btn-history" onclick="javascript:showHistoryBox();">支払履歴</button>
+
+<div class="w-100" style="margin:auto; height:auto; position:relative;">
     {% csrf_token %}
-    <div style="font-size:40px; font-weight:800;
-        color: #F7D479; text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.7); text-align:center; width:100%; margin-top:80px;">会員プラン<br>
-    </div>
+    <div class="plan-title">会員プラン<br></div>
     <br>
     <br>
     <div class="container-fluid">
-
         <div class="row">
-
             <div class="col-sm-4">
                 <div style="width:100%; position:relative;" class="frame">
+
                     <div class="planForm">
                         <div class="contentform">
                             <div style="width:100%;">
@@ -85,7 +88,7 @@
 
                                 <div style="color:#ff99ff; font-size:14px;">
                                     <center>
-                                        {% if me.plan == '' or me.plan == '0' and status != '' %}期限切れ！ 従業員： {{memb_count}}{% endif %}
+                                        {% if me.plan == '' or me.plan == '0' and status != '' %}上限に達しました。 従業員： {{memb_count}}{% endif %}
                                     </center>
                                 </div>
 
@@ -94,13 +97,11 @@
                     </div>
 
                     <button type="button" style="{% if me.plan == '' or me.plan == '0' %}background:#b3b300;{% else %}background:#4d0099;{% endif %}" class="payBtn"
-                        onclick="{% if me.plan != '' and me.plan != '0' %}window.location.href='/rakubaru/ratopay?price=0&plan=0&members=1';{% endif %}">{% if me.plan == '' or me.plan == '0' %}現在の計画{% else %}今払う{% endif %}</button>
+                        onclick="{% if me.plan != '' and me.plan != '0' %}downgradeSubscriptionToFree(){% endif %}">{% if me.plan == '' or me.plan == '0' %}現在の計画{% else %}今払う{% endif %}</button>
 
                 </div>
                 <br>
             </div>
-
-
 
             <div class="col-sm-4">
                 <div style="width:100%; position:relative;" class="frame">
@@ -119,7 +120,7 @@
                                             <label style="font-size:20px; color:white;">月額</label>
                                             <br>
 
-                                            <label class="lbl2">20人まで</label>
+                                            <label class="lbl2">10人まで</label>
                                             <br>
 
                                         </div>
@@ -130,15 +131,15 @@
 
                                 <div class="form-group">
                                     <center>
-                                        <div class="lbl3" onclick="">このメンバーシップには最大20人の従業員を登録できます。</div>
+                                        <div class="lbl3" onclick="">このメンバーシップには最大10人の従業員を登録できます。</div>
                                     </center>
                                 </div>
 
                                 {% if me.plan == '1' %}
                                 <div style="color:#ff99ff; font-size:14px;">
                                     <center>
-                                        {% if me.subscriptionID %} {{me.subscriptionID}} {% endif %}<br>
-                                        {% if status != '' %}期限切れ！ 従業員： {{memb_count}}{% endif %}
+                                        <!--{% if me.subscriptionID %} {{me.subscriptionID}} {% endif %}<br>-->
+                                        {% if status != '' %}上限に達しました。 従業員： {{memb_count}}{% endif %}
                                     </center>
                                 </div>
                                 {% endif %}
@@ -146,8 +147,7 @@
                                 <div class="form-group">
                                     <center>
                                         <div class="lbl3">お持ちの場合は、クーポンコードを入力してください。</div>
-                                        <input type="text" id="coupon1" style="color:white; width:150px; font-size:18px; margin-bottom:10px;
-                                            padding:10px; background:transparent; border-radius:5px; border:2px solid white; text-align:center;" value="">
+                                        <input type="text" id="coupon1" class="coupon-input" value="">
                                     </center>
                                 </div>
 
@@ -156,7 +156,7 @@
                     </div>
 
                     <button type="button" style="{% if me.plan == '1' %}{% if me.subscriptionID == '' %}background:#ff0000;{% else %}background:#b3b300;{% endif %}{% else %}background:#4d0099;{% endif %}" class="payBtn"
-                        onclick="{% if me.plan != '1' %}openPaymentAlert(5000, 1, 20);{% else %}{% if me.subscriptionID == '' %}openPaymentAlert(5000, 1, 20);{% endif %}{% endif %}">
+                        onclick="{% if me.plan != '1' %}{% if me.plan == '0' %}openNewSubscriptionAlert(5000, 1, 10);{% elif me.plan == '2' %}upDowngradeSubscriptionToPlan1(){% endif %}{% else %}{% if me.subscriptionID == '' %}openNewSubscriptionAlert(5000, 1, 10);{% endif %}{% endif %}">
                         {% if me.plan == '1' %}現在の計画{% if me.subscriptionID == '' %}<br><i class="fa fa-exclamation-triangle"></i>サブスクリプションを追加する{% endif %}{% else %}今払う{% endif %}
                     </button>
 
@@ -166,6 +166,9 @@
 
             <div class="col-sm-4">
                 <div style="width:100%; position:relative;" class="frame">
+
+                    <button class="plan-0-title" onclick="downgradeSubscriptionForPlan2()">ダウングレード（-10人）</button>
+
                     <div class="planForm">
                         <div class="contentform">
                             <div style="width:100%;">
@@ -201,22 +204,33 @@
                                 {% if me.plan == '2' %}
                                 <div style="color:#ff99ff; font-size:14px;">
                                     <center>
-                                        {% if me.subscriptionID %} {{me.subscriptionID}} {% endif %}
-                                        <div class="text-left" style="display:inline-block;">
+                                        <!--{% if me.subscriptionID %} {{me.subscriptionID}}<br> {% endif %}-->
+                                        <div style="display:inline-block; text-align:left;">
                                             計画された従業員 : {{planned_count}} <br>
-                                            現在の従業員：&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{memb_count}} {% if status != '' %}期限切れ！{% endif %}
+                                            現在の従業員：&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{memb_count}} {% if status != '' %}上限に達しました。{% endif %}
                                         </div>
                                     </center>
                                 </div>
         `                       {% endif %}
+
+                                <input hidden id="current_payment" value="{{current_payment}}">
                                 <input hidden id="last_payment" value="{{last_payment}}">
+                                <input hidden id="last_1_payment" value="{{last_1_payment}}">
                                 <input hidden id="planned_count" value="{{planned_count}}">
+
+                                <div class="form-group">
+                                    <center>
+                                        <div class="lbl3">お持ちの場合は、クーポンコードを入力してください。</div>
+                                        <input type="text" id="coupon2" class="coupon-input" value="">
+                                    </center>
+                                </div>
+
                             </div>
                         </div>
                     </div>
 
                     <button type="button" style="{% if me.plan == '2' %}{% if me.subscriptionID == '' %}background:#ff0000;{% else %}background:#b3b300;{% endif %}{% else %}background:#4d0099;{% endif %}" class="payBtn"
-                        onclick="toPay()">
+                        onclick="{% if me.subscriptionID == '' %}createNewSubscriptionForPlan2();{% else %}upgradeSubscriptionForPlan2();{% endif %}">
                         {% if me.plan == '2' %}現在の計画:今払う{% if me.subscriptionID == '' %}<br><i class="fa fa-exclamation-triangle"></i>サブスクリプションを追加する{% endif %}{% else %}今払う{% endif %}
                     </button>
 
@@ -228,6 +242,7 @@
         </div>
     </div>
 </div>
+
 
 <div id="paymentform" class="col-sm-12" style="display:none;">
     {% csrf_token %}
@@ -270,7 +285,7 @@
                     <img src="/static/images/rakubaru/progressbar.gif" style="width:30px; display:none;" id="gif0">
                 </center>
                 <div class="form-group" style="margin-top:20px;">
-                    <button class="bouton-update" id="pay-btn">購読する</button>
+                    <button class="bouton-update" id="pay-btn">購入する</button>
                 </div>
             </form>
         </div>
@@ -283,9 +298,36 @@
 </div>
 
 
+<div id="payment-history">
+    <div style="padding:20px;color:white;">
+        <img src="/static/images/rakubaru/cancel.png" style="width:25px; height:25px; float:right;" onclick="javascript:dismissHistoryBox();">
+        <div style="width:100%;">
+            <h2>支払履歴</h2>
+            <br>
+            {% for inv in invoices %}
+            <div style="background-color:#805500;border-radius:3px;width:100%;">
+                <div class="contentform">
+                    <div style="display:flex;">
+                        <div>
+                            <div style="color:#BDB76B;">{{inv.number}}</div>
+                            <div style="font-size:14px;">毎月の支払</div>
+                        </div>
+                        <div style="flex-grow:1"></div>
+                        <label style="margin-right:10px; font-size:25px; color:yellow; font-family:verdana;"><span style="font-size:14px;">¥</span>{{inv.amount}}&nbsp;<span style="font-size:12px;">{{inv.status}}</span></label>
+                    </div>
+                    <label style="font-size:20px;">{{inv.created}}</label>
+                    <div style="float:right; margin-top:8px;">
+                        <a href="{{inv.hosted_invoice_url}}" target="_blank" style="color:#00ffff;font-size:14px;">請求書の詳細を読む...<i class="fa fa-file"></i></a>
+                    </div>
+                </div>
+            </div>
+            <br>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
 <div id="backgroundOverlay" onclick="dismissLayouts();"></div>
-
-
 
 
 <input type="hidden" id="registered_membs_count" name="registered_membs_count" value="{{memb_count}}">
@@ -323,13 +365,16 @@ function topFunction() {
 function dismissLayouts(){
     document.getElementById("paymentform").style.display='none';
     document.getElementById("backgroundOverlay").style.display='none';
+    dismissHistoryBox();
 }
 
-function toPay() {
+function createNewSubscriptionForPlan2() {
+    showAlert("2番目の計画をスキップすることはできません。 10人プランにアップグレードしてください。");
+    return;
     var planned_count = document.getElementById("planned_count").value;
-    var last_payment = document.getElementById("last_payment").value;
-    var price = parseInt(last_payment) + 4500;
-    openPaymentAlert(price, 2, parseInt(planned_count) + 10);
+    var current_payment = document.getElementById("current_payment").value;
+    var price = parseInt(current_payment) + 4500;
+    openNewSubscriptionAlert(price, 2, parseInt(planned_count) + 10);
 }
 
 
@@ -343,8 +388,14 @@ function formSubmit(form, gif){
             var result = xhr.response;
             console.log('Payment Response: ' + result);
             if(result == 'success') {
-                alert('支払いは成功しました。');
-                location.reload();
+                swal("支払いは成功しました。", {
+                    icon: "success",
+                })
+                .then((ok) => {
+                    if (ok) {
+                        location.reload();
+                    }
+                });
             }else{
                 alert(result);
             }
@@ -364,7 +415,7 @@ function showToast(text) {
 
 </script>
 
-<form style="display: none;" id="form" action="/rakubaru/ratestpay" method="post" enctype="multipart/form-data">
+<form style="display: none;" id="form" action="/rakubaru/racreatesubscription" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <input type="hidden" id="token" name="token" value="">
     <input type="hidden" id="price" name="price" value="0">
@@ -376,6 +427,14 @@ function showToast(text) {
     <input type="hidden" id="pay-name" name="name" value="">
     <input type="hidden" id="pay-email" name="email" value="">
     <input type="hidden" id="pay-method" name="pay_method" value="">
+</form>
+
+<form style="display: none;" id="updowngradeform" action="/rakubaru/raupdowngradesubscription" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="price" id="down_price" value="0">
+    <input type="hidden" name="me_id" value="{{me.pk}}">
+    <input type="hidden" name="plan" id="down_plan" value="0">
+    <input type="hidden" name="members" id="down_members" value="1">
 </form>
 
 <script src="https://js.stripe.com/v3/"></script>
@@ -458,16 +517,18 @@ function stripeTokenHandler(token, method, name, email) {
 </script>
 
 <script>
-function openPaymentAlert(price, plan, membs){
-    console.log(membs + '///' + parseInt(document.getElementById('registered_membs_count').value));
-    if(membs < parseInt(document.getElementById('registered_membs_count').value)) {
+function openNewSubscriptionAlert(price, plan, membs){
+    if(parseInt(document.getElementById('registered_membs_count').value) > membs) {
         alert('選択したプランの利用者上限が、現在の社員数を下回っています。登録社員を削除して選択しなおしてください。');
         return;
     }
-    c1 = document.getElementById('coupon1').value;
+    var c1 = document.getElementById('coupon1').value;
+    var c2 = document.getElementById('coupon2').value;
 
     if (plan == 1 && c1.length > 0){
         checkcoupon(price, plan, membs, c1);
+    }else if (plan == 2 && c2.length > 0){
+        checkcoupon(price, plan, membs, c2);
     }else {
         document.getElementById('price').value = price;
         document.getElementById('plan').value = plan;
@@ -475,7 +536,7 @@ function openPaymentAlert(price, plan, membs){
         document.getElementById('discount').value = 0;
         document.getElementById("paymentform").style.display = "block";
         document.getElementById("backgroundOverlay").style.display = "block";
-        document.getElementById("pay-btn").innerHTML = "購読する ¥" + String(price);
+        document.getElementById("pay-btn").innerHTML = "購入する ¥" + String(parseInt(price)) + "/月";
     }
 
 }
@@ -490,7 +551,7 @@ function checkcoupon(price, plan, membs, code) {
             if(status == "0") {
                 var discount = data["discount"];
                 var coupon_id = data["coupon_id"];
-                alert('良い！ ' + String(discount) + '%割引が受けられます。');
+                alert(String(discount) + '%割引が受けられます。');
                 price = price * (1 - parseFloat(discount) / 100)
                 document.getElementById('price').value = price;
                 document.getElementById('plan').value = plan;
@@ -499,7 +560,7 @@ function checkcoupon(price, plan, membs, code) {
                 document.getElementById('discount').value = discount;
                 document.getElementById("paymentform").style.display = "block";
                 document.getElementById("backgroundOverlay").style.display = "block";
-                document.getElementById("pay-btn").innerHTML = "購読する ¥" + String(price);
+                document.getElementById("pay-btn").innerHTML = "購入する ¥" + String(parseInt(price)) + "/月";
             }else if(status == "1") {
                 alert("このクーポンはすでに有効期限が切れています。");
             }else if(status == "2") {
@@ -508,11 +569,195 @@ function checkcoupon(price, plan, membs, code) {
         }
 
     };
-    xhr.open('POST', '/rakubaru/checkcoupon?coupon_code=' + code, true);
+    xhr.open('GET', '/rakubaru/checkcoupon?coupon_code=' + code, true);
     xhr.send('');
 }
 
 
+function showHistoryBox(){
+    console.log("tapped on history button")
+    document.getElementById("backgroundOverlay").style.display = "block";
+    setTimeout(function(){
+        document.getElementById("payment-history").style.display = "block";
+        document.getElementById("payment-history").setAttribute('class', 'slide-rin');
+    }, 30);
+}
+
+function dismissHistoryBox(){
+    document.getElementById("payment-history").setAttribute('class', 'slide-rout');
+    setTimeout(function() {
+        document.getElementById("payment-history").style.display="none";
+        document.getElementById("backgroundOverlay").style.display = "none";
+    }, 400);
+}
+
+function upDowngradeSubscriptionToPlan1() {
+    var planned_count = document.getElementById("planned_count").value;
+    if(parseInt(planned_count) > 20) {
+        showAlert('このダウングレードは、招待20人以下の場合にのみ有することができる。');
+        return;
+    }
+    if(parseInt(document.getElementById('registered_membs_count').value) > 10) {
+        showAlert('選択したプランの利用者上限が、現在の社員数を下回っています。登録社員を削除して選択しなおしてください。');
+        return;
+    }
+    var last_1_payment = document.getElementById("last_1_payment").value;
+    var price = parseInt(last_1_payment);
+    swal({
+        title: "注意",
+        text: "既に登録済みのクレジットカードから引き落としされます。\n価格: ¥" + String(price) + ",    メンバーの数: 10",
+        icon: "warning",
+        button: "OK",
+        dangerMode: true,
+    })
+    .then((ok) => {
+        if (ok) {
+            upDowngradeSubscription(price, 1, 10);
+        }
+    });
+}
+
+function showAlert(msg) {
+    swal({
+        title: "警告！",
+        text: msg,
+        icon: "warning",
+        button: "OK",
+        dangerMode: true,
+    });
+}
+
+function upDowngradeSubscription(price, plan, members) {
+    document.getElementById("down_price").value = price;
+    document.getElementById("down_plan").value = plan;
+    document.getElementById("down_members").value = members;
+
+    document.getElementById("bar").style.display = "block";
+    var updownform = document.getElementById("updowngradeform");
+    var formData = new FormData(updownform);
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var result = xhr.response;
+            console.log('///////////////' + result)
+            if(result == 'success') {
+                swal("支払いは成功しました。", {
+                    icon: "success",
+                })
+                .then((ok) => {
+                    if (ok) {
+                        location.reload();
+                    }
+                });
+            }else{
+                alert(result);
+            }
+            document.getElementById("bar").style.display = "none";
+        }
+    };
+    xhr.open('POST', updownform.getAttribute('action'), true);
+    xhr.send(formData);
+}
+
+
+
+function downgradeSubscriptionForPlan2() {
+    var planned_count = document.getElementById("planned_count").value;
+    if(parseInt(planned_count) <= 20) {
+        showAlert('20人から10人にダウングレードするときは、「10人まで」プランの購入ボタンから切り替えをお願いします。');
+        return;
+    }
+    if(parseInt(planned_count) - 10 < parseInt(document.getElementById('registered_membs_count').value)) {
+        showAlert('選択したプランの利用者上限が、現在の社員数を下回っています。登録社員を削除して選択しなおしてください。');
+        return;
+    }
+    var last_payment = document.getElementById("last_payment").value;
+    var price = parseInt(last_payment);
+    swal({
+        title: "注意",
+        text: "登録済みのクレジットカードから、以下の金額が引き落としされます。\n価格: ¥" + String(price) + ",    メンバーの数: " + String(parseInt(planned_count) - 10),
+        icon: "warning",
+        button: "OK",
+        dangerMode: true,
+    })
+    .then((ok) => {
+        if (ok) {
+            upDowngradeSubscription(price, 2, parseInt(planned_count) - 10);
+        }
+    });
+}
+
+
+function upgradeSubscriptionForPlan2() {
+    var planned_count = document.getElementById("planned_count").value;
+    var current_payment = document.getElementById("current_payment").value;
+    var price = parseInt(current_payment) + 4500;
+
+    var c2 = document.getElementById('coupon2').value;
+
+    if (c2.length > 0){
+        checkcouponforplan2upgrade(price, c2, parseInt(planned_count) + 10);
+    }else {
+        upDowngradeSubscription(price, 2, parseInt(planned_count) + 10)
+    }
+
+}
+
+
+function checkcouponforplan2upgrade(price, code, membs) {
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        console.log(xhr.responseText);
+        if (this.readyState == 4 && this.status == 200) {
+            var data = JSON.parse(xhr.responseText);
+            var status = data["status"];
+            if(status == "0") {
+                var discount = data["discount"];
+                var coupon_id = data["coupon_id"];
+                alert(String(discount) + '%割引が受けられます。');
+                price = price * (1 - parseFloat(discount) / 100);
+                upDowngradeSubscription(price, 2, membs)
+            }else if(status == "1") {
+                alert("このクーポンはすでに有効期限が切れています。");
+            }else if(status == "2") {
+                alert("このクーポンは存在しません。");
+            }
+        }
+
+    };
+    xhr.open('GET', '/rakubaru/checkcoupon?coupon_code=' + code, true);
+    xhr.send('');
+}
+
+
+function downgradeSubscriptionToFree() {
+    var planned_count = document.getElementById("planned_count").value;
+    if(parseInt(planned_count) > 10) {
+        showAlert('ダウングレードは、10人ずつしかすることができません。');
+        return;
+    }
+    document.getElementById("bar").style.display = "block";
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var result = xhr.response;
+            console.log('Response: ' + result);
+            if(result == '0') {
+                swal("ダウングレードが正常にされて！", {
+                    icon: "success",
+                })
+                .then((ok) => {
+                    location.reload();
+                });
+            }else if(result == '1') {
+                showAlert('選択したプランの利用者上限が、現在の社員数を下回っています。登録社員を削除して選択しなおしてください。');
+            }
+            document.getElementById("bar").style.display = "none";
+        }
+    };
+    xhr.open('GET', '/rakubaru/rasubscriptiondelete', true);
+    xhr.send('');
+}
 
 </script>
 

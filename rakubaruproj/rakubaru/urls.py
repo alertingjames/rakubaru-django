@@ -19,13 +19,14 @@ urlpatterns=[
     url(r'ralogout', views.ralogout, name='ralogout'),
     url(r'ranewemployee', views.ranewemployee, name='ranewemployee'),
     url(r'radelmember', views.radelmember, name='radelmember'),
-    url(r'^rapasswordchange', views.rapasswordchange, name='rapasswordchange'),
-    url(r'^rachangepassword', views.rachangepassword, name='rachangepassword'),
-    url(r'^raallreports', views.raallreports, name='raallreports'),
-    url(r'^radelroute', views.radelroute, name='radelroute'),
-    url(r'^rauserreports', views.rauserreports, name='rauserreports'),
-    url(r'^rasearchreportbydate', views.rasearchreportbydate, name='rasearchreportbydate'),
-    url(r'^raopenroutemap', views.raopenroutemap, name='raopenroutemap'),
+    url(r'rapasswordchange', views.rapasswordchange, name='rapasswordchange'),
+    url(r'rachangepassword', views.rachangepassword, name='rachangepassword'),
+    url(r'raallreports', views.raallreports, name='raallreports'),
+    url(r'radelroute', views.radelroute, name='radelroute'),
+    url(r'rauserreports', views.rauserreports, name='rauserreports'),
+    url(r'rasearchreportbydate', views.rasearchreportbydate, name='rasearchreportbydate'),
+    url(r'raopenroutemap', views.raopenroutemap, name='raopenroutemap'),
+    url(r'getlastpoint', views.getlastpoint, name='getlastpoint'),
     url(r'rapinmap', views.rapinmap, name='rapinmap'),
     url(r'raeditroute', views.raeditroute, name='raeditroute'),
     url(r'raemployeeprocess', views.raemployeeprocess, name='raemployeeprocess'),
@@ -53,7 +54,11 @@ urlpatterns=[
     url(r'assignedworks', views.assignedworks, name='assignedworks'),
 
     url(r'createproduct', views.createproduct, name='createproduct'),
-    url(r'ratestpay', views.ratestpay, name='ratestpay'),
+    url(r'racreatesubscription', views.racreatesubscription, name='racreatesubscription'),
+    url(r'raupdowngradesubscription', views.raupdowngradesubscription, name='raupdowngradesubscription'),
+    url(r'rasubscriptiondelete', views.rasubscriptiondelete, name='rasubscriptiondelete'),
+
+    url(r'getmysubscriptions', views.getmysubscriptions, name='getmysubscriptions'),
 
 
     ######################### User #################################################################################################################
@@ -87,6 +92,11 @@ urlpatterns=[
 
     url(r'upRoute', views.upRoute, name='upRoute'),
     url(r'getMyCumulativeDistance', views.getMyCumulativeDistance, name='getMyCumulativeDistance'),
+
+    url(r'upRTRoute', views.upRTRoute, name='upRTRoute'),
+    url(r'routearea', views.routearea, name='routearea'),
+
+    url(r'rmroute', views.rmroute, name='rmroute'),
 
 ]
 

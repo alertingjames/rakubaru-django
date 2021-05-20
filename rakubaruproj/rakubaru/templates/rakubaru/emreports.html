@@ -250,6 +250,10 @@ a {
   }
 }
 
+#bar {
+    margin: 0;position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);z-index:99999;
+}
+
 </style>
 
 <!--<script>-->
@@ -269,6 +273,12 @@ a {
 	position:fixed; left:50%; float:middle; transform:translate(-50%, -50%); width:350px; z-index:100; top:92px; display:none;">
     {% if member %}{{member.name}}{% elif admin %}{{admin.name}}会社{% else %}らくばる{% endif %} レポート
 </div>
+
+<div id="bar" style="display:none;"></div>
+
+<script>
+var bar=new RadialProgress(document.getElementById("bar"),{colorBg:"rgba(0,0,0,0)",colorFg:"#0066ff",thick:8,round:true,indeterminate:true,animationSpeed:0.5});
+</script>
 
 {% if reports %}
 <div style="width:100%; height:auto; padding-bottom:20px;">
@@ -303,6 +313,12 @@ a {
                     <a href="#" style="flex-grow:1;">
                         <div style="padding-left:8px; float:left; margin-top:5px;">
                             <div style="color:black; font-size:20px; font-weight:600; text-align:left; word-wrap: break-word;">{{report.route.name}}</div>
+                            {% if report.route.area_name %}
+                            <div style="color:black; font-size:16px; font-weight:520;">{{report.route.area_name}}</div>
+                            {% endif %}
+                            {% if report.route.assign_title %}
+                            <div style="color:black; font-size:14px;">{{report.route.assign_title}}</div>
+                            {% endif %}
                             <div style="font-size:16px; margin-top:5px;">
                                 <i class="fa fa-clock-o" style="color:orange; font-size:25px; margin-right:5px; vertical-align:middle;"></i>
                                 {{report.route.start_time}} ~ {{report.route.end_time}}
@@ -340,7 +356,7 @@ a {
                 <div class="form-group" style="display:flex; display:none;">
                     <div style="flex-grow:1;">
                         <button class="bouton-update" style="width:60px; height:60px; text-align:center;"
-                            onclick="javascript:window.location.href='/rakubaru/raopenroutemap?route_id={{report.route.pk}}';">
+                            onclick="javascript:window.location.href='/rakubaru/raopenroutemap?route_id={{report.route.pk}}'; document.getElementById('bar').style.display = 'block';">
                             <i class="fas fa-route" style="color:white; font-size:25px;"></i>
                         </button>
                     </div>

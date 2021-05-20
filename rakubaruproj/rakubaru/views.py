@@ -43,6 +43,10 @@ def login(request):
         resp = {}
         if members.count() > 0:
             member = members[0]
+            if int(member.admin_id) > 0:
+                admin = Rmember.objects.get(id=member.admin_id)
+                if admin.subscription_status == 'subscription_canceled':
+                    return HttpResponse(json.dumps({'result_code':'100'}))
 
             if member.status == '':
                 member.status = 'loggedin'
@@ -87,6 +91,14 @@ def checkdevice(request):
     if request.method == 'POST':
         member_id = request.POST.get('member_id', '1')
         device = request.POST.get('device', '')
+
+        members = Rmember.objects.filter(id=member_id)
+        if members.count() > 0:
+            member = members.first()
+            if int(member.admin_id) > 0:
+                admin = Rmember.objects.get(id=member.admin_id)
+                if admin.subscription_status == 'subscription_canceled':
+                    return HttpResponse(json.dumps({'result_code':'100'}))
 
         devices = Device.objects.filter(member_id=member_id, device=device)
         if devices.count() > 0:
@@ -363,16 +375,7 @@ def uploadroute(request):
 @api_view(['GET', 'POST'])
 def upRoute(request):
     if request.method == 'POST':
-        member_id = request.POST.get('member_id', '0')
-        name = request.POST.get('name', '')
-        description = request.POST.get('description', '')
-        start_time = request.POST.get('start_time', '0')
-        end_time = request.POST.get('end_time', '0')
-        duration = request.POST.get('duration', '0')
-        speed = request.POST.get('speed', '0')
-        distance = request.POST.get('distance', '0')
-
-        sts = request.POST.get('status', '')
+        route_id = request.POST.get('route_id', '0')
 
         fs = FileSystemStorage()
 
@@ -384,25 +387,7 @@ def upRoute(request):
         	decoded_line = line.decode("utf-8")
         	points = points + decoded_line
 
-        route = Route()
-        route.member_id = member_id
-        try:
-            assign_id = request.POST.get('assign_id', '0')
-            route.assign_id = assign_id
-        except KeyError:
-            print('no key')
-            route.assign_id = '0'
-        route.name = name
-        route.description = description
-        route.admin_desc = description
-        route.start_time = start_time
-        route.end_time = end_time
-        route.duration = duration
-        route.speed = speed
-        route.distance = distance
-        route.reported_time = str(int(round(time.time() * 1000)))
-        if sts == 'report': route.status = 'reported'
-        route.save()
+        route = Route.objects.get(id=route_id)
 
         if points != '':
             points = points.replace('\\','')
@@ -433,6 +418,73 @@ def upRoute(request):
         return HttpResponse(json.dumps(resp))
 
 
+#################################################### Real time #########################################################################################################################################
+
+@api_view(['GET', 'POST'])
+def upRTRoute(request):
+    if request.method == 'POST':
+        route_id = request.POST.get('route_id', '0')
+        member_id = request.POST.get('member_id', '0')
+        name = request.POST.get('name', '')
+        description = request.POST.get('description', '')
+        start_time = request.POST.get('start_time', '0')
+        end_time = request.POST.get('end_time', '0')
+        duration = request.POST.get('duration', '0')
+        speed = request.POST.get('speed', '0')
+        distance = request.POST.get('distance', '0')
+        pulse = request.POST.get('pulse', '0')
+        sts = request.POST.get('status', '')
+
+        route = None
+        if int(route_id) > 0:
+            route = Route.objects.get(id=route_id)
+        else:
+            route = Route()
+
+        route.member_id = member_id
+        try:
+            assign_id = request.POST.get('assign_id', '0')
+            route.assign_id = assign_id
+        except KeyError:
+            print('no key')
+            route.assign_id = '0'
+        if name != '':
+            route.name = name
+        route.description = description
+        route.admin_desc = description
+        route.start_time = start_time
+        route.end_time = end_time
+        route.duration = duration
+        route.speed = speed
+        route.distance = distance
+        route.reported_time = str(int(round(time.time() * 1000)))
+        if sts == 'report': route.status = 'reported'
+        route.save()
+
+        if description == '':
+            lat = request.POST.get('lat', '0')
+            lng = request.POST.get('lng', '0')
+            comment = request.POST.get('comment', '')
+            color = request.POST.get('color', '')
+            tm = str(int(round(time.time() * 1000)))
+
+            if pulse == '1':
+                Rpoint.objects.filter(route_id=route.pk).last().delete()
+
+            pnt = Rpoint()
+            pnt.route_id = route.pk
+            pnt.lat = lat
+            pnt.lng = lng
+            pnt.comment = comment
+            pnt.color = color
+            pnt.time = tm
+            pnt.save()
+
+        resp = {'result_code': '0', 'route_id': str(route.pk)}
+        return HttpResponse(json.dumps(resp))
+
+
+
 
 @api_view(['GET', 'POST'])
 def getmyroutes(request):
@@ -443,6 +495,13 @@ def getmyroutes(request):
         if members.count() > 0:
             member = members[0]
             routes = Route.objects.filter(member_id=member.pk).order_by('-id')
+            for route in routes:
+                assigns = AreaAssign.objects.filter(id=route.assign_id)
+                if assigns.count() > 0:
+                    assign = assigns[0]
+                    area = Area.objects.get(id=assign.area_id)
+                    route.area_name = area.area_name
+                    route.assign_title = assign.title
             # for route in routes:
             #     route.name = member.name + '_' + datetime.datetime.fromtimestamp(float(int(route.reported_time)/1000)).strftime("%y%m%d_%H%M")
             serializer = RouteSerializer(routes, many=True)
@@ -461,6 +520,24 @@ def routedetails(request):
         pointser = RpointSerializer(pnts, many=True)
         resp = {'result_code':'0', 'points':pointser.data}
         return HttpResponse(json.dumps(resp))
+
+
+@api_view(['GET', 'POST'])
+def routearea(request):
+    if request.method == 'POST':
+        route_id = request.POST.get('route_id','1')
+        route = Route.objects.get(id=route_id)
+        if int(route.assign_id) > 0:
+            assign = AreaAssign.objects.get(id=route.assign_id)
+            area = Area.objects.get(id=assign.area_id)
+            areaser = AreaSerializer(area, many=False)
+            sublocs = Sublocality.objects.filter(area_id=area.pk)
+            sublocser = SublocalitySerializer(sublocs, many=True)
+            data = {
+                'area':areaser.data,
+                'sublocs':sublocser.data
+            }
+            return HttpResponse(json.dumps({'result_code':'0', 'data':data}))
 
 
 @api_view(['GET', 'POST'])
@@ -1101,6 +1178,12 @@ def raallreports(request):
     for route in routes:
         members = Rmember.objects.filter(admin_id=adminID, id=int(route.member_id))
         if members.count() > 0:
+            assigns = AreaAssign.objects.filter(id=route.assign_id)
+            if assigns.count() > 0:
+                assign = assigns[0]
+                area = Area.objects.get(id=assign.area_id)
+                route.area_name = area.area_name
+                route.assign_title = assign.title
             # member = members[0]
             # route.name = member.name + '_' + datetime.datetime.fromtimestamp(float(int(route.reported_time)/1000)).strftime("%y%m%d_%H%M")
             routeList.append(route)
@@ -1123,7 +1206,7 @@ def getRouteListData(routes):
 
         if float(route.distance) == 0:
             route.speed = '0.0'
-            route.duration = '00h 00m 00s'
+            # route.duration = '00h 00m 00s'
 
         members = Rmember.objects.filter(id=int(route.member_id))
         if members.count() > 0:
@@ -1175,6 +1258,13 @@ def rauserreports(request):
     member_id = request.GET['member_id']
     member = Rmember.objects.get(id=int(member_id))
     routes = Route.objects.filter(member_id=member.pk, status='reported').order_by('-id')
+    for route in routes:
+        assigns = AreaAssign.objects.filter(id=route.assign_id)
+        if assigns.count() > 0:
+            assign = assigns[0]
+            area = Area.objects.get(id=assign.area_id)
+            route.area_name = area.area_name
+            route.assign_title = assign.title
     # for route in routes:
     #     route.name = member.name + '_' + datetime.datetime.fromtimestamp(float(int(route.reported_time)/1000)).strftime("%y%m%d_%H%M")
     reportList = getRouteListData(routes)
@@ -1206,6 +1296,12 @@ def rasearchreportbydate(request):
                 if members.count() > 0:
                     member = members[0]
                     if int(member.admin_id) == me.pk:
+                        assigns = AreaAssign.objects.filter(id=route.assign_id)
+                        if assigns.count() > 0:
+                            assign = assigns[0]
+                            area = Area.objects.get(id=assign.area_id)
+                            route.area_name = area.area_name
+                            route.assign_title = assign.title
                         routeList.append(route)
             routeList = getroutessearchedbydate(routeList, key)
             return render(request, 'rakubaru/reports.html', {'reports':getRouteListData(routeList)})
@@ -1213,6 +1309,13 @@ def rasearchreportbydate(request):
             member_id = request.GET['member_id']
             member = Rmember.objects.get(id=int(member_id))
             routes = Route.objects.filter(member_id=member_id).order_by('-id')
+            for route in routes:
+                assigns = AreaAssign.objects.filter(id=route.assign_id)
+                if assigns.count() > 0:
+                    assign = assigns[0]
+                    area = Area.objects.get(id=assign.area_id)
+                    route.area_name = area.area_name
+                    route.assign_title = assign.title
             routeList = getroutessearchedbydate(routes, key)
             return render(request, 'rakubaru/reports.html', {'reports':getRouteListData(routeList), 'member':member})
 
@@ -1259,20 +1362,71 @@ def raopenroutemap(request):
 
         if float(route.distance) == 0:
             route.speed = '0.0'
-            route.duration = '00h 00m 00s'
+            # route.duration = '00h 00m 00s'
 
         pnts = Rpoint.objects.filter(route_id=route.pk)
         pins = Rpin.objects.filter(member_id=route.member_id)
         for pin in pins:
             pin.time = datetime.datetime.fromtimestamp(float(int(pin.time)/1000)).strftime("%m/%d/%y %r").replace('AM', '午前').replace('PM', '午後')
 
+        area = None
+        sublocs = []
+        if int(route.assign_id) > 0:
+            assign = AreaAssign.objects.get(id=route.assign_id)
+            area = Area.objects.get(id=assign.area_id)
+            sublocs = Sublocality.objects.filter(area_id=area.pk)
+            for subloc in sublocs:
+                subloc.locarr = subloc.locarr.replace("'","")
+
         data = {
             'route':route,
             'points':pnts,
-            'pins':pins
+            'pins':pins,
+            'area': area,
+            'sublocs': sublocs,
         }
 
+        try:
+            if request.session['adminID'] == 0 or request.session['adminID'] == '':
+                return render(request, 'rakubaru/admin.html')
+        except KeyError:
+            print('no session')
+            return render(request, 'rakubaru/admin.html')
+
+        adminID = request.session['adminID']
+        me = Rmember.objects.get(id=adminID)
+
+        if me.email == 'alertingjames@gmail.com' or me.email == 'yamamoto_h@nac-om.com' or me.email == 'sono_hirotaka@yahoo.co.jp':
+            return render(request, 'rakubaru/route_real_time.html', {'report':data})
+
         return render(request, 'rakubaru/route.html', {'report':data})
+
+
+
+def getlastpoint(request):
+    import datetime
+    route_id = request.GET['route_id']
+    route = Route.objects.get(id=route_id)
+    route.start_time = datetime.datetime.fromtimestamp(float(int(route.start_time)/1000)).strftime("%m/%d/%y %H:%M")
+    route.end_time = datetime.datetime.fromtimestamp(float(int(route.end_time)/1000)).strftime("%m/%d/%y %H:%M")
+    route.reported_time = datetime.datetime.fromtimestamp(float(int(route.reported_time)/1000)).strftime("%m/%d/%y %H:%M")
+    route.speed = round(float(route.speed), 2)
+    route.distance = round(float(route.distance), 3)
+    con_sec, con_min, con_hour = convertMillis(int(route.duration))
+    route.duration = "{0}h {1}m {2}s".format(str(int(con_hour)).zfill(2), str(int(con_min)).zfill(2), str(int(con_sec)).zfill(2))
+    if float(route.distance) == 0:
+        route.speed = '0.0'
+    last_point = Rpoint.objects.filter(route_id=route.pk).last()
+    data = {
+        'id':last_point.pk,
+        'lat':last_point.lat,
+        'lng':last_point.lng,
+        'color':last_point.color,
+        'route':RouteSerializer(route, many=False).data,
+    }
+    return HttpResponse(json.dumps(data))
+
+
 
 
 def rapinmap(request):
@@ -1373,92 +1527,6 @@ def raemployeeprocess(request):
 
         else:
             return HttpResponse('error')
-
-
-def createproduct(request):
-    product = create_product()
-    if product is not None:
-        return HttpResponse('New product has been created!')
-    else:
-        return HttpResponse('New product creation failed')
-
-
-def create_product():
-    stripe.api_key = settings.STRIPE_LIVE_SECRET_KEY
-
-    product = stripe.Product.create(
-      name='Rakubaru Membership',
-      type='service',
-    )
-
-    if product is not None :
-        prods = Product.objects.filter(productID=product.id)
-        prod = None
-        if prods.count() == 0:
-            prod = Product()
-            prod.name = 'Rakubaru Membership'
-            prod.type = 'service'
-            prod.productID = product.id
-            prod.save()
-        else:
-            prod = products[0]
-
-        price = stripe.Price.create(
-            nickname='Standard Monthly',
-            product=product.id,
-            unit_amount=5000,
-            currency='jpy',
-            recurring={
-                'interval': 'month',
-                'usage_type': 'licensed',
-            },
-        )
-
-        if price is not None:
-            prcs = Price.objects.filter(product_id=prod.id, price=5000, priceID=price.id)
-            prc = None
-            if prcs.count() == 0:
-                prc = Price()
-                prc.product_id = prod.pk
-                prc.price = 5000
-                prc.priceID = price.id
-                prc.save()
-
-                return prod
-
-    return None
-
-
-
-
-def ratoplan(request):
-    try:
-        if request.session['adminID'] == 0 or request.session['adminID'] == '':
-            return render(request, 'rakubaru/admin.html')
-    except KeyError:
-        print('no session')
-        return render(request, 'rakubaru/admin.html')
-
-    adminID = request.session['adminID']
-    me = Rmember.objects.get(id=adminID)
-
-    members = Rmember.objects.filter(admin_id=me.pk)
-    if me.planned_members == '':
-        me.planned_members = '1'
-        me.save()
-    count = members.count()
-    ex_status = ''
-    if count >= int(me.planned_members):
-        ex_status = 'expired'
-
-    paids = Paid.objects.filter(member_id=me.pk).order_by('-id')
-    paid = paids[0]
-    last_payment = paid.paid_amount
-
-    if me.email == 'alertingjames@gmail.com' or me.email == 'yamamoto_h@nac-om.com':
-        return render(request, 'rakubaru/payment_plans.html', {'me':me, 'status':ex_status, 'planned_count': int(me.planned_members), 'memb_count': count, 'last_payment':last_payment})
-    else:
-        return render(request, 'rakubaru/plans.html', {'me':me, 'status':ex_status, 'memb_count': count})
 
 
 
@@ -1575,8 +1643,85 @@ def rapay(request):
 
 
 
+
+def ratoplan(request):
+    try:
+        if request.session['adminID'] == 0 or request.session['adminID'] == '':
+            return render(request, 'rakubaru/admin.html')
+    except KeyError:
+        print('no session')
+        return render(request, 'rakubaru/admin.html')
+
+    adminID = request.session['adminID']
+    me = Rmember.objects.get(id=adminID)
+
+    members = Rmember.objects.filter(admin_id=me.pk)
+    if me.planned_members == '':
+        me.planned_members = '1'
+        me.save()
+    count = members.count()
+    ex_status = ''
+    if count >= int(me.planned_members):
+        ex_status = 'expired'
+
+    current_payment = 0
+    last_payment = 0
+    last_1_payment = 0
+    paids = Paid.objects.filter(member_id=me.pk).order_by('-id')
+    if paids.count() > 0:
+        paid = paids[0]
+        current_payment = paid.paid_amount
+        if paids.count() > 1:
+            paid = paids[1]
+            last_payment = paid.paid_amount
+
+    for paid in paids:
+        if paid.plan == '1':
+            last_1_payment = paid.paid_amount
+            break
+
+    if me.email == 'alertingjames@gmail.com' or me.email == 'yamamoto_h@nac-om.com' or me.email == 'sono_hirotaka@yahoo.co.jp':
+        import datetime
+        stripe.api_key = settings.STRIPE_LIVE_SECRET_KEY
+        # stripe_subscription_id = 'sub_JA6DSZQSjIJkVZ'
+        invoiceList = []
+        stripe_subscription_id = me.subscriptionID
+        if stripe_subscription_id != '':
+            invoices = stripe.Invoice.list(subscription=stripe_subscription_id)
+            for inv in invoices:
+                data = {
+                    'number':inv.number,
+                    'receipt_number':inv.receipt_number,
+                    'status':inv.status.capitalize(),
+                    'created':datetime.datetime.fromtimestamp(float(int(inv.created))).strftime("%m / %d / %Y"),
+                    'amount':inv.amount_paid,
+                    'hosted_invoice_url':inv.hosted_invoice_url,
+                    'invoice_pdf':inv.invoice_pdf,
+                }
+                invoiceList.append(data)
+
+        context = {
+            'me':me,
+            'status':ex_status,
+            'planned_count': int(me.planned_members),
+            'memb_count': count,
+            'current_payment':current_payment,
+            'last_payment':last_payment,
+            'last_1_payment':last_1_payment,
+            'invoices':invoiceList,
+        }
+
+        return render(request, 'rakubaru/payment_plans.html', context)
+
+    else:
+        return render(request, 'rakubaru/plans.html', {'me':me, 'status':ex_status, 'memb_count': count})
+
+
+
+############################################################################################################### Subscription ##############################################################################################
+
 @api_view(['GET', 'POST'])
-def ratestpay(request):
+def racreatesubscription(request):
     stripe.api_key = settings.STRIPE_LIVE_SECRET_KEY
 
     try:
@@ -1660,6 +1805,7 @@ def ratestpay(request):
                 if subscription is not None:
                     me.subscriptionID = subscription.id
                     me.subperiodend = subscription.current_period_end
+                    me.subscription_status = ''
                     me.save()
 
                 # return HttpResponse("subscription id: " + subscription.id)
@@ -1680,6 +1826,7 @@ def ratestpay(request):
                     paid.discount = discount
                     paid.discount_amount = str(amount * float(discount) / 100)
                     paid.paid_amount = str(amount - float(paid.discount_amount))
+                    paid.plan_members = membs
                     paid.save()
 
                     if me.planned_members == '':
@@ -1698,6 +1845,240 @@ def ratestpay(request):
             return HttpResponse(str(e))
 
 
+
+@api_view(['GET', 'POST'])
+def raupdowngradesubscription(request):
+    stripe.api_key = settings.STRIPE_LIVE_SECRET_KEY
+
+    try:
+        if request.session['adminID'] == 0 or request.session['adminID'] == '':
+            return render(request, 'rakubaru/admin.html')
+    except KeyError:
+        print('no session')
+        return render(request, 'rakubaru/admin.html')
+
+    adminID = request.session['adminID']
+    me = Rmember.objects.get(id=adminID)
+
+    if request.method == "POST":
+        price = request.POST.get('price', '')
+        me_id = request.POST.get('me_id', '1')
+        plan = request.POST.get('plan', '')
+        membs = request.POST.get('members', '1')
+
+        amount = int(float(price))
+        prices = Price.objects.filter(price=amount)
+        priceID = ''
+        products = Product.objects.all()
+        product = None
+        if products.count() > 0:
+            product = products[0]
+        else:
+            product = create_product()
+        if prices.count() > 0:
+            prc = prices[0]
+            priceID = prc.priceID
+        else:
+            prc = stripe.Price.create(
+                nickname='Standard Monthly',
+                product=product.productID,
+                unit_amount=amount,
+                currency='jpy',
+                recurring={
+                    'interval': 'month',
+                    'usage_type': 'licensed',
+                },
+            )
+
+            if prc is not None:
+                priceID = prc.id
+                prcs = Price.objects.filter(product_id=product.id, price=amount, priceID=prc.id)
+                priceObj = None
+                if prcs.count() == 0:
+                    priceObj = Price()
+                    priceObj.product_id = product.pk
+                    priceObj.price = amount
+                    priceObj.priceID = prc.id
+                    priceObj.save()
+
+        if me.subscriptionID != '':
+            try:
+                subscription = stripe.Subscription.retrieve(me.subscriptionID)
+
+                stripe.Subscription.modify(
+                    subscription.id,
+                    cancel_at_period_end=False,
+                    proration_behavior='always_invoice',
+                    items=[{
+                        'id': subscription['items']['data'][0].id,
+                        'price': priceID,
+                    }]
+                )
+
+                if subscription is not None:
+                    me.subscriptionID = subscription.id
+                    me.subperiodend = subscription.current_period_end
+                    me.subscription_status = ''
+                    me.save()
+
+                    paids = Paid.objects.filter(plan_members=membs)
+
+                    last_paid = None
+                    if paids.count() > 0:
+                        last_paid = paids.first()
+
+                    paid = Paid()
+                    paid.member_id = me.pk
+                    paid.plan = plan
+                    paid.paid_time = str(int(round(time.time() * 1000)))
+
+                    if last_paid is not None:
+                        paid.coupon_id = last_paid.coupon_id
+                        paid.discount = last_paid.discount
+                        paid.discount_amount = last_paid.discount_amount
+                        paid.paid_amount = str(amount)
+                    paid.plan_members = membs
+                    paid.save()
+
+
+
+                    if me.planned_members == '':
+                        me.planned_members = '1'
+
+                    me.planned_members = membs
+                    me.plan = plan
+                    me.save()
+
+                    return HttpResponse('success')
+
+                else:
+                    return HttpResponse('支払いエラー。')
+
+            except stripe.error.InvalidRequestError as e:
+                return HttpResponse(str(e))
+
+        else:
+            return HttpResponse('サブスクリプションはありません。')
+
+
+
+def rasubscriptiondelete(request):
+    stripe.api_key = settings.STRIPE_LIVE_SECRET_KEY
+    try:
+        if request.session['adminID'] == 0 or request.session['adminID'] == '':
+            return render(request, 'rakubaru/admin.html')
+    except KeyError:
+        print('no session')
+        return render(request, 'rakubaru/admin.html')
+
+    adminID = request.session['adminID']
+    me = Rmember.objects.get(id=adminID)
+
+    members = Rmember.objects.filter(admin_id=me.pk)
+    if members.count() > 1:
+        return HttpResponse('1')
+
+    if me.subscriptionID != '':
+        stripe.Subscription.delete(me.subscriptionID)
+
+    me.subscriptionID = ''
+    me.subperiodend = ''
+    me.subscription_status = ''
+    me.save()
+
+    paid = Paid()
+    paid.member_id = me.pk
+    paid.plan = '1'
+    paid.paid_time = str(int(round(time.time() * 1000)))
+    paid.coupon_id = '0'
+    paid.discount = '0'
+    paid.discount_amount = '0'
+    paid.paid_amount = '0'
+    paid.plan_members = '1'
+    paid.save()
+
+    me.planned_members = '1'
+    me.plan = '0'
+    me.save()
+
+    return HttpResponse('0')
+
+
+
+
+def createproduct(request):
+    product = create_product()
+    if product is not None:
+        return HttpResponse('New product has been created!')
+    else:
+        return HttpResponse('New product creation failed')
+
+
+def create_product():
+    stripe.api_key = settings.STRIPE_LIVE_SECRET_KEY
+
+    product = stripe.Product.create(
+      name='Rakubaru Membership',
+      type='service',
+    )
+
+    if product is not None :
+        prods = Product.objects.filter(productID=product.id)
+        prod = None
+        if prods.count() == 0:
+            prod = Product()
+            prod.name = 'Rakubaru Membership'
+            prod.type = 'service'
+            prod.productID = product.id
+            prod.save()
+        else:
+            prod = products[0]
+
+        price = stripe.Price.create(
+            nickname='Standard Monthly',
+            product=product.id,
+            unit_amount=5000,
+            currency='jpy',
+            recurring={
+                'interval': 'month',
+                'usage_type': 'licensed',
+            },
+        )
+
+        if price is not None:
+            prcs = Price.objects.filter(product_id=prod.id, price=5000, priceID=price.id)
+            prc = None
+            if prcs.count() == 0:
+                prc = Price()
+                prc.product_id = prod.pk
+                prc.price = 5000
+                prc.priceID = price.id
+                prc.save()
+
+                return prod
+
+    return None
+
+
+
+def getmysubscriptions(request):
+    import datetime
+    stripe.api_key = settings.STRIPE_TEST_SECRET_KEY
+    stripe_subscription_id = 'sub_JA6DSZQSjIJkVZ'
+    invoices = stripe.Invoice.list(subscription=stripe_subscription_id)
+    invoiceList = []
+    for inv in invoices:
+        data = {
+            'number':inv.number,
+            'receipt_number':inv.receipt_number,
+            'status':inv.status.capitalize(),
+            'created':datetime.datetime.fromtimestamp(float(int(inv.created))).strftime("%d %b, %Y"),
+            'amount':inv.amount_paid,
+            'hosted_invoice_url':inv.hosted_invoice_url,
+            'invoice_pdf':inv.invoice_pdf,
+        }
+        invoiceList.append(data)
+    return HttpResponse(json.dumps(invoiceList))
 
 
 
@@ -1725,6 +2106,9 @@ def rachecksubscription(request):
         return HttpResponse('1')
     else:
         return HttpResponse('0')
+
+
+############################################################################################################################################################################################################################
 
 
 
@@ -1811,6 +2195,9 @@ def postarea(request):
 
     if request.method == 'POST':
         area_name = request.POST.get('area_name', '')
+        pref_name = request.POST.get('pref_name', '')
+        city_name = request.POST.get('city_name', '')
+        region_name = request.POST.get('region_name', '')
         copies = request.POST.get('copies', '0')
         unit_price = request.POST.get('unit_price', '0')
         allowance = request.POST.get('allowance', '0')
@@ -1827,11 +2214,15 @@ def postarea(request):
         area.unit_price = unit_price
         area.allowance = allowance
         area.amount = amount
-        area.distance = distance
+        if distance == '': area.distance = '0'
+        else: area.distance = distance
         area.client_dist = '0'
         area.clients = '0'
         area.locarr = locarr
         area.posted_time = str(int(round(time.time() * 1000)))
+        area.prefecture = pref_name
+        area.city = city_name
+        area.region = region_name
 
         area.save()
 
@@ -1907,10 +2298,17 @@ def assignarea(request):
             assign.unit_price = unit_price
             assign.allowance = allowance
             assign.amount = amount
-            assign.distance = distance
+            if distance == '': assign.distance = '0'
+            else: assign.distance = distance
             assign.distribution = distribution
-            assign.start_time = start_time
-            assign.end_time = end_time
+            if start_time == '':
+                assign.start_time = '0'
+            else:
+                assign.start_time = start_time
+            if end_time == '':
+                assign.end_time = '0'
+            else:
+                assign.end_time = end_time
             assign.client_dist = '0'
             assign.assigned_time = str(int(round(time.time() * 1000)))
             assign.save()
@@ -1959,15 +2357,26 @@ def getallassigns(request):
                 for route in routes:
                     distance = distance + float(route.distance)
                 assigned_distance = area.distance
-                progress = round(float(distance * 100 / float(assigned_distance)), 2)
+                progress = 0
+                if float(assigned_distance) > 0:
+                    progress = round(float(distance * 100 / float(assigned_distance)), 2)
+                assign.client_dist = round(distance, 2)
+
+                dist_start_time = ' --- '
+                dist_end_time = ' --- '
+                if assign.start_time != '' and assign.start_time != '0':
+                    dist_start_time = datetime.datetime.fromtimestamp(float(int(assign.start_time)/1000)).strftime("%m/%d/%y")
+                if assign.end_time != '' and assign.end_time != '0':
+                    dist_end_time = datetime.datetime.fromtimestamp(float(int(assign.end_time)/1000)).strftime("%m/%d/%y")
+
                 data = {
                     'assign': assign,
                     'area': area,
                     'member': member,
                     'progress':progress,
                     'works':works,
-                    'dist_start':datetime.datetime.fromtimestamp(float(int(assign.start_time)/1000)).strftime("%m/%d/%y"),
-                    'dist_end':datetime.datetime.fromtimestamp(float(int(assign.end_time)/1000)).strftime("%m/%d/%y"),
+                    'dist_start':dist_start_time,
+                    'dist_end':dist_end_time,
                     'assigned':datetime.datetime.fromtimestamp(float(int(assign.assigned_time)/1000)).strftime("%m/%d/%y %H:%M")
                 }
                 assignList.append(data)
@@ -2024,6 +2433,9 @@ def updatearea(request):
     if request.method == 'POST':
         area_id = request.POST.get('area_id', '0')
         area_name = request.POST.get('area_name', '')
+        pref_name = request.POST.get('pref_name', '')
+        city_name = request.POST.get('city_name', '')
+        region_name = request.POST.get('region_name', '')
         copies = request.POST.get('copies', '0')
         unit_price = request.POST.get('unit_price', '0')
         allowance = request.POST.get('allowance', '0')
@@ -2035,11 +2447,15 @@ def updatearea(request):
 
         area = Area.objects.get(id=area_id)
         area.area_name = area_name
+        area.prefecture = pref_name
+        area.city = city_name
+        area.region = region_name
         area.copies = copies
         area.unit_price = unit_price
         area.allowance = allowance
         area.amount = amount
-        area.distance = distance
+        if distance == '': area.distance = '0'
+        else: area.distance = distance
         area.locarr = locarr
 
         area.save()
@@ -2111,8 +2527,10 @@ def editassign(request):
         assign.amount = amount
         assign.distance = distance
         assign.distribution = distribution
-        assign.start_time = start_time
-        assign.end_time = end_time
+        if start_time != '': assign.start_time = start_time
+        else: assign.start_time = '0'
+        if end_time != '': assign.end_time = end_time
+        else: assign.end_time = '0'
         assign.save()
 
         return HttpResponse(json.dumps({'result':'success'}))
@@ -2202,14 +2620,22 @@ def searchassign(request):
             if areas.count() > 0:
                 area = areas[0]
                 member = Rmember.objects.get(id=assign.member_id)
+
+                dist_start_time = ''
+                dist_end_time = ''
+                if assign.start_time != '' and assign.start_time != '0':
+                    dist_start_time = datetime.datetime.fromtimestamp(float(int(assign.start_time)/1000)).strftime("%m/%d/%y")
+                if assign.end_time != '' and assign.end_time != '0':
+                    dist_end_time = datetime.datetime.fromtimestamp(float(int(assign.end_time)/1000)).strftime("%m/%d/%y")
+
                 data = {
                     'assign': assign,
                     'area': area,
                     'member': member,
                     'progress':30,
                     'works':1,
-                    'dist_start':datetime.datetime.fromtimestamp(float(int(assign.start_time)/1000)).strftime("%m/%d/%y"),
-                    'dist_end':datetime.datetime.fromtimestamp(float(int(assign.end_time)/1000)).strftime("%m/%d/%y"),
+                    'dist_start':dist_start_time,
+                    'dist_end':dist_end_time,
                     'assigned':datetime.datetime.fromtimestamp(float(int(assign.assigned_time)/1000)).strftime("%m/%d/%y %H:%M")
                 }
                 if q.lower() in assign.title.lower():
@@ -2255,14 +2681,22 @@ def schassignbydate(request):
                 area = areas[0]
                 member = Rmember.objects.get(id=assign.member_id)
                 import datetime
+
+                dist_start_time = ''
+                dist_end_time = ''
+                if assign.start_time != '' and assign.start_time != '0':
+                    dist_start_time = datetime.datetime.fromtimestamp(float(int(assign.start_time)/1000)).strftime("%m/%d/%y")
+                if assign.end_time != '' and assign.end_time != '0':
+                    dist_end_time = datetime.datetime.fromtimestamp(float(int(assign.end_time)/1000)).strftime("%m/%d/%y")
+
                 data = {
                     'assign': assign,
                     'area': area,
                     'member': member,
                     'progress':30,
                     'works':1,
-                    'dist_start':datetime.datetime.fromtimestamp(float(int(assign.start_time)/1000)).strftime("%m/%d/%y"),
-                    'dist_end':datetime.datetime.fromtimestamp(float(int(assign.end_time)/1000)).strftime("%m/%d/%y"),
+                    'dist_start':dist_start_time,
+                    'dist_end':dist_end_time,
                     'assigned':datetime.datetime.fromtimestamp(float(int(assign.assigned_time)/1000)).strftime("%m/%d/%y %H:%M")
                 }
 
@@ -2451,6 +2885,13 @@ def emreports(request):
     member_id = request.GET['member_id']
     member = Rmember.objects.get(id=int(member_id))
     routes = Route.objects.filter(member_id=member.pk, status='reported').order_by('-id')
+    for route in routes:
+        assigns = AreaAssign.objects.filter(id=route.assign_id)
+        if assigns.count() > 0:
+            assign = assigns[0]
+            area = Area.objects.get(id=assign.area_id)
+            route.area_name = area.area_name
+            route.assign_title = assign.title
     reportList = getRouteListData(routes)
 
     return render(request, 'rakubaru/emreports.html', {'reports':reportList, 'member':member})
@@ -2464,6 +2905,12 @@ def adminreports(request):
     for route in routes:
         members = Rmember.objects.filter(admin_id=admin.pk, id=int(route.member_id))
         if members.count() > 0:
+            assigns = AreaAssign.objects.filter(id=route.assign_id)
+            if assigns.count() > 0:
+                assign = assigns[0]
+                area = Area.objects.get(id=assign.area_id)
+                route.area_name = area.area_name
+                route.assign_title = assign.title
             # member = members[0]
             # route.name = member.name + '_' + datetime.datetime.fromtimestamp(float(int(route.reported_time)/1000)).strftime("%y%m%d_%H%M")
             routeList.append(route)
@@ -2478,6 +2925,12 @@ def allreports(request):
     for route in routes:
         members = Rmember.objects.filter(id=int(route.member_id))
         if members.count() > 0:
+            assigns = AreaAssign.objects.filter(id=route.assign_id)
+            if assigns.count() > 0:
+                assign = assigns[0]
+                area = Area.objects.get(id=assign.area_id)
+                route.area_name = area.area_name
+                route.assign_title = assign.title
             # member = members[0]
             # route.name = member.name + '_' + datetime.datetime.fromtimestamp(float(int(route.reported_time)/1000)).strftime("%y%m%d_%H%M")
             routeList.append(route)
@@ -2507,18 +2960,42 @@ def emroutemap(request):
 
         if float(route.distance) == 0:
             route.speed = '0.0'
-            route.duration = '00h 00m 00s'
+            # route.duration = '00h 00m 00s'
 
         pnts = Rpoint.objects.filter(route_id=route.pk)
         pins = Rpin.objects.filter(member_id=route.member_id)
         for pin in pins:
             pin.time = datetime.datetime.fromtimestamp(float(int(pin.time)/1000)).strftime("%m/%d/%y %r").replace('AM', '午前').replace('PM', '午後')
 
+        area = None
+        sublocs = []
+        if int(route.assign_id) > 0:
+            assign = AreaAssign.objects.get(id=route.assign_id)
+            area = Area.objects.get(id=assign.area_id)
+            sublocs = Sublocality.objects.filter(area_id=area.pk)
+            for subloc in sublocs:
+                subloc.locarr = subloc.locarr.replace("'","")
+
         data = {
             'route':route,
             'points':pnts,
-            'pins':pins
+            'pins':pins,
+            'area': area,
+            'sublocs': sublocs,
         }
+
+        try:
+            if request.session['adminID'] == 0 or request.session['adminID'] == '':
+                return render(request, 'rakubaru/admin.html')
+        except KeyError:
+            print('no session')
+            return render(request, 'rakubaru/admin.html')
+
+        adminID = request.session['adminID']
+        me = Rmember.objects.get(id=adminID)
+
+        if me.email == 'alertingjames@gmail.com' or me.email == 'yamamoto_h@nac-om.com' or me.email == 'sono_hirotaka@yahoo.co.jp':
+            return render(request, 'rakubaru/route_real_time.html', {'report':data})
 
         return render(request, 'rakubaru/route.html', {'report':data})
 
@@ -2846,14 +3323,33 @@ def monthlypay(admin, pd):
 
 
 
+def regiontest(request):
+
+    fs = FileSystemStorage()
+
+    file = fs.open('ccc.json')
+    points = ''
+
+    for line in file:
+        decoded_line = line.decode("utf-8")
+        points = points + decoded_line
+
+    return render(request, 'rakubaru/test_area.html', {'data': points})
 
 
 
 
 
-
-
-
+def rmroute(request):
+    routes = Route.objects.filter(member_id=0)
+    routes.delete()
+    return HttpResponse('Success!')
+    i = 0
+    for route in routes:
+        i = i + 1
+        pnts = Rpoint.objects.filter(route_id=route.pk)
+        pnts.delete()
+    return HttpResponse('Success!')
 
 
 

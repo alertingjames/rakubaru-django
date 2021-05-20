@@ -42,19 +42,19 @@
     <table cellspacing="0" class="table table-fit">
         <tr>
             <th style="width:3%;">id</th>
-            <th style="width:9%;">エリア名</th>
-            <th style="width:15%;">サブエリア</th>
+            <th style="width:15%;">エリア名</th>
+            <!--<th style="width:8%;">サブエリア</th>-->
             <th style="width:5%;">配布部数</th>
             <th style="width:5%;">配布単価</th>
             <th style="width:5%;">手当</th>
             <th style="width:5%;">金額</th>
             <th style="width:5%;">全体距離</th>
-            <th style="width:5%;">配布距離</th>
-            <th style="width:5%;">配布員</th>
+            <!--<th style="width:5%;">配布距離</th>-->
+            <th style="width:5%;">割当履歴</th>
             <th style="width:6%;">作成日</th>
             <th style="width:3%;">割当</th>
             <th style="width:3%;">編集</th>
-            <th style="width:4%;">削除する</th>
+            <th style="width:4%;">削除</th>
         </tr>
     </table>
 </div>
@@ -66,19 +66,19 @@
     <table cellspacing="0" class="table table-fit" style="background-color:white;">
         <tr>
             <th style="width:3%;">id</th>
-            <th style="width:9%;">エリア名</th>
-            <th style="width:15%;">サブエリア</th>
+            <th style="width:15%;">エリア名</th>
+            <!--<th style="width:8%;">サブエリア</th>-->
             <th style="width:5%;">配布部数</th>
             <th style="width:5%;">配布単価</th>
             <th style="width:5%;">手当</th>
             <th style="width:5%;">金額</th>
             <th style="width:5%;">全体距離</th>
-            <th style="width:5%;">配布距離</th>
-            <th style="width:5%;">配布員</th>
+            <!--<th style="width:5%;">配布距離</th>-->
+            <th style="width:5%;">割当履歴</th>
             <th style="width:6%;">作成日</th>
             <th style="width:3%;">割当</th>
             <th style="width:3%;">編集</th>
-            <th style="width:4%;">削除する</th>
+            <th style="width:4%;">削除</th>
         </tr>
 
             {% for area in areas %}
@@ -95,21 +95,22 @@
                         </a>
                     </div>
                 </td>
-                <td>
-                    <a href="/rakubaru/editarea?area_id={{area.area.pk}}">
-                        <ul class="text-left" style="padding:5px;">
-                            {% for subloc in area.sublocs %}
-                            <li class="subloc_name">{{subloc.loc_name}}</li>
-                            {% endfor %}
-                        </ul>
-                    </a>
-                </td>
+                <!--<td>-->
+                <!--    <a href="/rakubaru/editarea?area_id={{area.area.pk}}">-->
+                <!--        {{area.sublocs|length}} サブエリア-->
+                        <!--<ul class="text-left" style="padding:5px;">-->
+                        <!--    {% for subloc in area.sublocs %}-->
+                        <!--    <li class="subloc_name">{{subloc.loc_name}}</li>-->
+                        <!--    {% endfor %}-->
+                        <!--</ul>-->
+                <!--    </a>-->
+                <!--</td>-->
                 <td>{{area.area.copies}}</td>
                 <td>{{area.area.unit_price}}</td>
                 <td>{{area.area.allowance}}</td>
                 <td>{{area.area.amount}}</td>
                 <td><label style="color:#0033cc; font-size:20px;">{{area.area.distance}}</label>km</td>
-                <td><label style="color:#0033cc; font-size:20px;">{{area.area.client_dist}}</label>km</td>
+                <!--<td><label style="color:#0033cc; font-size:20px;">{{area.area.client_dist}}</label>km</td>-->
                 <td>
                     <a href="/rakubaru/getallassigns?area_id={{area.area.pk}}">
                         <div class="hyperlink">
@@ -212,7 +213,7 @@
         <input hidden name="start_time" id="dist_start_time">
         <input hidden name="end_time" id="dist_end_time">
 
-        <button type="button" class="bouton-update" id="btn-assign" onclick="openRegBox()">それらに割り当てます</button>
+        <button type="button" class="bouton-update" id="btn-assign" onclick="openRegBox()">選択ユーザに割り当てる</button>
 
     </form>
 </div>
@@ -237,104 +238,123 @@ var memberArray = new Array();
     {% csrf_token %}
     <img src="/static/images/rakubaru/cancel.png" style="width:25px; height:25px; float:right;"
         onclick="javascript:dismissLayouts()">
-    <div style="width:100%; display:inline-block;">
-        <div style="font-size:18px; font-weight:600; color:black; text-align:center;" id="wellbox_title">それらにエリアを割り当てます</div>
-        <br>
-        <div class="col-sm-12">
-            <form action="#" method="post" enctype="multipart/form-data" style="width:100%;" id="afm">
-                {% csrf_token %}
-                <div class="form-group">
-                    <p>タイトル </p>
-                    <div style="text-align:center; width:100%;">
-                        <input type="text" name="title" id="atitle" placeholder="タイトル...">
-                    </div>
-                </div>
-                <div class="form-group" id="selusers-frame" style="display:none;">
-                    <p>選ばれたメンバー</p>
-                    <div id="selusers">
+    <br>
+    <div style="width:100%;">
+        <div style="font-size:18px; font-weight:600; color:black; text-align:center;">社員へのエリア割り当て</div>
+    </div>
+    <br>
+    <form action="#" method="post" enctype="multipart/form-data" id="afm" style="width:100%; display:inline-block;">
+        {% csrf_token %}
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="pan">
+                        <div class="contentform">
+        		            <div class="formcontent">
+        		                <div class="form-group">
+                                    <p>タイトル </p>
+                                    <div style="text-align:center; width:100%;">
+                                        <input type="text" name="title" id="atitle" placeholder="タイトル...">
+                                    </div>
+                                </div>
+                                <div class="form-group" id="selusers-frame" style="display:none;">
+                                    <p>選ばれたメンバー</p>
+                                    <div id="selusers">
 
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <p>顧客名 </p>
+                                    <div style="text-align:center; width:100%;">
+                                        <input type="text" name="customer" id="customer" placeholder="顧客名...">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <p>配布部数</p>
+                                    <div style="text-align:center; width:100%;">
+                                        <input type="number" name="copies" id="copies" placeholder="配布部数..." oninput="entercopies()">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <p>配布単価</p>
+                                    <div style="text-align:center; width:100%;">
+                                        <input type="number" step="any" name="unit_price" id="uprice" placeholder="配布単価..." oninput="enteruprice()">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <p>手当</p>
+                                    <div style="text-align:center; width:100%;">
+                                        <input type="number" step="any" name="allowance" id="allowance" placeholder="手当..." oninput="enterallowance()">
+                                    </div>
+                                </div>
+        		            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <p>顧客名 </p>
-                    <div style="text-align:center; width:100%;">
-                        <input type="text" name="customer" id="customer" placeholder="顧客名...">
+                <div class="col-sm-6">
+                    <div class="pan">
+                        <div class="contentform">
+        		            <div class="formcontent">
+        		                <div class="form-group">
+                                    <p>金額</p>
+                                    <div style="text-align:center; width:100%;">
+                                        <input type="number" step="any" name="amount" id="amount" placeholder="金額..." readonly>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <p>配布に必要な移動距離 </p>
+                                    <div style="text-align:center; width:100%;">
+                                        <input type="number" step="any" name="distance" id="distance" placeholder="距離 (km)...">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <p>配布物</p>
+                                    <div style="text-align:center; width:100%;">
+                                        <input type="text" name="distribution" id="distribution" placeholder="配布物...">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <p>配布期間（開始日）</p>
+                                    <div style="text-align:center; width:100%;">
+                                        <input type="date" onchange="setValue1(this)">
+                                    </div>
+                                    <input type="hidden" name="start_time" id="start_time">
+                                    <script>
+                                        function setValue1(obj) {
+                                            var st = obj.value;
+                                            if(st.length > 0) {
+                                                document.getElementById("start_time").value = new Date(st).getTime();
+                                                console.log(st);
+                                            }
+                                        }
+                                    </script>
+                                </div>
+                                <div class="form-group">
+                                    <p>配布期間（終了日）</p>
+                                    <div style="text-align:center; width:100%;">
+                                        <input type="date" onchange="setValue2(this)">
+                                    </div>
+                                    <input type="hidden" name="end_time" id="end_time">
+                                    <script>
+                                        function setValue2(obj) {
+                                            var et = obj.value;
+                                            if(et.length > 0) {
+                                                document.getElementById("end_time").value = new Date(et).getTime();
+                                                console.log(et);
+                                            }
+                                        }
+                                    </script>
+                                </div>
+                                <center><img src="/static/images/rakubaru/progressbar.gif" style="width:30px; height:30px; display:none;" id="gif2"></center>
+                                <center>
+                                    <button type="button" id="submit-button" onclick="assignArea()">送信</button>
+                                </center>
+                                <br>
+        		            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <p>配布部数</p>
-                    <div style="text-align:center; width:100%;">
-                        <input type="number" name="copies" id="copies" placeholder="配布部数..." oninput="entercopies()">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <p>配布単価</p>
-                    <div style="text-align:center; width:100%;">
-                        <input type="number" step="any" name="unit_price" id="uprice" placeholder="配布単価..." oninput="enteruprice()">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <p>手当</p>
-                    <div style="text-align:center; width:100%;">
-                        <input type="number" step="any" name="allowance" id="allowance" placeholder="手当..." oninput="enterallowance()">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <p>金額</p>
-                    <div style="text-align:center; width:100%;">
-                        <input type="number" step="any" name="amount" id="amount" placeholder="金額..." readonly>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <p>配布に必要な移動距離 </p>
-                    <div style="text-align:center; width:100%;">
-                        <input type="number" step="any" name="distance" id="distance" placeholder="距離 (km)...">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <p>配布物</p>
-                    <div style="text-align:center; width:100%;">
-                        <input type="text" name="distribution" id="distribution" placeholder="配布物...">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <p>配布期間（開始日）</p>
-                    <div style="text-align:center; width:100%;">
-                        <input type="date" onchange="setValue1(this)">
-                    </div>
-                    <input type="hidden" name="start_time" id="start_time">
-                    <script>
-                        function setValue1(obj) {
-                            var st = obj.value;
-                            if(st.length > 0) {
-                                document.getElementById("start_time").value = new Date(st).getTime();
-                                console.log(st);
-                            }
-                        }
-                    </script>
-                </div>
-                <div class="form-group">
-                    <p>配布期間（終了日）</p>
-                    <div style="text-align:center; width:100%;">
-                        <input type="date" onchange="setValue2(this)">
-                    </div>
-                    <input type="hidden" name="end_time" id="end_time">
-                    <script>
-                        function setValue2(obj) {
-                            var et = obj.value;
-                            if(et.length > 0) {
-                                document.getElementById("end_time").value = new Date(et).getTime();
-                                console.log(et);
-                            }
-                        }
-                    </script>
-                </div>
-                <center><img src="/static/images/rakubaru/progressbar.gif" style="width:30px; height:30px; display:none;" id="gif2"></center>
-                <center>
-                    <button type="button" id="submit-button" onclick="assignArea()">送信</button>
-                </center>
-                <br>
-            </form>
+        	</div>
         </div>
     </div>
 </div>
@@ -426,38 +446,38 @@ function assignArea(){
         alert("タイトルを入力してください。");
         return;
     }
-    if(document.getElementById("customer").value == "") {
-        alert("顧客名を入力してください。。");
-        return;
-    }
-    if(copiesbox.value == "") {
-        alert("配布部数を入力してください。");
-        return;
-    }
-    if(upricebox.value == "") {
-        alert("配布単価を入力してください。");
-        return;
-    }
-    if(allowancebox.value == "") {
-        alert("許容値を入力してください。");
-        return;
-    }
-    if(amountbox.value == "") {
-        alert("金額を入力してください。");
-        return;
-    }
-    if(document.getElementById("distribution").value == "") {
-        alert("配布名を入力してください。");
-        return;
-    }
-    if(document.getElementById("start_time").value == "") {
-        alert("配布開始時刻を入力してください。");
-        return;
-    }
-    if(document.getElementById("end_time").value == "") {
-        alert("配布終了時刻を入力してください。");
-        return;
-    }
+    // if(document.getElementById("customer").value == "") {
+    //     alert("顧客名を入力してください。。");
+    //     return;
+    // }
+    // if(copiesbox.value == "") {
+    //     alert("配布部数を入力してください。");
+    //     return;
+    // }
+    // if(upricebox.value == "") {
+    //     alert("配布単価を入力してください。");
+    //     return;
+    // }
+    // if(allowancebox.value == "") {
+    //     alert("許容値を入力してください。");
+    //     return;
+    // }
+    // if(amountbox.value == "") {
+    //     alert("金額を入力してください。");
+    //     return;
+    // }
+    // if(document.getElementById("distribution").value == "") {
+    //     alert("配布名を入力してください。");
+    //     return;
+    // }
+    // if(document.getElementById("start_time").value == "") {
+    //     alert("配布開始時刻を入力してください。");
+    //     return;
+    // }
+    // if(document.getElementById("end_time").value == "") {
+    //     alert("配布終了時刻を入力してください。");
+    //     return;
+    // }
 
     console.log("///" + document.getElementById("area_id").value);
 

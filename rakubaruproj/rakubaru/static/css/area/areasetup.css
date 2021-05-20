@@ -5,8 +5,7 @@ html, body{
 
 #form {
   border-radius: 8px;
-  min-width:200px;
-  width:auto;
+  width:400px;
   height:auto;
   position:fixed;
   margin:80px 10px 10px 5px;
@@ -60,7 +59,7 @@ input:focus {
   border:0;
   opacity:0.95;
   padding: 12px 18px;
-  border-radius: 50px 50px 50px 50px;
+  border-radius: 50px;
   cursor: pointer;
   font-size: 16px;
 }
@@ -104,6 +103,22 @@ input:focus {
     margin-left:10px;
 }
 
+.reset-btn {
+    background-color: transparent;
+    color:blue;
+    font-size:14px;
+    padding:8px;
+    float:right;
+    border:0;
+    margin-top:5px;
+    text-decoration:underline;
+}
+
+.reset-btn:hover {
+    font-weight:600;
+    color:red;
+}
+
 .edit-btn {
     background-color:green;
     color:white;
@@ -129,7 +144,8 @@ input:focus {
   top:8%;
   right:0;
   width: 300px;
-  height: 90%;
+  max-height: 90%;
+  height: auto;
   padding: 5px;
   color:black;
   z-index:100;
@@ -169,40 +185,45 @@ div#list > div:hover {
 }
 
 div#list > div > div {
-  width: auto;
-  height: auto;
-  padding: 5px 12px 5px 12px;
-  margin-bottom: 5px;
-  color: black;
-  cursor:pointer;
-  word-wrap: break-word;      /* IE */
+    width: auto;
+    height: auto;
+    padding: 5px 12px 5px 12px;
+    margin-bottom: 5px;
+    color: black;
+    cursor:pointer;
+    word-wrap: break-word;      /* IE */
 }
 
 div#list > div > div > span {
-  font-size:20px;
-  color:#eee;
-  float:right;
-  cursor:pointer;
+    font-size:20px;
+    color:#eee;
+    float:right;
+    cursor:pointer;
 }
 
 div#list > div > div > span:hover {
-  color:white;
+    color:white;
 }
 
 p span {
-  color: #F00;
+    color: #F00;
 }
 
 p {
-  margin: 0px;
-  font-weight: 520;
-  font-size:14px;
+    margin: 0px;
+    font-weight: 520;
+    font-size:14px;
 }
 
 #regform {
     font-size:16px; font-weight:300; color: black; z-index:99999; box-shadow: 0px 0px 100px rgba(0, 0, 0, 1.0);
 	position:fixed; left:50%; float:middle; background-color:white; border-radius:10px; padding: 8px 15px 15px 15px;
 	transform:translate(-50%, -50%); min-width:500px; max-width:600px; width:auto; top:450px;
+}
+
+.sel-area-name-box {
+    position:fixed; transform:translate(-50%, -50%); left:50%; float:middle; top:100px; background-color:white; z-index:200; box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.6); cursor:pointer;
+    padding:8px 20px; display:none;
 }
 
 @media (max-width: 900px) {
@@ -214,6 +235,72 @@ p {
     margin-left: 10px;
     list-style-type: square;
 }
+
+
+#areaFrame {
+    border-radius: 8px;
+    width:auto;
+    height:auto;
+    position:absolute;
+    margin:80px 10px 10px 5px;
+    z-index:500;
+    background-color:white;
+    border:1px solid #eee;
+    padding:15px;
+    display:none;
+}
+
+
+#bar {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index:99999;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,21 +1,9 @@
 html, body{
-  background: #BDB76B no-repeat center center fixed;
-  background-size:cover;
+  background: #BDB76B no-repeat center center fixed;background-size:cover;
 }
 
 #myBtn {
-  display: none;
-  position: fixed;
-  bottom: 20%;
-  right: 15px;
-  z-index: 99;
-  border: none;
-  outline: none;
-  background-color: rgba(0,0,0,0.3);
-  color: white;
-  cursor: pointer;
-  padding: 15px;
-  border-radius: 50%;
+  display: none;position: fixed;bottom: 20%;right: 15px;z-index: 99;border: none;outline: none;background-color: rgba(0,0,0,0.3);color: white;cursor: pointer;padding: 15px;border-radius: 50%;
 }
 
 #myBtn:hover {
@@ -23,20 +11,11 @@ html, body{
 }
 
 .planForm {
-  border-radius: 15px;
-  max-width:550px;
-  width:auto;
-  min-height:650px;
-  box-shadow:0 0 30px rgba(0,0,0,0.3);
-  margin:auto;
-  overflow: hidden;
-  text-align:center;
-  background-color: rgba(102, 0, 204, 0.5);
+  border-radius: 15px;max-width:550px;width:auto;min-height:650px;box-shadow:0 0 30px rgba(0,0,0,0.3);margin:auto;overflow: hidden;text-align:center;background-color: rgba(102, 0, 204, 0.5);
 }
 
 .planForm:hover {
-    box-shadow:0 0 50px rgba(0,0,0,0.5);
-    background-color: rgba(102, 0, 204, 0.8);
+    box-shadow:0 0 50px rgba(0,0,0,0.5);background-color:rgba(102, 0, 204, 0.8);
 }
 
 .frame {
@@ -44,50 +23,27 @@ html, body{
 }
 
 .frame:hover {
-    transform: scale(1.1);
+    transform: scale(1.02);transition:0.3s;
 }
 
 form h1 {
-  font-size: 21px;
-  background: #327a81 none repeat scroll 0% 0%;
-  color: rgb(255, 255, 255);
-  padding: 19px 22px;
-  border-radius: 5px 5px 0px 0px;
-  margin: auto;
-  text-shadow: none;
-  text-align:left
+  font-size: 21px;background: #327a81 none repeat scroll 0% 0%;color: rgb(255, 255, 255);padding: 19px 22px;border-radius: 5px 5px 0px 0px;margin: auto;text-shadow: none;text-align:left
 }
 
 h1 {
-  text-align:center;
-  color: #666;
-  text-shadow: 1px 1px 0px #FFF;
-  margin:50px 0px 0px 0px
+  text-align:center;color: #666;text-shadow: 1px 1px 0px #FFF;margin:50px 0px 0px 0px
 }
 
 .form-group {
-  overflow: hidden;
-  width:100%;
+  overflow: hidden;width:100%;
 }
 
 .contentform {
-  padding: 10px 10px;
+  padding: 10px;
 }
 
 #snackbar {
-    visibility: hidden;
-    min-width: 200px;
-    margin-left: -125px;
-    background-color: #333;
-    color: #fff;
-    text-align: center;
-    border-radius: 2px;
-    padding: 12px;
-    position: fixed;
-    z-index: 1;
-    left: 50%;
-    bottom: 30px;
-    font-size: 17px;
+    visibility: hidden;min-width: 200px;margin-left: -125px;background-color: #333;color: #fff;text-align: center;border-radius: 2px;padding: 12px;position: fixed;z-index: 1;left: 50%;bottom: 30px;font-size: 17px;
 }
 
 #snackbar.show {
@@ -131,9 +87,7 @@ h1 {
 
 /* Modal Content (image) */
 .modal-content {
-  margin: auto;
-  display: block;
-  width: 400px;
+  margin: auto;display: block;width: 400px;
 }
 
 /* Add Animation */
@@ -156,26 +110,21 @@ h1 {
 
 /* The Close Button */
 .close {
-  position: absolute;
-  top: 5px;
-  right: 15px;
-  color: gray;
-  font-size: 40px;
-  font-weight: bold;
-  transition: 0.3s;
+  position: absolute;top: 5px;right: 15px;color: gray;font-size: 40px;font-weight: bold;transition: 0.3s;
 }
 
 .close:hover,
 .close:focus {
-  color: black;
-  text-decoration: none;
-  cursor: pointer;
+  color: black;text-decoration: none;cursor: pointer;
 }
 
 /* 100% Image Width on Smaller Screens */
 @media only screen and (max-width: 500px){
   .modal-content {
-    width: 100%;
+      width: 100%;
+  }
+  #payment-history {
+      width: 100%;
   }
 }
 
@@ -210,11 +159,12 @@ h1 {
         font-size:13px; }
     .payBtn {
         font-size:16px; }
+    ..plan-0-title {
+        font-size:16px; }
 }
 
 #paymentform {
-    font-size:16px; font-weight:300; color: black; z-index:99999; box-shadow: 0px 0px 100px rgba(0, 0, 0, 1.0);
-	position:fixed; left:50%; float:middle; background-color:white; border-radius:10px; padding: 8px 15px 15px 15px;
+    font-size:16px; font-weight:300; color: black; z-index:99999; box-shadow: 0px 0px 100px rgba(0, 0, 0, 1.0);position:fixed; left:50%; float:middle; background-color:white; border-radius:10px; padding: 8px 15px 15px 15px;
 	transform:translate(-50%, -50%); min-width:450px; max-width:600px; width:auto; top:450px;
 }
 
@@ -224,51 +174,118 @@ h1 {
 
 
 #backgroundOverlay{
-    background-color:rgba(0,0,0,0.6);
-    position:fixed;
-    top:0;
-    left:0;
-    right:0;
-    bottom:0;
-    display:none;
+    background-color:rgba(0,0,0,0.6);position:fixed;top:0;left:0;right:0;bottom:0;display:none;
 }
 
 
 .bouton-update{
-  background-color: #008CBA;
-  color: #FFF;
-  text-align: center;
-  width: 100%;
-  border:0;
-  padding: 12px 18px;
-  border-radius: 50px;
-  cursor: pointer;
-  font-size: 16px;
+  background-color:#008CBA;color:#FFF;text-align: center;width:100%;border:0;padding:12px 18px;border-radius:50px;cursor: pointer;font-size:16px;
 }
 
 .form-group {
-  overflow: hidden;
-  width:100%;
+  overflow: hidden;width:100%;
 }
 
 input {
-  margin-bottom: 15px;
-  margin-right:auto;
-  width: 100%;
-  height: 36px;
-  opacity:0.95;
-  float: middle;
-  padding: 0px 15px;
-  color:black;
-  text-align:left;
-  border: none;
-  border: 2px solid gray;
-  border-radius: 50px;
+  margin-bottom: 15px;margin-right:auto;width: 100%;height: 36px;opacity:0.95;float: middle;padding: 0px 15px;color:black;text-align:left;border: none;border: 2px solid gray;border-radius: 50px;
 }
 
 input:focus {
   border:0;
 }
+
+button:focus {
+    outline: none;
+}
+
+#title {
+    font-size:25px; font-weight:800; color: #F7D479; text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.7); text-align:center; position:fixed; left:50%; float:middle; transform:translate(-50%, -50%); width:350px; z-index:100; top:92px; display:none;
+}
+
+.coupon-input {
+    color:white; width:150px; font-size:18px; margin-bottom:10px; padding:10px; background:transparent; border-radius:5px; border:2px solid white; text-align:center;
+}
+
+
+.plan-title {
+    font-size:40px; font-weight:800; color: #F7D479; text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.7); text-align:center; width:100%; margin-top:40px;
+}
+
+.plan-0-title {
+    border-radius:0px 50px 0px 50px; background-color:#b3b300; border:0;color:white;position:absolute;top:-15px;left:10%;padding:10px 30px;font-size:16px;font-weight:500;color:white;text-align:left;
+}
+
+.plan-0-title:hover {
+    background-color:#6600cc;
+}
+
+.btn-history {
+    position:fixed;right:-30px;top:100px;padding:15px 20px;width:120px;background-color:rgba(102, 0, 204, 0.8);color:white;border:0;border-radius:50px;text-align:left;z-index:3000;
+}
+
+
+#payment-history {
+    position:fixed; float:right; z-index:1000000000; right:0; top:0; width:400px; height:100%; display:none; background:#BDB76B;
+    transform: translateX(100%);
+    -webkit-transform: translateX(100%);
+}
+
+.slide-rin {
+    animation: slide-rin 0.5s forwards;
+    -webkit-animation: slide-rin 0.5s forwards;
+}
+
+.slide-rout {
+    animation: slide-rout 0.5s forwards;
+    -webkit-animation: slide-rout 0.5s forwards;
+}
+
+@keyframes slide-rin {
+    100% { transform: translateX(0%); }
+}
+
+@-webkit-keyframes slide-rin {
+    100% { -webkit-transform: translateX(0%); }
+}
+
+@keyframes slide-rout {
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(100%); }
+}
+
+@-webkit-keyframes slide-rout {
+    0% { -webkit-transform: translateX(0%); }
+    100% { -webkit-transform: translateX(100%); }
+}
+
+#bar {
+    margin: 0;position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);z-index:99999;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -7,6 +7,7 @@
 
 <script src="https://apis.google.com/js/api.js"></script>
 <script type="text/javascript" src="https://maps.google.com/maps/api/js?key=AIzaSyAD08ggeOQbSPf8_w-8KvqKhqeXWH3GM8s&sensor=false&libraries=drawing,places"></script>
+<script type="text/javascript" src="/static/js/area/radialprogress.js"></script>
 
 
 <div id="form">
@@ -15,10 +16,26 @@
         <label>エリアを検索する</label>
         <br>
         <div style="display:flex;">
-            <input type="text" id="region-name-box" placeholder="地域名を入力してください" style="flex-grow:1;">
-            <button class="draw-btn" style="width:90px;" onclick="searchArea()">検索</button>
+            <div style="flex-grow:1;">
+                <div>県</div>
+                <input type="text" id="pref-name-box" placeholder="例：福岡県">
+            </div>
+            <div style="flex-grow:1; margin-left:5px;">
+                <div>市区町村</div>
+                <input type="text" id="city-name-box" placeholder="例：小郡市">
+            </div>
         </div>
         <br>
+        <div>サブリージョン</div>
+        <div style="display:flex;">
+            <input type="text" id="region-name-box" placeholder="例：希みが丘1丁目" style="flex-grow:1;">
+            <button class="draw-btn" style="width:90px;" onclick="searchArea()">検索</button>
+        </div>
+        <button class="reset-btn" onclick="reset()">リセット</button>
+        <br>
+        <div style="font-size:12px;">ヒント：望む検索結果が得られないときは「サブリージョン」を空白にして検索してみてください。</div>
+        <br>
+        <button class="reset-btn" style="float:right;" onclick="releaseDrawing()">リリース</button>
         <label>エリアを描く</label>
         <br>
         <div style="w-100">
@@ -31,8 +48,16 @@
     </div>
 </div>
 
-<div id="locationList">
+<div id="locationList" style="display:none;">
     <div id="list"></div>
+</div>
+
+<div id="areaFrame">
+    ドラッグして移動
+    <img src="/static/images/rakubaru/cancel.png" style="width:25px; height:25px; float:right;"
+        onclick="javascript:document.getElementById('areaFrame').style.display='none';">
+    <br>
+    <iframe id="area-iframe" width="600" height="550" loading="lazy" allowfullscreen></iframe>
 </div>
 
 <div id="regform" class="col-sm-12" style="display:none;">
@@ -49,11 +74,14 @@
                     <p>エリア名 <span>*</span></p>
                     <div style="text-align:center; width:100%;">
                         <input type="text" name="area_name" id="area_name" placeholder="エリア名...">
+                        <input hidden name="pref_name" id="pref_name">
+                        <input hidden name="city_name" id="city_name">
+                        <input hidden name="region_name" id="region_name">
                     </div>
                 </div>
                 <div class="form-group" id="subloc-frame" style="display:none;">
                     <p>サブローカリティ</p>
-                    <ul id="subloc">
+                    <ul id="subloc" style="margin-left:20px;">
 
                     </ul>
                 </div>
@@ -99,7 +127,16 @@
     </div>
 </div>
 
+<div id="selectedAreaBox" class="sel-area-name-box" onclick="this.style.display='none';">
+
+</div>
+
+<div id="bar" style="display:none;"></div>
 <div id="map_canvas"><noscript><p>GoogleマップをレンダリングするにはJavaScriptが必要です</p></noscript></div>
+
+<script>
+var bar=new RadialProgress(document.getElementById("bar"),{colorBg:"rgba(0,0,0,0)",colorFg:"#0066ff",thick:8,round:true,indeterminate:true,animationSpeed:0.5});
+</script>
 
 <script>
 
@@ -116,6 +153,9 @@ var colors = ['#1E90FF', '#FF1493', '#32CD32', '#FF8C00', '#4B0082'];
 var selectedColor;
 var colorButtons = {};
 var overlays = new Array();
+var regionPolygons = new Array();
+var polyCenters = new Array();
+var all_overlays = [];
 
 function clearSelection () {
     if (selectedShape) {
@@ -123,6 +163,11 @@ function clearSelection () {
         selectedShape.setDraggable(false);
         selectedShape = null;
     }
+}
+
+function releaseDrawing(){
+    clearSelection();
+    drawingManager.setDrawingMode(null);
 }
 
 function setSelection (overlay) {
@@ -157,11 +202,15 @@ function clearAllSelection() {
     selectedShape = null;
 }
 
-function deleteSelectedShape () {
+function deleteSelectedShape() {
     if (selectedShape) {
         if(shapeObjArray.filter(obj => obj.shape === selectedShape).length > 0) {
-            ul.removeChild(shapeObjArray.filter(obj => obj.shape === selectedShape)[0].layout);
+            console.log(shapeObjArray.filter(obj => obj.shape === selectedShape).length)
+            // ul.removeChild(shapeObjArray.filter(obj => obj.shape === selectedShape)[0].layout);
             shapeObjArray.splice(shapeObjArray.indexOf(shapeObjArray.filter(obj => obj.shape === selectedShape)[0]), 1);
+            if(shapeObjArray.length == 0){
+                locList.style.display = "none";
+            }
         }
         selectedShape.setMap(null);
     }
@@ -173,6 +222,25 @@ function resetShapeVals() {
     shapeObjArray = new Array();
     selectedShape = null;
     ul.innerHTML = "";
+    for(var i=0; i<regionPolygons.length; i++) {
+        regionPolygons[i].setMap(null);
+    }
+}
+
+function deleteAllShape() {
+  for (var i = 0; i < all_overlays.length; i++) {
+    all_overlays[i].overlay.setMap(null);
+  }
+  all_overlays = [];
+}
+
+function reset() {
+    resetShapeVals();
+    deleteAllShape();
+    coords = new Array();
+    shapeObjArray = new Array();
+    overlays = new Array();
+    clearAllSelection();
 }
 
 function selectColor (color) {
@@ -283,11 +351,11 @@ function initialize(){
             enableDrawing();
             drawingManager.setDrawingMode(null);
 
-            var autocomplete = new google.maps.places.Autocomplete(document.getElementById("region-name-box"));
-            google.maps.event.addListener(autocomplete, 'place_changed', function (event) {
-                var place = autocomplete.getPlace();
-                console.log(place.name)
-            });
+            // var autocomplete = new google.maps.places.Autocomplete(document.getElementById("region-name-box"));
+            // google.maps.event.addListener(autocomplete, 'place_changed', function (event) {
+            //     var place = autocomplete.getPlace();
+            //     console.log(place.name)
+            // });
 
         });
     } else {
@@ -315,170 +383,149 @@ google.maps.event.addDomListener(window, 'load', initialize);
 <script>
 
 var areaName = "";
+var prefName = "";
+var cityName = "";
+var regionName = "";
+
 var coords = new Array();
 
-var input = document.getElementById("region-name-box");
-input.addEventListener("keyup", function(event) {
-    event.preventDefault();
-    if (event.keyCode === 13) {
-        searchArea();
-    }
-});
-
+var prefbox = document.getElementById("pref-name-box");
+var citybox = document.getElementById("city-name-box");
+var regionbox = document.getElementById("region-name-box");
 
 
 function searchArea() {
-    if(input.value == ""){
-        alert("エリア名を入力してください。");
+    if(prefbox.value == ""){
+        alert("都道府県名を入力してください。");
         return;
     }
-    getRegionCoordinates(input.value);
+    if(citybox.value == ""){
+        alert("都市名を入力してください。");
+        return;
+    }
+
+    getRegionCoordinates(prefbox.value, citybox.value, regionbox.value);
 }
 
 
-function getRegionCoordinates(region_name) {
-    areaName = region_name;
+var addListenersOnPolygon = function(polygon) {
+    google.maps.event.addListener(polygon, 'click', function (event) {
+        document.getElementById("selectedAreaBox").style.display = "block";
+        document.getElementById("selectedAreaBox").innerHTML = polygon.region;
+    });
+}
+
+var alertShowed = false;
+
+function getRegionCoordinates(pref_name, city_name, region_name) {
+    areaName = pref_name + city_name + region_name;
+    prefName = pref_name;
+    cityName = city_name;
+    regionName = region_name;
+
+    alertShowed = false;
+
     resetShapeVals();
 
-    function trans(){
-        gapi.client.init({
-            'apiKey': 'AIzaSyAD08ggeOQbSPf8_w-8KvqKhqeXWH3GM8s',
-            'discoveryDocs': ['https://www.googleapis.com/discovery/v1/apis/translate/v2/rest'],
-        }).then(function() {
-            return gapi.client.language.translations.list({
-                q: region_name,
-                source: 'ja',
-                target: 'en',
-            });
-        }).then(function(response) {
-            console.log(response.result.data.translations[0].translatedText);
-            region_name = response.result.data.translations[0].translatedText;
+    coords = new Array();
 
-            coords = new Array();
-
-            var url = 'https://nominatim.openstreetmap.org/search.php?q=' + region_name + '&polygon_geojson=1&format=json'
-            var xhr = new XMLHttpRequest();
-            xhr.onreadystatechange = function() {
-                if (this.readyState == 4 && this.status == 200) {
-                    var jsondata = JSON.parse(xhr.responseText);
-                    // console.log(JSON.stringify(jsondata));
-                    if(Array.isArray(jsondata) && jsondata.length > 0) {
-                        var coordjsonarr = jsondata[0].geojson.coordinates;
-                        var loc = { lat: Number(jsondata[0].lat), lng: Number(jsondata[0].lon) };
-                        var mapOptions = {
-                            center: loc,
-                            zoom: 10,
-                            mapTypeId: google.maps.MapTypeId.ROADMAP,
-                            mapTypeControl: true,
-                            mapTypeControlOptions: {
-                                style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
-                                position: google.maps.ControlPosition.LEFT_BOTTOM
-                            }
-                        };
-                        map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
-                        var ne = new google.maps.LatLng(Number(jsondata[0].boundingbox[0]), Number(jsondata[0].boundingbox[2]));
-                        var sw = new google.maps.LatLng(Number(jsondata[0].boundingbox[1]), Number(jsondata[0].boundingbox[3]));
-                        var bounds = new google.maps.LatLngBounds();
-                        bounds.extend(ne);
-                        bounds.extend(sw);
-                        map.fitBounds(bounds);
-                        marker = new google.maps.Marker({
-                            position: loc,
-                            map: map,
-                            title: "<iframe width='600' height='450' style='border:0; margin-bottom:10px;' loading='lazy' allowfullscreen src='https://www.google.com/maps/embed/v1/place?key=AIzaSyAD08ggeOQbSPf8_w-8KvqKhqeXWH3GM8s&q="
-                                    + jsondata[0].display_name + "'></iframe>" + "<div style='font-size:16px; font-weight:520;'>" + jsondata[0].display_name + ":</div><div style='font-size:13px;'>Lat: " + jsondata[0].lat
-                                    + "</div><div style='font-size:13px;'>Lon: " + jsondata[0].lon + "</div>"
-                        });
-                        google.maps.event.addListener(marker, "click", function (e) {
-                            var infoWindow = new google.maps.InfoWindow();
-                            infoWindow.setContent(marker.title);
-                            infoWindow.open(map, marker);
-                        });
-                        if(coordjsonarr.length == 2 && !Array.isArray(coordjsonarr[0])) {
-                            var rectangle = new google.maps.Rectangle({
-                                bounds: bounds,
-                                strokeColor: "#FF0000",
-                                strokeOpacity: 0.8,
-                                strokeWeight: 1,
-                                fillColor: "#FF0000",
-                                fillOpacity: 0.15,
-                            });
-                            rectangle.setMap(map);
-                            coords.push({ lng: Number(jsondata[0].boundingbox[2]),  lat: Number(jsondata[0].boundingbox[0]) })
-                            coords.push({ lng: Number(jsondata[0].boundingbox[2]),  lat: Number(jsondata[0].boundingbox[1]) })
-                            coords.push({ lng: Number(jsondata[0].boundingbox[3]),  lat: Number(jsondata[0].boundingbox[1]) })
-                            coords.push({ lng: Number(jsondata[0].boundingbox[3]),  lat: Number(jsondata[0].boundingbox[0]) })
-                            // enableDrawing();
-                            return;
-                        }
-                        for(var i=0; i<coordjsonarr.length; i++){
-                            coords = new Array();
-                            var ibounds = new google.maps.LatLngBounds();
-                            for(var j=0; j<coordjsonarr[i].length; j++){
-                                if(coordjsonarr[i][j].length == 2) {
+    document.getElementById("bar").style.display = "block";
+    var url = 'https://www.rakubaru-posting.com/findregions?pref=' + pref_name + '&city=' + city_name + '&sname=' + region_name;
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            document.getElementById("bar").style.display = "none";
+            var jsondata = JSON.parse(xhr.responseText);
+            // console.log(JSON.stringify(jsondata));
+            if(Array.isArray(jsondata) && jsondata.length > 0) {
+                var bounds = new google.maps.LatLngBounds();
+                for (var x=0; x<jsondata.length; x++) {
+                    var bounds1 = new google.maps.LatLngBounds();
+                    var pref_name = jsondata[x].pref_name;
+                    var city_name = jsondata[x].city_name;
+                    var s_name = jsondata[x].s_name;
+                    var coordjsonarr = jsondata[x].coordinates;
+                    var coords1 = new Array();
+                    var locs = new Array();
+                    for(var i=0; i<coordjsonarr.length; i++){
+                        for(var j=0; j<coordjsonarr[i].length; j++){
+                            if(coordjsonarr[i][j].length == 2) {
+                                if(!coords1.includes({ lng: coordjsonarr[i][j][0],  lat: coordjsonarr[i][j][1] })){
+                                    coords1.push({ lng: coordjsonarr[i][j][0],  lat: coordjsonarr[i][j][1] });
                                     coords.push({ lng: coordjsonarr[i][j][0],  lat: coordjsonarr[i][j][1] });
-                                    var iloc = new google.maps.LatLng(coordjsonarr[i][j][1], coordjsonarr[i][j][0]);
-                                    ibounds.extend(iloc);
                                 }
-                                else if(Array.isArray(coordjsonarr[i][j][0])) {
-                                    coords = new Array();
-                                    var jbounds = new google.maps.LatLngBounds();
-                                    for(var k=0; k<coordjsonarr[i][j].length; k++) {
-                                        if(coordjsonarr[i][j][k].length == 2) {
-                                            coords.push({ lng: coordjsonarr[i][j][k][0],  lat: coordjsonarr[i][j][k][1] });
-                                            var jloc = new google.maps.LatLng(coordjsonarr[i][j][k][1], coordjsonarr[i][j][k][0]);
-                                            jbounds.extend(jloc);
-                                        }
-                                    }
-                                    if(coords.length > 0 && jbounds.contains(new google.maps.LatLng(Number(jsondata[0].lat), Number(jsondata[0].lon)))) {
-                                        var polygon = new google.maps.Polygon({
-                                            paths: coords,
-                                            strokeColor: '#FF0000',
-                                            strokeOpacity: 0.8,
-                                            strokeWeight: 1,
-                                            fillColor: '#FF0000',
-                                            fillOpacity: 0.15
-                                        });
-                                        // Draw the polygon on the desired map instance
-                                        if(map != null){
-                                            polygon.setMap(map);
-                                        }
-                                        return;
-                                    }
-                                }
-                            }
-                            if(coords.length > 0 && ibounds.contains(new google.maps.LatLng(Number(jsondata[0].lat), Number(jsondata[0].lon)))) {
-                                var polygon = new google.maps.Polygon({
-                                    paths: coords,
-                                    strokeColor: '#FF0000',
-                                    strokeOpacity: 0.8,
-                                    strokeWeight: 1,
-                                    fillColor: '#FF0000',
-                                    fillOpacity: 0.15
-                                });
-                                // Draw the polygon on the desired map instance
-                                if(map != null){
-                                    polygon.setMap(map);
-                                }
+                                var iloc = new google.maps.LatLng(coordjsonarr[i][j][1], coordjsonarr[i][j][0]);
+                                bounds.extend(iloc);
+                                bounds1.extend(iloc);
+                                locs.push(iloc);
                             }
                         }
+                    }
 
-                        // enableDrawing();
+                    if(coords1.length > 0) {
+                        var color = getColor();
+                        var polygon = new google.maps.Polygon({
+                            paths: coords1,
+                            strokeColor: "#0000e6",
+                            strokeOpacity: 1.0,
+                            strokeWeight: 1,
+                            fillColor: color,
+                            fillOpacity: 0.2,
+                            region: s_name
+                        });
 
-                    }else {
-                        geocodeAddress(region_name);
+                        polygon.setMap(map);
+                        regionPolygons.push(polygon);
+
+                        addListenersOnPolygon(polygon);
+
+                    }
+
+                }
+
+                map.fitBounds(bounds);
+                alertShowed = true;
+
+            }else {
+                showNoResultAlert("検索条件に該当するエリアは見つかりませんでした。\n望む検索結果が得られないときは「サブリージョン」を空白にして検索してみてください。");
+                alertShowed = true;
+            }
+
+            // enableDrawing();
+
+        }else {
+            setTimeout(function(){
+                if (alertShowed == false) {
+                    if(coords.length == 0){
+                        showNoResultAlert("検索条件に該当するエリアは見つかりませんでした。\n望む検索結果が得られないときは「サブリージョン」を空白にして検索してみてください。");
+                        document.getElementById("bar").style.display = "none";
                     }
                 }
-            };
-            xhr.open('GET', url, true);
-            xhr.send('');
+            },10000);
+        }
 
-        }, function(reason) {
-            console.log('Error: ' + reason.result.error.message);
-        });
-    }
-    gapi.load('client', trans);
+    };
 
+    xhr.open('GET', url, true);
+    xhr.send('');
+
+
+}
+
+function getColor() {
+    const randomColor = Math.floor(Math.random()*16777215).toString(16);
+    return "#" + randomColor;
+}
+
+
+function showNoResultAlert(msg) {
+    swal({
+        title: "ごめんなさい",
+        text: msg,
+        icon: "warning",
+        button: "OK",
+        dangerMode: true,
+    });
 }
 
 
@@ -517,8 +564,9 @@ function enableDrawing() {
     });
 
     google.maps.event.addListener(drawingManager, 'overlaycomplete', function (e) {
-        var newShape = e.overlay;
+        all_overlays.push(e);
 
+        var newShape = e.overlay;
         newShape.type = e.type;
 
         var overlay = {
@@ -576,6 +624,8 @@ function enableDrawing() {
 }
 
 
+var selAddr;
+
 function geocodeAddress(loc_name) {
   var address = loc_name;
   var addr;
@@ -613,14 +663,20 @@ function geocodeAddress(loc_name) {
         google.maps.event.addListener(marker, 'click', function() {
             if (marker.formatted_address) {
                 addr = marker.formatted_address;
+                selAddr = addr;
                 var mapframe = "<iframe width='600' height='450' style='border:0; margin-bottom:10px;' loading='lazy' allowfullscreen src='https://www.google.com/maps/embed/v1/place?key=AIzaSyAD08ggeOQbSPf8_w-8KvqKhqeXWH3GM8s&q="
                             + addr + "'></iframe>";
-                infowindow.setContent(mapframe + marker.formatted_address + "<br>coordinates: " + marker.getPosition().toUrlValue(6));
+                var html = mapframe + marker.formatted_address + "<br>coordinates: " + marker.getPosition().toUrlValue(6);
+                html = html + "<div style='float:right; display:flex;'><a href='javascript:void(0)' onclick='javascript:showAreaFrame();' class='btn btn-primary' style='flex-grow:1;'>ビューエリア</a><a href='https://www.google.com/maps/search/?api=1&query=" + addr + "' target='_blank' class='btn btn-primary' style='flex-grow:1; margin-left:3px;'>グーグルマップ</a></div>";
+                infowindow.setContent(html);
             } else {
                 addr = address;
+                selAddr = addr;
                 var mapframe = "<iframe width='600' height='450' style='border:0; margin-bottom:10px;' loading='lazy' allowfullscreen src='https://www.google.com/maps/embed/v1/place?key=AIzaSyAD08ggeOQbSPf8_w-8KvqKhqeXWH3GM8s&q="
                             + addr + "'></iframe>";
-                infowindow.setContent(mapframe + address + "<br>coordinates: " + marker.getPosition().toUrlValue(6));
+                var html = mapframe + address + "<br>coordinates: " + marker.getPosition().toUrlValue(6);
+                html = html + "<div style='float:right; display:flex;'><a href='javascript:void(0)' onclick='javascript:showAreaFrame();' class='btn btn-primary' style='flex-grow:1;'>ビューエリア</a><a href='https://www.google.com/maps/search/?api=1&query=" + addr + "' target='_blank' class='btn btn-primary' style='flex-grow:1; margin-left:3px;'>グーグルマップ</a></div>";
+                infowindow.setContent(html);
             }
 
             infowindow.open(map, marker);
@@ -633,6 +689,12 @@ function geocodeAddress(loc_name) {
         alert('Geocode was not successful for the following reason: ' + status);
     }
   });
+}
+
+function showAreaFrame() {
+    console.log("addr===>" + selAddr)
+    document.getElementById("areaFrame").style.display = "block";
+    document.getElementById("area-iframe").src = "https://www.google.com/maps/embed/v1/place?key=AIzaSyAD08ggeOQbSPf8_w-8KvqKhqeXWH3GM8s&q=" + selAddr;
 }
 
 function getAreaName(locarr, overlay, color) {
@@ -804,6 +866,7 @@ function addAreaToList(locarr, loc_name, overlay, color, lat, lng){
             coords:locarr
         };
         shapeObjArray.push(shapeObj);
+        locList.style.display = "block";
     }
 
 }
@@ -817,10 +880,15 @@ function selShape(overlay) {
     setSelection(overlay);
 }
 
+var areaframe = document.getElementById('areaFrame');
+
 var regform = document.getElementById('regform');
 var darkbg = document.getElementById('backgroundOverlay');
 
 var areanamebox = document.getElementById('area_name');
+var prefnamebox = document.getElementById('pref_name');
+var citynamebox = document.getElementById('city_name');
+var regionnamebox = document.getElementById('region_name');
 var sublocframe = document.getElementById('subloc-frame');
 var sublocbox = document.getElementById('subloc');
 var copiesbox = document.getElementById('copies');
@@ -830,18 +898,24 @@ var amountbox = document.getElementById('amount');
 var distancebox = document.getElementById('distance');
 
 function openRegBox() {
+    areaframe.style.display='none';
     regform.style.display='block';
     darkbg.style.display='block';
     areanamebox.value = areaName;
+    prefnamebox.value = prefName;
+    citynamebox.value = cityName;
+    regionnamebox.value = regionName;
+
     sublocbox.innerHTML = "";
     if(shapeObjArray.length > 0) {
-        for(var i=0; i<shapeObjArray.length; i++) {
-            var li = document.createElement("li");
-            li.innerHTML = shapeObjArray[i].loc_name;
-            li.setAttribute("class", "subloc_name");
-            sublocbox.append(li);
-        }
-        sublocframe.style.display = "block";
+        // for(var i=0; i<shapeObjArray.length; i++) {
+        //     var li = document.createElement("li");
+        //     li.innerHTML = shapeObjArray[i].loc_name;
+        //     li.setAttribute("class", "subloc_name");
+        //     sublocbox.append(li);
+        // }
+        sublocbox.innerHTML = String(shapeObjArray.length) + "サブエリア";
+        // sublocframe.style.display = "block";
     }else {
         sublocframe.style.display = "none";
     }
@@ -966,11 +1040,171 @@ function formSubmit(form, gif){
 
 </script>
 
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script>
+    $( function() {
+        $( "#areaFrame" ).draggable();
+      } );
+</script>
+
+
+
+
+<script>
+
+/////////////////////////////////////////////////////////////////////
+function getRegionCoordinates2(region_name) {
+    areaName = region_name;
+    resetShapeVals();
+
+    function trans(){
+        gapi.client.init({
+            'apiKey': 'AIzaSyAD08ggeOQbSPf8_w-8KvqKhqeXWH3GM8s',
+            'discoveryDocs': ['https://www.googleapis.com/discovery/v1/apis/translate/v2/rest'],
+        }).then(function() {
+            return gapi.client.language.translations.list({
+                q: region_name,
+                source: 'ja',
+                target: 'en',
+            });
+        }).then(function(response) {
+            console.log(response.result.data.translations[0].translatedText);
+            region_name = response.result.data.translations[0].translatedText;
+
+            coords = new Array();
+
+            var url = 'https://nominatim.openstreetmap.org/search.php?q=' + region_name + '&polygon_geojson=1&format=json';
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    var jsondata = JSON.parse(xhr.responseText);
+                    // console.log(JSON.stringify(jsondata));
+                    if(Array.isArray(jsondata) && jsondata.length > 0) {
+                        var coordjsonarr = jsondata[0].geojson.coordinates;
+                        var loc = { lat: Number(jsondata[0].lat), lng: Number(jsondata[0].lon) };
+                        var mapOptions = {
+                            center: loc,
+                            zoom: 10,
+                            mapTypeId: google.maps.MapTypeId.ROADMAP,
+                            mapTypeControl: true,
+                            mapTypeControlOptions: {
+                                style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+                                position: google.maps.ControlPosition.LEFT_BOTTOM
+                            }
+                        };
+                        map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
+                        var ne = new google.maps.LatLng(Number(jsondata[0].boundingbox[0]), Number(jsondata[0].boundingbox[2]));
+                        var sw = new google.maps.LatLng(Number(jsondata[0].boundingbox[1]), Number(jsondata[0].boundingbox[3]));
+                        var bounds = new google.maps.LatLngBounds();
+                        bounds.extend(ne);
+                        bounds.extend(sw);
+                        map.fitBounds(bounds);
+                        selAddr = jsondata[0].display_name;
+                        var html = "<iframe width='600' height='450' style='border:0; margin-bottom:10px;' loading='lazy' allowfullscreen src='https://www.google.com/maps/embed/v1/place?key=AIzaSyAD08ggeOQbSPf8_w-8KvqKhqeXWH3GM8s&q="
+                                    + jsondata[0].display_name + "'></iframe>" + "<div style='font-size:16px; font-weight:520;'>" + jsondata[0].display_name + ":</div><div style='font-size:13px;'>Lat: " + jsondata[0].lat
+                                    + "</div><div style='font-size:13px;'>Lon: " + jsondata[0].lon + "</div>";
+                        html = html + "<div style='float:right; display:flex;'><a href='javascript:void(0)' onclick='javascript:showAreaFrame();' class='btn btn-primary' style='flex-grow:1;'>ビューエリア</a><a href='https://www.google.com/maps/search/?api=1&query=" + selAddr + "' target='_blank' class='btn btn-primary' style='flex-grow:1; margin-left:3px;'>グーグルマップ</a></div>";
+                        marker = new google.maps.Marker({
+                            position: loc,
+                            map: map,
+                            title: html
+                        });
+                        google.maps.event.addListener(marker, "click", function (e) {
+                            var infoWindow = new google.maps.InfoWindow();
+                            infoWindow.setContent(marker.title);
+                            infoWindow.open(map, marker);
+                        });
+                        if(coordjsonarr.length == 2 && !Array.isArray(coordjsonarr[0])) {
+                            var rectangle = new google.maps.Rectangle({
+                                bounds: bounds,
+                                strokeColor: "#FF0000",
+                                strokeOpacity: 0.8,
+                                strokeWeight: 1,
+                                fillColor: "#FF0000",
+                                fillOpacity: 0.15,
+                            });
+                            rectangle.setMap(map);
+                            coords.push({ lng: Number(jsondata[0].boundingbox[2]),  lat: Number(jsondata[0].boundingbox[0]) })
+                            coords.push({ lng: Number(jsondata[0].boundingbox[2]),  lat: Number(jsondata[0].boundingbox[1]) })
+                            coords.push({ lng: Number(jsondata[0].boundingbox[3]),  lat: Number(jsondata[0].boundingbox[1]) })
+                            coords.push({ lng: Number(jsondata[0].boundingbox[3]),  lat: Number(jsondata[0].boundingbox[0]) })
+                            // enableDrawing();
+                            return;
+                        }
+                        for(var i=0; i<coordjsonarr.length; i++){
+                            coords = new Array();
+                            var ibounds = new google.maps.LatLngBounds();
+                            for(var j=0; j<coordjsonarr[i].length; j++){
+                                if(coordjsonarr[i][j].length == 2) {
+                                    coords.push({ lng: coordjsonarr[i][j][0],  lat: coordjsonarr[i][j][1] });
+                                    var iloc = new google.maps.LatLng(coordjsonarr[i][j][1], coordjsonarr[i][j][0]);
+                                    ibounds.extend(iloc);
+                                }
+                                else if(Array.isArray(coordjsonarr[i][j][0])) {
+                                    coords = new Array();
+                                    var jbounds = new google.maps.LatLngBounds();
+                                    for(var k=0; k<coordjsonarr[i][j].length; k++) {
+                                        if(coordjsonarr[i][j][k].length == 2) {
+                                            coords.push({ lng: coordjsonarr[i][j][k][0],  lat: coordjsonarr[i][j][k][1] });
+                                            var jloc = new google.maps.LatLng(coordjsonarr[i][j][k][1], coordjsonarr[i][j][k][0]);
+                                            jbounds.extend(jloc);
+                                        }
+                                    }
+                                    if(coords.length > 0 && jbounds.contains(new google.maps.LatLng(Number(jsondata[0].lat), Number(jsondata[0].lon)))) {
+                                        var polygon = new google.maps.Polygon({
+                                            paths: coords,
+                                            strokeColor: '#FF0000',
+                                            strokeOpacity: 0.8,
+                                            strokeWeight: 1,
+                                            fillColor: '#FF0000',
+                                            fillOpacity: 0.15
+                                        });
+                                        // Draw the polygon on the desired map instance
+                                        if(map != null){
+                                            polygon.setMap(map);
+                                        }
+                                        return;
+                                    }
+                                }
+                            }
+                            if(coords.length > 0 && ibounds.contains(new google.maps.LatLng(Number(jsondata[0].lat), Number(jsondata[0].lon)))) {
+                                var polygon = new google.maps.Polygon({
+                                    paths: coords,
+                                    strokeColor: '#FF0000',
+                                    strokeOpacity: 0.8,
+                                    strokeWeight: 1,
+                                    fillColor: '#FF0000',
+                                    fillOpacity: 0.15
+                                });
+                                // Draw the polygon on the desired map instance
+                                if(map != null){
+                                    polygon.setMap(map);
+                                }
+                            }
+                        }
+
+                        // enableDrawing();
+
+                    }else {
+                        geocodeAddress(region_name);
+                    }
+                }
+            };
+            xhr.open('GET', url, true);
+            xhr.send('');
+
+        }, function(reason) {
+            console.log('Error: ' + reason.result.error.message);
+        });
+    }
+    gapi.load('client', trans);
+
+}
+
+</script>
+
+
 {% endblock %}
-
-
-
-
 
 
 

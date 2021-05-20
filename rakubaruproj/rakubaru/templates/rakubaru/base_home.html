@@ -13,6 +13,8 @@
     <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.1/css/all.css">
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
     <link rel="shortcut icon" href="/static/images/rakubaru/appicon.jpg" type="image/jpg">
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script type="text/javascript" src="/static/js/area/radialprogress.js"></script>
 
 <style>
 
@@ -84,28 +86,28 @@ h4:hover{
                     </a>
                 </li>
                 <li style="margin-right:30px;">
-                    <a href="javascript:void(0)" onclick="checkSubscription();">
+                    <a href="javascript:void(0)" onclick="{% if me.subscription_status == '' %}checkSubscription();{% else %}showAlertWarning();{% endif %}">
                         <h4 style=""><span class="fa fa-user-plus" aria-hidden="true" style="margin-right:10px;"></span>社員追加</h4>
                     </a>
                 </li>
                 <li style="margin-right:30px;">
-                    <a href="/rakubaru/raallreports">
+                    <a href="{% if me.subscription_status == '' %}/rakubaru/raallreports{% else %}javascript:showAlertWarning();{% endif %}">
                         <h4 style=""><span class="fas fa-route" aria-hidden="true" style="margin-right:10px;"></span>レポート</h4>
                     </a>
                 </li>
                 <li style="margin-right:30px;">
-                    <a href="/rakubaru/rapinmap?option=all">
+                    <a href="{% if me.subscription_status == '' %}/rakubaru/rapinmap?option=all{% else %}javascript:showAlertWarning();{% endif %}">
                         <h4 style=""><span class="fa fa-map-pin" aria-hidden="true" style="margin-right:10px;"></span>ピン</h4>
                     </a>
                 </li>
-                {% if me.email == 'alertingjames@gmail.com' or me.email == 'yamamoto_h@nac-om.com' %}
+                {% if me.email == 'alertingjames@gmail.com' or me.email == 'yamamoto_h@nac-om.com' or me.email == 'sono_hirotaka@yahoo.co.jp' %}
                 <li style="margin-right:30px;">
-                    <a href="/rakubaru/toareas">
+                    <a href="{% if me.subscription_status == '' %}/rakubaru/toareas{% else %}javascript:showAlertWarning();{% endif %}">
                         <h4 style=""><span class="fa fa-area-chart" aria-hidden="true" style="margin-right:10px;"></span>エリア</h4>
                     </a>
                 </li>
                 <li style="margin-right:30px;">
-                    <a href="/rakubaru/getallassigns">
+                    <a href="{% if me.subscription_status == '' %}/rakubaru/getallassigns{% else %}javascript:showAlertWarning();{% endif %}">
                         <h4 style=""><span class="fa fa-pie-chart" aria-hidden="true" style="margin-right:10px;"></span>進捗</h4>
                     </a>
                 </li>
@@ -121,7 +123,7 @@ h4:hover{
                     <ul class="dropdown-menu" role="menu">
                         <li class="menu">
                             <div style="font-size:14px;">
-                                <a href="/rakubaru/rapasswordchange">
+                                <a href="{% if me.subscription_status == '' %}/rakubaru/rapasswordchange{% else %}javascript:showAlertWarning();{% endif %}">
                                     <span class="glyphicon glyphicon-lock" style="margin-right:10px;"></span>パスワードを変更する
                                 </a>
                             </div>
@@ -133,10 +135,10 @@ h4:hover{
                                 </a>
                             </div>
                         </li>
-                        {% if me.email == 'alertingjames@gmail.com' or me.email == 'yamamoto_h@nac-om.com' %}
+                        {% if me.email == 'alertingjames@gmail.com' or me.email == 'yamamoto_h@nac-om.com' or me.email == 'sono_hirotaka@yahoo.co.jp' %}
                         <li class="menu" style="margin-top:15px;">
                             <div style="font-size:14px;">
-                                <a href="javascript:void(0)" onclick="openBroadcastBox();">
+                                <a href="javascript:void(0)" onclick="{% if me.subscription_status == '' %}openBroadcastBox();{% else %}showAlertWarning();{% endif %}">
                                     <span class="fas fa-broadcast-tower" style="margin-right:10px;"></span>放送
                                 </a>
                             </div>
@@ -144,7 +146,7 @@ h4:hover{
                         {% endif %}
                         <li class="menu" style="margin-top:15px;">
                             <div style="font-size:14px;">
-                                <a href="/rakubaru/ralogout">
+                                <a href="{% if me.subscription_status == '' %}/rakubaru/ralogout{% else %}javascript:showAlertWarning();{% endif %}">
                                     <span class="glyphicon glyphicon-off" style="margin-right:10px;"></span>サインアウト
                                 </a>
                             </div>
@@ -216,7 +218,24 @@ h4:hover{
         $('.navbar-collapse').collapse('hide');
     }
 
+    function showAlertWarning() {
+        swal({
+            title: "警告！",
+            text: "サブスクリプションはキャンセルされました。 この問題を修正するまで、このプラットフォームを使用することはできません。問題を解決してください。",
+            icon: "warning",
+            button: "OK",
+            dangerMode: true,
+        })
+        .then((ok) => {
+            if (ok) {
+                window.location.href = "/rakubaru/ratoplan";
+            }
+        });
+    }
+
 </script>
+
+
 
 {% block body %}
 {% endblock %}
@@ -224,6 +243,55 @@ h4:hover{
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -3,7 +3,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from rest_framework.urlpatterns import format_suffix_patterns
-from rakubaru import views
+from rakubaru import views, region_service, stripe_webhook
 from rakubaru.views import run_task
 
 urlpatterns = [
@@ -27,7 +27,18 @@ urlpatterns = [
     url(r'^delcoupon',views.delcoupon,  name='delcoupon'),
     url(r'^monthcouponhistorydata',views.monthcouponhistorydata,  name='monthcouponhistorydata'),
 
+    url(r'^findregions', region_service.findregions, name='findregions'),
+    url(r'^stripe_webhook', stripe_webhook.stripe_webhook_view, name='stripe_webhook_view'),
+
     url(r'^test', views.test, name='test'),
+    url(r'^regiontest', views.regiontest, name='regiontest'),
+
+    url(r'^regregion', region_service.regregion, name='regregion'),
+    url(r'^delregion', region_service.delregion, name='delregion'),
+    url(r'^dispregion', region_service.dispregion, name='dispregion'),
+
+    url(r'^modeltest', region_service.modeltest, name='modeltest'),
+
     # url(r'^deltestadmins', views.deltestadmins, name='deltestadmins'),
 ]
 
@@ -37,3 +48,41 @@ urlpatterns+=static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns=format_suffix_patterns(urlpatterns)
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

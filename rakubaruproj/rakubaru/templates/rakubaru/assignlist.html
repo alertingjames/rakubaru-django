@@ -9,11 +9,11 @@
 <style>
 
 .table-owner {
-  width: 150%;
+  width: 155%;
 }
 
 .table-owner1 {
-  width: 150%;
+  width: 155%;
 }
 
 .area-details {
@@ -37,7 +37,7 @@
 <div id="no_result" style="font-size:16px; font-weight:300; color:white; text-align:center;
 	position:fixed; left:50%; float:middle; padding: 10px 15px 10px 15px;
 	transform:translate(-50%, -50%); width:auto; z-index:100; top:450px; display:none;">
-    ディストリビューションが割り当てられていません ...
+    社員が割り当てられていません ...
 </div>
 
 <div id="title0" style="font-size:40px; font-weight:800; color:white; text-align:center;
@@ -62,20 +62,20 @@
             <th style="width:2%;">id</th>
             <th style="width:6%;">会員 </th>
             <th style="width:6%;">タイトル </th>
-            <th style="width:9%;">エリア名</th>
-            <th style="width:5%;">顧客名</th>
+            <th style="width:10%;">エリア名</th>
+            <th style="width:4%;">配布部数</th>
+            <th style="width:5%;">全体距離</th>
             <th style="width:5%;">配布距離</th>
-            <th style="width:5%;">顧客距離</th>
             <th style="width:6%;">配布物</th>
             <th style="width:5%;">配布期間（開始日）</th>
             <th style="width:5%;">配布期間（終了日）</th>
-            <th style="width:3%;">配布数</th>
+            <th style="width:3%;">配布回数</th>
             <th style="width:6%;">進捗</th>
-            <th style="width:4%;">配布部数</th>
             <th style="width:4%;">配布単価</th>
             <th style="width:4%;">手当</th>
             <th style="width:4%;">金額</th>
             <th style="width:4%;">距離</th>
+            <th style="width:5%;">顧客名</th>
             <th style="width:5%;">割り当て時間</th>
             <th style="width:3%;">編集</th>
             <th style="width:3%;">削除する</th>
@@ -90,20 +90,20 @@
             <th style="width:2%;">id</th>
             <th style="width:6%;">会員 </th>
             <th style="width:6%;">タイトル </th>
-            <th style="width:9%;">エリア名</th>
-            <th style="width:5%;">顧客名</th>
+            <th style="width:10%;">エリア名</th>
+            <th style="width:4%;">配布部数</th>
+            <th style="width:5%;">全体距離</th>
             <th style="width:5%;">配布距離</th>
-            <th style="width:5%;">顧客距離</th>
             <th style="width:6%;">配布物</th>
             <th style="width:5%;">配布期間（開始日）</th>
             <th style="width:5%;">配布期間（終了日）</th>
-            <th style="width:3%;">配布数</th>
+            <th style="width:3%;">配布回数</th>
             <th style="width:6%;">進捗</th>
-            <th style="width:4%;">配布部数</th>
             <th style="width:4%;">配布単価</th>
             <th style="width:4%;">手当</th>
             <th style="width:4%;">金額</th>
             <th style="width:4%;">距離</th>
+            <th style="width:5%;">顧客名</th>
             <th style="width:5%;">割り当て時間</th>
             <th style="width:3%;">編集</th>
             <th style="width:3%;">削除する</th>
@@ -134,17 +134,18 @@
                         </div>
                     </a>
                 </td>
-                <td>{{assign.assign.customer}}</td>
+                <td>{{assign.assign.copies}}</td>
                 <td><label style="color:#0033cc; font-size:20px;">{{assign.area.distance}}</label>km</td>
                 <td>
-                    {% if assign.assign.client_dist != '0' %}
-                    <div style="font-size:12px;">クライアントが報告した</div>
-                    <div style="border:3px solid red; padding:3px 6px 0px 6px; display:inline-block;">
-                        <label style="color:#0033cc; font-size:20px;">{{assign.assign.client_dist}}</label>km
-                    </div>
-                    {% else %}
                     <label style="color:#0033cc; font-size:20px;">{{assign.assign.client_dist}}</label>km
-                    {% endif %}
+                    <!--{% if assign.assign.client_dist != '0' %}-->
+                    <!--<div style="font-size:12px;">クライアントが報告した</div>-->
+                    <!--<div style="border:3px solid red; padding:3px 6px 0px 6px; display:inline-block;">-->
+                    <!--    <label style="color:#0033cc; font-size:20px;">{{assign.assign.client_dist}}</label>km-->
+                    <!--</div>-->
+                    <!--{% else %}-->
+                    <!--<label style="color:#0033cc; font-size:20px;">{{assign.assign.client_dist}}</label>km-->
+                    <!--{% endif %}-->
                 </td>
                 <td>{{assign.assign.distribution}}</td>
                 <td><label style="color:#cc66ff; font-size:18px;">{{assign.dist_start}}</label></td>
@@ -153,7 +154,7 @@
                     <a href="/rakubaru/assignedworks?assign_id={{assign.assign.pk}}&member_id={{assign.member.pk}}">
                         <div class="hyperlink">
                             <div style="font-size:25px; color:#0077b3; font-weight:600;">{{assign.works}}</div>
-                            <div class="hint">作品を見る</div>
+                            <div class="hint">レポート</div>
                         </div>
                     </a>
                 </td>
@@ -164,11 +165,11 @@
                     	<input hidden id="canvas-id" value="canvas{{assign.assign.pk}}">
                     </div>
                 </td>
-                <td>{{assign.assign.copies}}</td>
                 <td>{{assign.assign.unit_price}}</td>
                 <td>{{assign.assign.allowance}}</td>
                 <td>{{assign.assign.amount}}</td>
                 <td>{{assign.assign.distance}} km</td>
+                <td>{{assign.assign.customer}}</td>
                 <td>{{assign.assigned}}</td>
                 <td>
                     <a href="javascript:void(0)" role="button" onclick="openEditBox(this);" id="{{assign.assign.id}}">
@@ -203,97 +204,119 @@
     <div style="width:100%; display:inline-block;">
         <div style="font-size:18px; font-weight:600; color:black; text-align:center;" id="wellbox_title">割り当てを更新する</div>
         <br>
-        <div class="col-sm-12">
-            <form action="/rakubaru/editassign" method="post" enctype="multipart/form-data" style="width:100%;" id="assign-form">
-                {% csrf_token %}
-                <div class="form-group">
-                    <p>タイトル </p>
-                    <div style="text-align:center; width:100%;">
-                        <input type="text" name="title" id="atitle" placeholder="タイトル...">
+        <form action="/rakubaru/editassign" method="post" enctype="multipart/form-data" style="width:100%;" id="assign-form">
+            {% csrf_token %}
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="pan">
+                            <div class="contentform">
+            		            <div class="formcontent">
+
+                                    <div class="form-group">
+                                        <p>タイトル </p>
+                                        <div style="text-align:center; width:100%;">
+                                            <input type="text" name="title" id="atitle" placeholder="タイトル...">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <p>顧客名 </p>
+                                        <div style="text-align:center; width:100%;">
+                                            <input type="text" name="customer" id="customer" placeholder="顧客名...">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <p>配布部数</p>
+                                        <div style="text-align:center; width:100%;">
+                                            <input type="number" name="copies" id="copies" placeholder="配布部数..." oninput="entercopies()">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <p>配布単価</p>
+                                        <div style="text-align:center; width:100%;">
+                                            <input type="number" step="any" name="unit_price" id="uprice" placeholder="配布単価..." oninput="enteruprice()">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <p>手当</p>
+                                        <div style="text-align:center; width:100%;">
+                                            <input type="number" step="any" name="allowance" id="allowance" placeholder="手当..." oninput="enterallowance()">
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="form-group">
-                    <p>顧客名 </p>
-                    <div style="text-align:center; width:100%;">
-                        <input type="text" name="customer" id="customer" placeholder="顧客名...">
+                    <div class="col-sm-6">
+                        <div class="pan">
+                            <div class="contentform">
+        		                <div class="formcontent">
+
+                                    <div class="form-group">
+                                        <p>金額</p>
+                                        <div style="text-align:center; width:100%;">
+                                            <input type="number" step="any" name="amount" id="amount" placeholder="金額..." readonly>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <p>配布に必要な移動距離 </p>
+                                        <div style="text-align:center; width:100%;">
+                                            <input type="number" step="any" name="distance" id="distance" placeholder="距離 (km)...">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <p>配布物</p>
+                                        <div style="text-align:center; width:100%;">
+                                            <input type="text" name="distribution" id="distribution" placeholder="配布物...">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <p>配布期間（開始日）</p>
+                                        <div style="text-align:center; width:100%;">
+                                            <input type="date" id="dist_start" onchange="setValue1(this)">
+                                        </div>
+                                        <input type="hidden" name="start_time" id="start_time">
+                                        <script>
+                                            function setValue1(obj) {
+                                                var st = obj.value;
+                                                if(st.length > 0) {
+                                                    document.getElementById("start_time").value = new Date(st).getTime();
+                                                    console.log(st);
+                                                }
+                                            }
+                                        </script>
+                                    </div>
+                                    <div class="form-group">
+                                        <p>配布期間（終了日）</p>
+                                        <div style="text-align:center; width:100%;">
+                                            <input type="date" id="dist_end" onchange="setValue2(this)">
+                                        </div>
+                                        <input type="hidden" name="end_time" id="end_time">
+                                        <script>
+                                            function setValue2(obj) {
+                                                var et = obj.value;
+                                                if(et.length > 0) {
+                                                    document.getElementById("end_time").value = new Date(et).getTime();
+                                                    console.log(et);
+                                                }
+                                            }
+                                        </script>
+                                    </div>
+                                    <input hidden name="assign_id" id="assign_id">
+                                    <center><img src="/static/images/rakubaru/progressbar.gif" style="width:30px; height:30px; display:none;" id="gif2"></center>
+                                    <center>
+                                        <button type="button" id="submit-button" onclick="updateAssign()">送信</button>
+                                    </center>
+
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="form-group">
-                    <p>配布部数</p>
-                    <div style="text-align:center; width:100%;">
-                        <input type="number" name="copies" id="copies" placeholder="配布部数..." oninput="entercopies()">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <p>配布単価</p>
-                    <div style="text-align:center; width:100%;">
-                        <input type="number" step="any" name="unit_price" id="uprice" placeholder="配布単価..." oninput="enteruprice()">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <p>手当</p>
-                    <div style="text-align:center; width:100%;">
-                        <input type="number" step="any" name="allowance" id="allowance" placeholder="手当..." oninput="enterallowance()">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <p>金額</p>
-                    <div style="text-align:center; width:100%;">
-                        <input type="number" step="any" name="amount" id="amount" placeholder="金額..." readonly>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <p>配布に必要な移動距離 </p>
-                    <div style="text-align:center; width:100%;">
-                        <input type="number" step="any" name="distance" id="distance" placeholder="距離 (km)...">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <p>配布物</p>
-                    <div style="text-align:center; width:100%;">
-                        <input type="text" name="distribution" id="distribution" placeholder="配布物...">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <p>配布期間（開始日）</p>
-                    <div style="text-align:center; width:100%;">
-                        <input type="date" id="dist_start" onchange="setValue1(this)">
-                    </div>
-                    <input type="hidden" name="start_time" id="start_time">
-                    <script>
-                        function setValue1(obj) {
-                            var st = obj.value;
-                            if(st.length > 0) {
-                                document.getElementById("start_time").value = new Date(st).getTime();
-                                console.log(st);
-                            }
-                        }
-                    </script>
-                </div>
-                <div class="form-group">
-                    <p>配布期間（終了日）</p>
-                    <div style="text-align:center; width:100%;">
-                        <input type="date" id="dist_end" onchange="setValue2(this)">
-                    </div>
-                    <input type="hidden" name="end_time" id="end_time">
-                    <script>
-                        function setValue2(obj) {
-                            var et = obj.value;
-                            if(et.length > 0) {
-                                document.getElementById("end_time").value = new Date(et).getTime();
-                                console.log(et);
-                            }
-                        }
-                    </script>
-                </div>
-                <input hidden name="assign_id" id="assign_id">
-                <center><img src="/static/images/rakubaru/progressbar.gif" style="width:30px; height:30px; display:none;" id="gif2"></center>
-                <center>
-                    <button type="button" id="submit-button" onclick="updateAssign()">送信</button>
-                </center>
-                <br>
-            </form>
-        </div>
+        	    </div>
+            </div>
+        </form>
+        <br>
     </div>
 </div>
 
@@ -500,38 +523,38 @@ function updateAssign(){
         alert("タイトルを入力してください。");
         return;
     }
-    if(document.getElementById("customer").value == "") {
-        alert("顧客名を入力してください。。");
-        return;
-    }
-    if(copiesbox.value == "") {
-        alert("配布部数を入力してください。");
-        return;
-    }
-    if(upricebox.value == "") {
-        alert("配布単価を入力してください。");
-        return;
-    }
-    if(allowancebox.value == "") {
-        alert("許容値を入力してください。");
-        return;
-    }
-    if(amountbox.value == "") {
-        alert("金額を入力してください。");
-        return;
-    }
-    if(document.getElementById("distribution").value == "") {
-        alert("配布名を入力してください。");
-        return;
-    }
-    if(document.getElementById("start_time").value == "") {
-        alert("配布開始時刻を入力してください。");
-        return;
-    }
-    if(document.getElementById("end_time").value == "") {
-        alert("配布終了時刻を入力してください。");
-        return;
-    }
+    // if(document.getElementById("customer").value == "") {
+    //     alert("顧客名を入力してください。。");
+    //     return;
+    // }
+    // if(copiesbox.value == "") {
+    //     alert("配布部数を入力してください。");
+    //     return;
+    // }
+    // if(upricebox.value == "") {
+    //     alert("配布単価を入力してください。");
+    //     return;
+    // }
+    // if(allowancebox.value == "") {
+    //     alert("許容値を入力してください。");
+    //     return;
+    // }
+    // if(amountbox.value == "") {
+    //     alert("金額を入力してください。");
+    //     return;
+    // }
+    // if(document.getElementById("distribution").value == "") {
+    //     alert("配布名を入力してください。");
+    //     return;
+    // }
+    // if(document.getElementById("start_time").value == "") {
+    //     alert("配布開始時刻を入力してください。");
+    //     return;
+    // }
+    // if(document.getElementById("end_time").value == "") {
+    //     alert("配布終了時刻を入力してください。");
+    //     return;
+    // }
 
     var form = document.getElementById("assign-form");
     var gif = document.getElementById("gif2");
