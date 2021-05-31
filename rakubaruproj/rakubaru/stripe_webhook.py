@@ -48,8 +48,14 @@ def stripe_webhook_view(request):
         members = Rmember.objects.filter(subscriptionID=subscription.id)
         if members.count() > 0:
             member = members.first()
-            member.subscription_status = 'subscription_canceled'
-            member.save()
+            if member.subperiodend != '':
+                now = int(round(time.time()))
+                subscription_period_end = int(member.subperiodend)
+                if now - subscription_period_end >= 86400 * 30:
+                    member.subscriptionID = ''
+                    member.subperiodend = ''
+                    member.subscription_status = 'subscription_canceled'
+                    member.save()
     elif event.type == 'invoice.payment_failed':
         invoice = event.data.object
         print('invoice payment failed')

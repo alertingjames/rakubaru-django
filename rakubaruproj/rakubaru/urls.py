@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from . import views
+from . import views, payment
 
 app_name='rakubaru'
 
@@ -30,7 +30,17 @@ urlpatterns=[
     url(r'rapinmap', views.rapinmap, name='rapinmap'),
     url(r'raeditroute', views.raeditroute, name='raeditroute'),
     url(r'raemployeeprocess', views.raemployeeprocess, name='raemployeeprocess'),
-    url(r'ratoplan', views.ratoplan, name='ratoplan'),
+
+    ########################################################################################################################################################
+    # url(r'ratoplan', views.ratoplan, name='ratoplan'),
+
+    url(r'ratoplan', payment.toplan, name='toplan'),
+    url(r'createproduct', payment.createproduct, name='createproduct'),
+    url(r'racreatesubscription', payment.racreatesubscription, name='racreatesubscription'),
+    url(r'rachangesubscription', payment.rachangesubscription, name='rachangesubscription'),
+    url(r'rasubscriptiondelete', payment.rasubscriptiondelete, name='rasubscriptiondelete'),
+
+
     url(r'ratopay', views.ratopay, name='ratopay'),
     url(r'rapay', views.rapay, name='rapay'),
     url(r'rachecksubscription', views.rachecksubscription, name='rachecksubscription'),
@@ -53,10 +63,9 @@ urlpatterns=[
     url(r'broadcast', views.broadcast, name='broadcast'),
     url(r'assignedworks', views.assignedworks, name='assignedworks'),
 
-    url(r'createproduct', views.createproduct, name='createproduct'),
-    url(r'racreatesubscription', views.racreatesubscription, name='racreatesubscription'),
-    url(r'raupdowngradesubscription', views.raupdowngradesubscription, name='raupdowngradesubscription'),
-    url(r'rasubscriptiondelete', views.rasubscriptiondelete, name='rasubscriptiondelete'),
+    url(r'radowngradesubscription', views.radowngradesubscription, name='radowngradesubscription'),
+    url(r'raupgradesubscription', views.raupgradesubscription, name='raupgradesubscription'),
+    # url(r'rasubscriptiondelete', views.rasubscriptiondelete, name='rasubscriptiondelete'),
 
     url(r'getmysubscriptions', views.getmysubscriptions, name='getmysubscriptions'),
 

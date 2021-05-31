@@ -19,7 +19,7 @@ from random import randint
 from pyfcm import FCMNotification
 import pyrebase
 
-from rakubaru.models import Rmember, Route, Rpoint, Rpin, Paid, Device, Coupon, Area, Sublocality, AreaAssign, Product, Price
+from rakubaru.models import Rmember, Route, Rpoint, Rpin, Paid, Device, Coupon, Area, Sublocality, AreaAssign, Product, Price, Invoice, Plan
 from rakubaru.serializers import RmemberSerializer, RouteSerializer, RpointSerializer, RpinSerializer, AreaSerializer, SublocalitySerializer, AreaAssignSerializer
 
 
@@ -1066,47 +1066,6 @@ def radelmember(request):
         fs.delete(fname)
     member.delete()
 
-    routes = Route.objects.filter(member_id=member_id)
-    for route in routes:
-        points = Rpoint.objects.filter(route_id=route.pk)
-        for pnt in points:
-            pnt.delete()
-        pins = Rpin.objects.filter(route_id=route.pk)
-        for pin in pins:
-            pin.delete()
-        route.delete()
-
-    devices = Device.objects.filter(member_id=member_id)
-    devices.delete()
-
-    if role == 'admin':
-        emps = Rmember.objects.filter(admin_id=member_id)
-        for emp in emps:
-            routes = Route.objects.filter(member_id=emp.pk)
-            for route in routes:
-                points = Rpoint.objects.filter(route_id=route.pk)
-                for pnt in points:
-                    pnt.delete()
-                pins = Rpin.objects.filter(route_id=route.pk)
-                for pin in pins:
-                    pin.delete()
-                route.delete()
-            devices = Device.objects.filter(member_id=emp.pk)
-            devices.delete()
-
-        paids = Paid.objects.filter(member_id=member_id)
-        paids.delete()
-
-        areas = Area.objects.filter(admin_id=member_id)
-        for area in areas:
-            sublocs = Sublocality.objects.filter(area_id=area.pk)
-            sublocs.delete()
-            assigns = AreaAssign.objects.filter(area_id=area.pk)
-            assigns.delete()
-            area.delete()
-
-        return redirect('/superadmin')
-
     return redirect('/rakubaru/rahome')
 
 
@@ -1396,10 +1355,7 @@ def raopenroutemap(request):
         adminID = request.session['adminID']
         me = Rmember.objects.get(id=adminID)
 
-        if me.email == 'alertingjames@gmail.com' or me.email == 'yamamoto_h@nac-om.com' or me.email == 'sono_hirotaka@yahoo.co.jp':
-            return render(request, 'rakubaru/route_real_time.html', {'report':data})
-
-        return render(request, 'rakubaru/route.html', {'report':data})
+        return render(request, 'rakubaru/route_real_time.html', {'report':data})
 
 
 
@@ -1680,25 +1636,42 @@ def ratoplan(request):
             last_1_payment = paid.paid_amount
             break
 
-    if me.email == 'alertingjames@gmail.com' or me.email == 'yamamoto_h@nac-om.com' or me.email == 'sono_hirotaka@yahoo.co.jp':
+    if me.email != '':
         import datetime
         stripe.api_key = settings.STRIPE_LIVE_SECRET_KEY
         # stripe_subscription_id = 'sub_JA6DSZQSjIJkVZ'
         invoiceList = []
+        invoiceNumberList = []
         stripe_subscription_id = me.subscriptionID
         if stripe_subscription_id != '':
+            invs = Invoice.objects.filter(member_id=me.pk)
+            for inv in invs:
+                invoiceList.insert(0,inv)
+                invoiceNumberList.append(inv.number)
             invoices = stripe.Invoice.list(subscription=stripe_subscription_id)
             for inv in invoices:
-                data = {
-                    'number':inv.number,
-                    'receipt_number':inv.receipt_number,
-                    'status':inv.status.capitalize(),
-                    'created':datetime.datetime.fromtimestamp(float(int(inv.created))).strftime("%m / %d / %Y"),
-                    'amount':inv.amount_paid,
-                    'hosted_invoice_url':inv.hosted_invoice_url,
-                    'invoice_pdf':inv.invoice_pdf,
-                }
-                invoiceList.append(data)
+                if not inv.number in invoiceNumberList:
+                    invoice = Invoice()
+                    invoice.member_id = me.pk
+                    invoice.number = inv.number
+                    invoice.receipt_number = inv.receipt_number
+                    invoice.amount = inv.amount_paid
+                    invoice.hosted_invoice_url = inv.hosted_invoice_url
+                    invoice.invoice_pdf = inv.invoice_pdf
+                    invoice.created_time = datetime.datetime.fromtimestamp(float(int(inv.created))).strftime("%m/%d/%Y %H:%m")
+                    invoice.status = inv.status.capitalize()
+                    invoiceList.append(invoice)
+
+                # data = {
+                #     'number':inv.number,
+                #     'receipt_number':inv.receipt_number,
+                #     'status':inv.status.capitalize(),
+                #     'created_time':datetime.datetime.fromtimestamp(float(int(inv.created))).strftime("%m/%d/%Y %H:%m"),
+                #     'amount':inv.amount_paid,
+                #     'hosted_invoice_url':inv.hosted_invoice_url,
+                #     'invoice_pdf':inv.invoice_pdf,
+                # }
+                # invoiceList.append(data)
 
         context = {
             'me':me,
@@ -1711,10 +1684,8 @@ def ratoplan(request):
             'invoices':invoiceList,
         }
 
-        return render(request, 'rakubaru/payment_plans.html', context)
-
-    else:
-        return render(request, 'rakubaru/plans.html', {'me':me, 'status':ex_status, 'memb_count': count})
+        # return render(request, 'rakubaru/payment_plans.html', context)
+        return render(request, 'rakubaru/membership_plans.html', context)
 
 
 
@@ -1722,6 +1693,7 @@ def ratoplan(request):
 
 @api_view(['GET', 'POST'])
 def racreatesubscription(request):
+    import datetime
     stripe.api_key = settings.STRIPE_LIVE_SECRET_KEY
 
     try:
@@ -1806,26 +1778,21 @@ def racreatesubscription(request):
                     me.subscriptionID = subscription.id
                     me.subperiodend = subscription.current_period_end
                     me.subscription_status = ''
+                    me.pay_method = pay_method
+                    me.payment_method_id = payment_method.id
                     me.save()
 
-                # return HttpResponse("subscription id: " + subscription.id)
-
-                # charge = stripe.Charge.create(
-                #     amount=amount,
-                #     currency="jpy",
-                #     source=token,  # obtained with Stripe.js
-                #     description="Paid by " + email
-                # )
-
-                # if charge is not None:
                     paid = Paid()
                     paid.member_id = me.pk
                     paid.plan = plan
                     paid.paid_time = str(int(round(time.time() * 1000)))
                     paid.coupon_id = coupon_id
                     paid.discount = discount
-                    paid.discount_amount = str(amount * float(discount) / 100)
-                    paid.paid_amount = str(amount - float(paid.discount_amount))
+                    if int(plan) == 1:
+                        paid.discount_amount = str(5000 * float(discount) / 100)
+                    elif int(plan) == 2:
+                        paid.discount_amount = str(4500 * float(discount) / 100)
+                    paid.paid_amount = str(amount)
                     paid.plan_members = membs
                     paid.save()
 
@@ -1835,6 +1802,19 @@ def racreatesubscription(request):
                     me.planned_members = membs
                     me.plan = plan
                     me.save()
+
+                    invoices = stripe.Invoice.list(subscription=subscription.id)
+                    for inv in invoices:
+                        invoice = Invoice()
+                        invoice.member_id = me.pk
+                        invoice.number = inv.number
+                        invoice.receipt_number = inv.receipt_number
+                        invoice.amount = inv.amount_paid
+                        invoice.hosted_invoice_url = inv.hosted_invoice_url
+                        invoice.invoice_pdf = inv.invoice_pdf
+                        invoice.created_time = datetime.datetime.fromtimestamp(float(int(inv.created))).strftime("%m/%d/%Y %H:%m")
+                        invoice.status = inv.status.capitalize()
+                        invoice.save()
 
                     return HttpResponse('success')
 
@@ -1847,7 +1827,8 @@ def racreatesubscription(request):
 
 
 @api_view(['GET', 'POST'])
-def raupdowngradesubscription(request):
+def radowngradesubscription(request):
+    import datetime
     stripe.api_key = settings.STRIPE_LIVE_SECRET_KEY
 
     try:
@@ -1903,16 +1884,15 @@ def raupdowngradesubscription(request):
 
         if me.subscriptionID != '':
             try:
-                subscription = stripe.Subscription.retrieve(me.subscriptionID)
+                stripe.Subscription.delete(me.subscriptionID)
 
-                stripe.Subscription.modify(
-                    subscription.id,
-                    cancel_at_period_end=False,
-                    proration_behavior='always_invoice',
+                subscription = stripe.Subscription.create(
+                    default_payment_method=me.payment_method_id,
+                    customer=me.customerID,
                     items=[{
-                        'id': subscription['items']['data'][0].id,
-                        'price': priceID,
-                    }]
+                        'price': priceID
+                    }],
+                    expand=['latest_invoice.payment_intent'],
                 )
 
                 if subscription is not None:
@@ -1936,11 +1916,10 @@ def raupdowngradesubscription(request):
                         paid.coupon_id = last_paid.coupon_id
                         paid.discount = last_paid.discount
                         paid.discount_amount = last_paid.discount_amount
-                        paid.paid_amount = str(amount)
+
+                    paid.paid_amount = str(amount)
                     paid.plan_members = membs
                     paid.save()
-
-
 
                     if me.planned_members == '':
                         me.planned_members = '1'
@@ -1948,6 +1927,143 @@ def raupdowngradesubscription(request):
                     me.planned_members = membs
                     me.plan = plan
                     me.save()
+
+                    invoices = stripe.Invoice.list(subscription=subscription.id)
+                    for inv in invoices:
+                        invoice = Invoice()
+                        invoice.member_id = me.pk
+                        invoice.number = inv.number
+                        invoice.receipt_number = inv.receipt_number
+                        invoice.amount = inv.amount_paid
+                        invoice.hosted_invoice_url = inv.hosted_invoice_url
+                        invoice.invoice_pdf = inv.invoice_pdf
+                        invoice.created_time = datetime.datetime.fromtimestamp(float(int(inv.created))).strftime("%m/%d/%Y %H:%m")
+                        invoice.status = inv.status.capitalize()
+                        invoice.save()
+
+                    return HttpResponse('success')
+
+                else:
+                    return HttpResponse('支払いエラー。')
+
+            except stripe.error.InvalidRequestError as e:
+                return HttpResponse(str(e))
+
+        else:
+            return HttpResponse('サブスクリプションはありません。')
+
+
+
+@api_view(['GET', 'POST'])
+def raupgradesubscription(request):
+    import datetime
+    stripe.api_key = settings.STRIPE_LIVE_SECRET_KEY
+
+    try:
+        if request.session['adminID'] == 0 or request.session['adminID'] == '':
+            return render(request, 'rakubaru/admin.html')
+    except KeyError:
+        print('no session')
+        return render(request, 'rakubaru/admin.html')
+
+    adminID = request.session['adminID']
+    me = Rmember.objects.get(id=adminID)
+
+    if request.method == "POST":
+        price = request.POST.get('price', '')
+        me_id = request.POST.get('me_id', '1')
+        plan = request.POST.get('plan', '')
+        membs = request.POST.get('members', '1')
+        coupon_id = request.POST.get('coupon_id', '1')
+        discount = request.POST.get('discount', '0')
+
+        amount = int(float(price))
+        prices = Price.objects.filter(price=amount)
+        priceID = ''
+        products = Product.objects.all()
+        product = None
+        if products.count() > 0:
+            product = products[0]
+        else:
+            product = create_product()
+        if prices.count() > 0:
+            prc = prices[0]
+            priceID = prc.priceID
+        else:
+            prc = stripe.Price.create(
+                nickname='Standard Monthly',
+                product=product.productID,
+                unit_amount=amount,
+                currency='jpy',
+                recurring={
+                    'interval': 'month',
+                    'usage_type': 'licensed',
+                },
+            )
+
+            if prc is not None:
+                priceID = prc.id
+                prcs = Price.objects.filter(product_id=product.id, price=amount, priceID=prc.id)
+                priceObj = None
+                if prcs.count() == 0:
+                    priceObj = Price()
+                    priceObj.product_id = product.pk
+                    priceObj.price = amount
+                    priceObj.priceID = prc.id
+                    priceObj.save()
+
+        if me.subscriptionID != '':
+            try:
+                stripe.Subscription.delete(me.subscriptionID)
+
+                subscription = stripe.Subscription.create(
+                    default_payment_method=me.payment_method_id,
+                    customer=me.customerID,
+                    items=[{
+                        'price': priceID
+                    }],
+                    expand=['latest_invoice.payment_intent'],
+                )
+
+                if subscription is not None:
+
+                    me.subscriptionID = subscription.id
+                    me.subperiodend = subscription.current_period_end
+                    me.subscription_status = ''
+                    me.save()
+
+                    paid = Paid()
+                    paid.member_id = me.pk
+                    paid.plan = plan
+                    paid.paid_time = str(int(round(time.time() * 1000)))
+
+                    paid.coupon_id = coupon_id
+                    paid.discount = discount
+                    paid.discount_amount = str(4500 * float(discount) / 100)
+
+                    paid.paid_amount = str(amount)
+                    paid.plan_members = membs
+                    paid.save()
+
+                    if me.planned_members == '':
+                        me.planned_members = '1'
+
+                    me.planned_members = membs
+                    me.plan = plan
+                    me.save()
+
+                    invoices = stripe.Invoice.list(subscription=subscription.id)
+                    for inv in invoices:
+                        invoice = Invoice()
+                        invoice.member_id = me.pk
+                        invoice.number = inv.number
+                        invoice.receipt_number = inv.receipt_number
+                        invoice.amount = inv.amount_paid
+                        invoice.hosted_invoice_url = inv.hosted_invoice_url
+                        invoice.invoice_pdf = inv.invoice_pdf
+                        invoice.created_time = datetime.datetime.fromtimestamp(float(int(inv.created))).strftime("%m/%d/%Y %H:%m")
+                        invoice.status = inv.status.capitalize()
+                        invoice.save()
 
                     return HttpResponse('success')
 
@@ -2063,8 +2179,8 @@ def create_product():
 
 def getmysubscriptions(request):
     import datetime
-    stripe.api_key = settings.STRIPE_TEST_SECRET_KEY
-    stripe_subscription_id = 'sub_JA6DSZQSjIJkVZ'
+    stripe.api_key = settings.STRIPE_LIVE_SECRET_KEY
+    stripe_subscription_id = 'sub_JXi73jbg9HPXpU'
     invoices = stripe.Invoice.list(subscription=stripe_subscription_id)
     invoiceList = []
     for inv in invoices:
@@ -2839,18 +2955,28 @@ def superadmin(request):
 
 def getplan(plan):
     pln = ''
-    if plan == '' or plan == '0':
+    if plan == '' or plan == '1':
         pln = '無料'
-    elif plan == '1':
-        pln = '5,000円'
     elif plan == '2':
-        pln = '14,000円'
+        pln = '5,000円'
     elif plan == '3':
-        pln = '23,000円'
+        pln = '9,500円'
     elif plan == '4':
-        pln = '45,000円'
+        pln = '14,000円'
     elif plan == '5':
-        pln = '45,000+円'
+        pln = '18,500円'
+    elif plan == '6':
+        pln = '23,000円'
+    elif plan == '7':
+        pln = '27,500+円'
+    elif plan == '8':
+        pln = '32,000+円'
+    elif plan == '9':
+        pln = '36,500+円'
+    elif plan == '10':
+        pln = '41,000+円'
+    elif plan == '11':
+        pln = '45,500+円'
 
     return pln
 
@@ -2994,10 +3120,8 @@ def emroutemap(request):
         adminID = request.session['adminID']
         me = Rmember.objects.get(id=adminID)
 
-        if me.email == 'alertingjames@gmail.com' or me.email == 'yamamoto_h@nac-om.com' or me.email == 'sono_hirotaka@yahoo.co.jp':
-            return render(request, 'rakubaru/route_real_time.html', {'report':data})
+        return render(request, 'rakubaru/route_real_time.html', {'report':data})
 
-        return render(request, 'rakubaru/route.html', {'report':data})
 
 
 

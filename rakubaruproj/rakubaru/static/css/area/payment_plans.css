@@ -11,7 +11,7 @@ html, body{
 }
 
 .planForm {
-  border-radius: 15px;max-width:550px;width:auto;min-height:650px;box-shadow:0 0 30px rgba(0,0,0,0.3);margin:auto;overflow: hidden;text-align:center;background-color: rgba(102, 0, 204, 0.5);
+  border-radius: 15px;max-width:550px;width:auto;min-height:250px;box-shadow:0 0 30px rgba(0,0,0,0.3);margin:auto;overflow: hidden;text-align:center;background-color: rgba(102, 0, 204, 0.5);
 }
 
 .planForm:hover {
@@ -141,7 +141,7 @@ h1 {
 }
 
 .lbl3 {
-    color:white; width:80%; font-size:16px; font-size: 0.9vw; margin-bottom:10px; padding:10px;
+    color:white; font-size:0.8vw;
 }
 
 .lbl4 {
@@ -191,7 +191,7 @@ input {
 }
 
 input:focus {
-  border:0;
+  border:3px solid white;outline: none;
 }
 
 button:focus {
@@ -203,7 +203,7 @@ button:focus {
 }
 
 .coupon-input {
-    color:white; width:150px; font-size:18px; margin-bottom:10px; padding:10px; background:transparent; border-radius:5px; border:2px solid white; text-align:center;
+    color:white; width:180px; font-size:18px; margin-bottom:10px; padding:10px; background:transparent; border-radius:5px; border:2px solid white; text-align:center;
 }
 
 

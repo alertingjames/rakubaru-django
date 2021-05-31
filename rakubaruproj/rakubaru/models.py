@@ -19,6 +19,9 @@ class Rmember(models.Model):
     subscriptionID = models.CharField(max_length=1000)
     subperiodend = models.CharField(max_length=50)
     subscription_status = models.CharField(max_length=50)
+    pay_method = models.CharField(max_length=200)
+    payment_method_id = models.CharField(max_length=200)
+
 
 class Rpoint(models.Model):
     route_id = models.CharField(max_length=11, default="0")
@@ -54,6 +57,13 @@ class Route(models.Model):
     admin_desc = models.CharField(max_length=1000)
     area_name = models.CharField(max_length=100)
     assign_title = models.CharField(max_length=200)
+
+
+class Plan(models.Model):
+    title = models.CharField(max_length=50)
+    price = models.CharField(max_length=50)
+    ppls = models.CharField(max_length=50)
+    status = models.CharField(max_length=50)
 
 
 class Paid(models.Model):
@@ -138,6 +148,17 @@ class Price(models.Model):
     product_id = models.CharField(max_length=11)
     price = models.CharField(max_length=11, default="0")
     priceID = models.CharField(max_length=1000)
+
+
+class Invoice(models.Model):
+    member_id = models.CharField(max_length=11)
+    number = models.CharField(max_length=50)
+    receipt_number = models.CharField(max_length=50)
+    amount = models.CharField(max_length=50)
+    hosted_invoice_url = models.CharField(max_length=500)
+    invoice_pdf = models.CharField(max_length=200)
+    created_time = models.CharField(max_length=50)
+    status = models.CharField(max_length=50)
 
 
 

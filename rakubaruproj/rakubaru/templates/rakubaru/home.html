@@ -364,6 +364,11 @@ label.cameraButton input[accept*="image"] {
 	position:fixed; left:50%; float:middle; transform:translate(-50%, -50%); width:350px; z-index:100; top:92px; display:none;">社員一覧</div>
 
 
+<div style="font-size:18px; font-weight:600; color:yellow; padding:10px 20px 10px 20px; border:2px solid yellow; position:fixed; left:1%; width:200px; top:92px;">
+    <a href="/static/docs/らくポスユーザーマニュアル.pdf" target="_blank" style="color:yellow;">らくポスの使い方</a>
+</div>
+
+
 {% if members %}
 <div style="width:100%; height:auto;">
     {% csrf_token %}
@@ -406,10 +411,8 @@ label.cameraButton input[accept*="image"] {
                                             <br>
                                             {% if member.status == '' %}<div style="color:red; font-size:16px;">No logged in</div>
                                             {% else %}
-                                            {% if me.email == 'alertingjames@gmail.com' or me.email == 'yamamoto_h@nac-om.com' %}
                                             <span style="font-size:16px; font-weight:500;">累計 {{member.cumulative_distance}}㎞</span>
                                             <!--<div style="color:red; font-size:16px; opacity:0;">Logged in</div>-->
-                                            {% endif %}
                                             {% endif %}
                                         </div>
                                     </center>
@@ -837,7 +840,7 @@ function processDeleting(gif, text){
 function confirmUserDeletion(userid) {
     swal({
         title: "このメンバーを削除してもよろしいですか？",
-        text: "削除すると、このユーザーを回復することはできません。",
+        text: "削除すると、このユーザーを回復することはできません。また、削除したユーザーのレポートも見られなくなります。",
         icon: "warning",
         buttons: ["いいえ","はい"],
         dangerMode: true,

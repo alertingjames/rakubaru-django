@@ -100,7 +100,6 @@ h4:hover{
                         <h4 style=""><span class="fa fa-map-pin" aria-hidden="true" style="margin-right:10px;"></span>ピン</h4>
                     </a>
                 </li>
-                {% if me.email == 'alertingjames@gmail.com' or me.email == 'yamamoto_h@nac-om.com' or me.email == 'sono_hirotaka@yahoo.co.jp' %}
                 <li style="margin-right:30px;">
                     <a href="{% if me.subscription_status == '' %}/rakubaru/toareas{% else %}javascript:showAlertWarning();{% endif %}">
                         <h4 style=""><span class="fa fa-area-chart" aria-hidden="true" style="margin-right:10px;"></span>エリア</h4>
@@ -111,7 +110,6 @@ h4:hover{
                         <h4 style=""><span class="fa fa-pie-chart" aria-hidden="true" style="margin-right:10px;"></span>進捗</h4>
                     </a>
                 </li>
-                {% endif %}
             </ul>
 
             <ul class="nav navbar-nav navbar-right">
@@ -135,7 +133,6 @@ h4:hover{
                                 </a>
                             </div>
                         </li>
-                        {% if me.email == 'alertingjames@gmail.com' or me.email == 'yamamoto_h@nac-om.com' or me.email == 'sono_hirotaka@yahoo.co.jp' %}
                         <li class="menu" style="margin-top:15px;">
                             <div style="font-size:14px;">
                                 <a href="javascript:void(0)" onclick="{% if me.subscription_status == '' %}openBroadcastBox();{% else %}showAlertWarning();{% endif %}">
@@ -143,10 +140,9 @@ h4:hover{
                                 </a>
                             </div>
                         </li>
-                        {% endif %}
                         <li class="menu" style="margin-top:15px;">
                             <div style="font-size:14px;">
-                                <a href="{% if me.subscription_status == '' %}/rakubaru/ralogout{% else %}javascript:showAlertWarning();{% endif %}">
+                                <a href="/rakubaru/ralogout">
                                     <span class="glyphicon glyphicon-off" style="margin-right:10px;"></span>サインアウト
                                 </a>
                             </div>

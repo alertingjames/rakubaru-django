@@ -315,7 +315,7 @@ var bar=new RadialProgress(document.getElementById("bar"),{colorBg:"rgba(0,0,0,0
                         <div style="flex-grow:1"></div>
                         <label style="margin-right:10px; font-size:25px; color:yellow; font-family:verdana;"><span style="font-size:14px;">¥</span>{{inv.amount}}&nbsp;<span style="font-size:12px;">{{inv.status}}</span></label>
                     </div>
-                    <label style="font-size:20px;">{{inv.created}}</label>
+                    <label style="font-size:20px;">{{inv.created_time}}</label>
                     <div style="float:right; margin-top:8px;">
                         <a href="{{inv.hosted_invoice_url}}" target="_blank" style="color:#00ffff;font-size:14px;">請求書の詳細を読む...<i class="fa fa-file"></i></a>
                     </div>
@@ -429,12 +429,22 @@ function showToast(text) {
     <input type="hidden" id="pay-method" name="pay_method" value="">
 </form>
 
-<form style="display: none;" id="updowngradeform" action="/rakubaru/raupdowngradesubscription" method="post" enctype="multipart/form-data">
+<form style="display:none;" id="downgradeform" action="/rakubaru/radowngradesubscription" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <input type="hidden" name="price" id="down_price" value="0">
     <input type="hidden" name="me_id" value="{{me.pk}}">
     <input type="hidden" name="plan" id="down_plan" value="0">
     <input type="hidden" name="members" id="down_members" value="1">
+</form>
+
+<form style="display:none;" id="upgradeform" action="/rakubaru/raupgradesubscription" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="price" id="up_price" value="0">
+    <input type="hidden" name="me_id" value="{{me.pk}}">
+    <input type="hidden" name="plan" id="up_plan" value="0">
+    <input type="hidden" name="members" id="up_members" value="1">
+    <input type="hidden" name="coupon_id" id="up_coupon_id" value="0">
+    <input type="hidden" name="discount" id="up_discount" value="0">
 </form>
 
 <script src="https://js.stripe.com/v3/"></script>
@@ -594,7 +604,7 @@ function dismissHistoryBox(){
 function upDowngradeSubscriptionToPlan1() {
     var planned_count = document.getElementById("planned_count").value;
     if(parseInt(planned_count) > 20) {
-        showAlert('このダウングレードは、招待20人以下の場合にのみ有することができる。');
+        showAlert('ダウングレードは、10人ずつしかすることができません。');
         return;
     }
     if(parseInt(document.getElementById('registered_membs_count').value) > 10) {
@@ -627,21 +637,21 @@ function showAlert(msg) {
     });
 }
 
-function upDowngradeSubscription(price, plan, members) {
+function downgradeSubscription(price, plan, members) {
     document.getElementById("down_price").value = price;
     document.getElementById("down_plan").value = plan;
     document.getElementById("down_members").value = members;
 
     document.getElementById("bar").style.display = "block";
-    var updownform = document.getElementById("updowngradeform");
-    var formData = new FormData(updownform);
+    var downform = document.getElementById("downgradeform");
+    var formData = new FormData(downform);
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
             var result = xhr.response;
             console.log('///////////////' + result)
             if(result == 'success') {
-                swal("支払いは成功しました。", {
+                swal(String(price) + "円が無事に支払われました。", {
                     icon: "success",
                 })
                 .then((ok) => {
@@ -655,10 +665,46 @@ function upDowngradeSubscription(price, plan, members) {
             document.getElementById("bar").style.display = "none";
         }
     };
-    xhr.open('POST', updownform.getAttribute('action'), true);
+    xhr.open('POST', downform.getAttribute('action'), true);
     xhr.send(formData);
 }
 
+
+function upgradeSubscription(price, plan, members) {
+    document.getElementById("up_price").value = price;
+    document.getElementById("up_plan").value = plan;
+    document.getElementById("up_members").value = members;
+
+    document.getElementById("bar").style.display = "block";
+    var upform = document.getElementById("upgradeform");
+    var formData = new FormData(upform);
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var result = xhr.response;
+            console.log('///////////////' + result)
+            if(result == 'success') {
+
+                var current_payment = document.getElementById("current_payment").value;
+                var price = parseInt(price) - parseInt(current_payment);
+
+                swal(String(price) + "円が無事に支払われました。", {
+                    icon: "success",
+                })
+                .then((ok) => {
+                    if (ok) {
+                        location.reload();
+                    }
+                });
+            }else{
+                alert(result);
+            }
+            document.getElementById("bar").style.display = "none";
+        }
+    };
+    xhr.open('POST', upform.getAttribute('action'), true);
+    xhr.send(formData);
+}
 
 
 function downgradeSubscriptionForPlan2() {
@@ -675,14 +721,14 @@ function downgradeSubscriptionForPlan2() {
     var price = parseInt(last_payment);
     swal({
         title: "注意",
-        text: "登録済みのクレジットカードから、以下の金額が引き落としされます。\n価格: ¥" + String(price) + ",    メンバーの数: " + String(parseInt(planned_count) - 10),
+        text: "以下の月額利用料が減額されます。\n¥" + String(price) + "\n招待可能な社員数は、以下が上限になります。\n" + String(parseInt(planned_count) - 10),
         icon: "warning",
         button: "OK",
         dangerMode: true,
     })
     .then((ok) => {
         if (ok) {
-            upDowngradeSubscription(price, 2, parseInt(planned_count) - 10);
+            downgradeSubscription(price, 2, parseInt(planned_count) - 10);
         }
     });
 }
@@ -692,15 +738,23 @@ function upgradeSubscriptionForPlan2() {
     var planned_count = document.getElementById("planned_count").value;
     var current_payment = document.getElementById("current_payment").value;
     var price = parseInt(current_payment) + 4500;
-
     var c2 = document.getElementById('coupon2').value;
-
     if (c2.length > 0){
         checkcouponforplan2upgrade(price, c2, parseInt(planned_count) + 10);
     }else {
-        upDowngradeSubscription(price, 2, parseInt(planned_count) + 10)
+        swal({
+            title: "注意",
+            text: "登録済みのクレジットカードから、以下の月額利用料が追加で引落しされます。\n¥4500\n" + "招待可能な社員数は、以下が上限になります。\n" + String(parseInt(planned_count) + 10),
+            icon: "warning",
+            button: "OK",
+            dangerMode: true,
+        })
+        .then((ok) => {
+            if (ok) {
+                upgradeSubscription(price, 2, parseInt(planned_count) + 10);
+            }
+        });
     }
-
 }
 
 
@@ -714,9 +768,22 @@ function checkcouponforplan2upgrade(price, code, membs) {
             if(status == "0") {
                 var discount = data["discount"];
                 var coupon_id = data["coupon_id"];
-                alert(String(discount) + '%割引が受けられます。');
-                price = price * (1 - parseFloat(discount) / 100);
-                upDowngradeSubscription(price, 2, membs)
+                document.getElementById("up_coupon_id").value = coupon_id;
+                document.getElementById("up_discount").value = discount;
+                var delta = parseInt(4500  * (1 - parseFloat(discount) / 100));
+                swal({
+                    title: String(discount) + '%割引が受けられます。',
+                    text: "あなたのカードから" + String(delta) + "円が引落としされます。\n" + "招待可能な社員上限が10人追加されます。",
+                    icon: "warning",
+                    button: "OK",
+                    dangerMode: true,
+                })
+                .then((ok) => {
+                    if (ok) {
+                        price = (price - 4500) + delta;
+                        upgradeSubscription(price, 2, membs)
+                    }
+                });
             }else if(status == "1") {
                 alert("このクーポンはすでに有効期限が切れています。");
             }else if(status == "2") {

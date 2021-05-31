@@ -1,0 +1,656 @@
+{% extends 'rakubaru/base_membership.html' %}
+{% block title %}会員プラン{% endblock %}
+{% block body %}
+
+<link rel="stylesheet" type="text/css" href="/static/css/area/payment_plans.css"/>
+
+<br>
+<br>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<meta charset="utf-8">
+
+<style>
+
+.icon-container {
+    padding: 7px 0;
+    font-size: 24px;
+}
+
+</style>
+
+<!--<script>-->
+<!--	history.pushState(null, null, location.href);-->
+<!--    history.back();-->
+<!--    history.forward();-->
+<!--    window.onpopstate = function () { history.go(1); };-->
+<!--</script>-->
+
+{% if note %}
+<script>alert("{{note}}");</script>
+{% endif %}
+
+<meta charset="UTF-8">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../lib/w3.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+<div id="title">会員プラン</div>
+
+<div id="bar" style="display:none;"></div>
+
+<script>
+var bar=new RadialProgress(document.getElementById("bar"),{colorBg:"rgba(0,0,0,0)",colorFg:"#0066ff",thick:8,round:true,indeterminate:true,animationSpeed:0.5});
+</script>
+
+<button type="button" class="btn-history" onclick="javascript:showHistoryBox();">支払履歴</button>
+
+<div class="w-100" style="margin:auto; height:auto; position:relative;">
+    {% csrf_token %}
+    <div class="plan-title">会員プラン<br></div>
+    <br>
+    <br>
+    <div class="container-fluid">
+        <div class="row">
+            {% for plan in plans %}
+            <div class="col-sm-3">
+                <div style="width:100%; position:relative;" class="frame">
+
+                    <div class="planForm">
+                        <div class="contentform">
+                            <div style="width:100%;">
+                                <div class="form-group">
+                                    <center>
+                                        <div style="width:auto; display:inline-block;">
+                                            <br>
+                                            <br>
+                                            <label class="lbl1">
+                                                {% if plan.title == 'free-1' %}無料{% else %}{{plan.price}}円月額{% endif %}
+                                            </label>
+                                            <br>
+                                            <label class="lbl2">{{plan.ppls}}人まで</label>
+                                            <br>
+                                        </div>
+                                    </center>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% load tag_library %}
+                    <button type="button" style="{% if me.plan|to_int == plan.pk %}{% if me.subscriptionID == '' %}background:red;{% else %}background:#b3b300;{% endif %}{% else %}background:#4d0099;{% endif %}" class="payBtn"
+                        onclick="{% if me.subscriptionID == '' %}createNewSubscription('{{plan.pk}}','{{plan.price}}','{{plan.ppls}}');{% else %}{% if me.plan|to_int != plan.pk %}changeSubscription('{{plan.pk}}','{{plan.price}}','{{plan.ppls}}');{% endif %}{% endif %}">
+                        {% if me.plan|to_int == plan.pk %}現在のプラン{% else %}購入{% endif %}
+                    </button>
+
+                </div>
+                <br>
+            </div>
+
+            {% endfor %}
+
+        </div>
+    </div>
+</div>
+
+
+<div id="paymentform" class="col-sm-12" style="display:none;">
+    {% csrf_token %}
+    <img src="/static/images/rakubaru/cancel.png" style="width:25px; height:25px; float:right;" onclick="dismissLayouts();">
+    <div style="width:100%; display:inline-block;">
+        <div class="col-sm-12">
+            <form action="/charge" method="post" id="payment-form">
+                <div class="form-row">
+                    <div class="icon-container">
+                        <i class="fa fa-cc-visa" style="color:navy;"></i>
+                        <i class="fa fa-cc-amex" style="color:blue;"></i>
+                        <i class="fa fa-cc-mastercard" style="color:red;"></i>
+                        <i class="fa fa-cc-discover" style="color:orange;"></i>
+                    </div>
+                    <div class="form-group">
+                        <label for="name">フルネーム </label>
+                        <div style="text-align:center; width:100%;">
+                            <input type="text" name="name" id="name" placeholder="フルネーム...">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Eメール</label>
+                        <div style="text-align:center; width:100%;">
+                            <input type="email" name="email" id="email" placeholder="Eメール...">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="card-element">
+                            クレジットカードまたはデビットカード
+                        </label>
+                        <div id="card-element" style="margin-top:10px;">
+                        <!-- A Stripe Element will be inserted here. -->
+                        </div>
+                        <div style="background-color:black; height:1.2px; margin-top:8px;"></div>
+                    </div>
+                    <!-- Used to display Element errors. -->
+                    <div id="card-errors" style="color:red;" role="alert"></div>
+                </div>
+                <center>
+                    <img src="/static/images/rakubaru/progressbar.gif" style="width:30px; display:none;" id="gif0">
+                </center>
+                <div class="form-group" style="margin-top:20px;">
+                    <button class="bouton-update" id="pay-btn">購入する</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div style="position:absolute; top:-40px; width:60%; margin-left:20%; margin-right:20%;">
+        <center>
+            <img src="/static/images/rakubaru/appicon.jpg" class="centered-and-cropped" style="border-radius:50%; border:5px solid white; width:80px; height:80px; margin-right:16px;">
+        </center>
+    </div>
+</div>
+
+
+<div id="payment-history">
+    <div style="padding:20px;color:white;">
+        <img src="/static/images/rakubaru/cancel.png" style="width:25px; height:25px; float:right;" onclick="javascript:dismissHistoryBox();">
+        <div style="width:100%;">
+            <h2>支払履歴</h2>
+            <br>
+            {% for inv in invoices %}
+            <div style="background-color:#805500;border-radius:3px;width:100%;">
+                <div class="contentform">
+                    <div style="display:flex;">
+                        <div>
+                            <div style="color:#BDB76B;">{{inv.number}}</div>
+                            <div style="font-size:14px;">毎月の支払</div>
+                        </div>
+                        <div style="flex-grow:1"></div>
+                        <label style="margin-right:10px; font-size:25px; color:yellow; font-family:verdana;"><span style="font-size:14px;">¥</span>{{inv.amount}}&nbsp;<span style="font-size:12px;">{{inv.status}}</span></label>
+                    </div>
+                    <label style="font-size:20px;">{{inv.created_time}}</label>
+                    <div style="float:right; margin-top:8px;">
+                        <a href="{{inv.hosted_invoice_url}}" target="_blank" style="color:#00ffff;font-size:14px;">請求書の詳細を読む...<i class="fa fa-file"></i></a>
+                    </div>
+                </div>
+            </div>
+            <br>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div id="backgroundOverlay" onclick="dismissLayouts();"></div>
+
+
+<input type="hidden" id="registered_membs_count" name="registered_membs_count" value="{{memb_count}}">
+
+<div id="snackbar">Submited!</div>
+
+<input type="hidden" id="me_email" value="{{me.email}}">
+<input type="hidden" id="me_id" value="{{me.pk}}">
+
+<meta charset="UTF-8">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+
+<button onclick="topFunction()" id="myBtn" title="Go to top"><i class="glyphicon glyphicon-menu-up" style="color:white; font-size:14px;"></i></button>
+
+<script>
+// When the user scrolls down 20px from the top of the document, show the button
+window.onscroll = function() {scrollFunction()};
+
+function scrollFunction() {
+    if (document.body.scrollTop > 80 || document.documentElement.scrollTop > 80) {
+        document.getElementById("myBtn").style.display = "block";
+        document.getElementById("title").style.display = "block";
+    } else {
+        document.getElementById("myBtn").style.display = "none";
+        document.getElementById("title").style.display = "none";
+    }
+}
+
+// When the user clicks on the button, scroll to the top of the document
+function topFunction() {
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+}
+
+function dismissLayouts(){
+    document.getElementById("paymentform").style.display='none';
+    document.getElementById("backgroundOverlay").style.display='none';
+    dismissHistoryBox();
+}
+
+function createNewSubscription(plan, price, ppls) {
+    openNewSubscriptionAlert(plan, price, ppls);
+}
+
+
+function formSubmit(form, gif){
+    gif.style.display = "block";
+    // console.log("payment method id: " + document.getElementById('pay-method').value)
+    var formData = new FormData(form);
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var result = xhr.response;
+            console.log('Payment Response: ' + result);
+            if(result == 'success') {
+                var price = document.getElementById("price").value;
+                swal(String(parseInt(price)) + "円が無事に支払われました。", {
+                    icon: "success",
+                })
+                .then((ok) => {
+                    if (ok) {
+                        location.reload();
+                    }
+                });
+            }else{
+                showAlert(result);
+            }
+            gif.style.display = "none";
+        }
+    };
+    xhr.open('POST', form.getAttribute('action'), true);
+    xhr.send(formData);
+}
+
+function showToast(text) {
+    var x = document.getElementById("snackbar");
+    x.innerHTML = text;
+    x.className = "show";
+    setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+}
+
+</script>
+
+<form style="display: none;" id="form" action="/rakubaru/racreatesubscription" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" id="token" name="token" value="">
+    <input type="hidden" id="price" name="price" value="0">
+    <input type="hidden" id="me_id" name="me_id" value="{{me.pk}}">
+    <input type="hidden" id="plan" name="plan" value="0">
+    <input type="hidden" id="members" name="members" value="1">
+    <input type="hidden" id="coupon_id" name="coupon_id" value="0">
+    <input type="hidden" id="discount" name="discount" value="0">
+    <input type="hidden" id="pay-name" name="name" value="">
+    <input type="hidden" id="pay-email" name="email" value="">
+    <input type="hidden" id="pay-method" name="pay_method" value="">
+</form>
+
+<form style="display:none;" id="newform" action="/rakubaru/rachangesubscription" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="price" id="new_price" value="0">
+    <input type="hidden" name="me_id" value="{{me.pk}}">
+    <input type="hidden" name="plan" id="new_plan" value="0">
+    <input type="hidden" name="members" id="new_members" value="1">
+    <input type="hidden" name="coupon_id" id="new_coupon_id" value="0">
+    <input type="hidden" name="discount" id="new_discount" value="0">
+</form>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+
+var stripe = Stripe('pk_live_51Hr8pdECq8YGopGg8KDcu5rS2vpS5u5K5d2eU9KL0OSlLGy5Nx2h5UIi2hRXlw2PCy8PYhyU1iT93vBXX02nq1yT00Q1UDxDUs');  // pk_test_51Hr8pdECq8YGopGgUx1FE1iUfberafsAxdiVFCoHBy7XflTnxYm28Gd2F8QrUBkVKtS4TmZ25twwL8ky2py6plMR00kwvysIGH
+var elements = stripe.elements();
+var style = {
+  base: {
+    // Add your base input styles here. For example:
+    fontSize: '16px',
+    color: '#32325d',
+  },
+};
+
+// Create an instance of the card Element.
+var card = elements.create('card', {style: style});
+
+// Add an instance of the card Element into the `card-element` <div>.
+card.mount('#card-element');
+
+// Create a token or display an error when the form is submitted.
+var form = document.getElementById('payment-form');
+form.addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    if(document.getElementById("name").value == "") {
+        showAlert("お名前を入力してください。");
+        return;
+    }
+    if(document.getElementById("email").value == "") {
+        showAlert("あなたのメールアドレスを入力してください。");
+        return;
+    }
+
+    document.getElementById('gif0').style.display = "block";
+
+    stripe.createToken(card).then(function(result) {
+        if (result.error) {
+            // Inform the customer that there was an error.
+            var errorElement = document.getElementById('card-errors');
+            errorElement.textContent = result.error.message;
+            document.getElementById('gif0').style.display = "none";
+        } else {
+            token = result.token;
+            // create paymentmethod
+            stripe
+              .createPaymentMethod({
+                type: 'card',
+                card: card,
+                billing_details: {
+                  name: document.getElementById("name").value,
+                },
+              })
+              .then(function(result) {
+                // Handle result.error or result.paymentMethod
+                if(result.error){
+                    document.getElementById('gif0').style.display = "none";
+                }else {
+                    var name = document.getElementById("name").value;
+                    var email = document.getElementById("email").value;
+                    stripeTokenHandler(token, result.paymentMethod, name, email);
+                }
+              });
+        }
+    });
+
+});
+
+function stripeTokenHandler(token, method, name, email) {
+    console.log(token.id)
+    console.log(method.id)
+    document.getElementById('token').value = token.id;
+    document.getElementById('pay-method').value = method.id;
+    document.getElementById('pay-name').value = name;
+    document.getElementById('pay-email').value = email;
+    formSubmit(document.getElementById('form'), document.getElementById('gif0'));
+}
+
+</script>
+
+<script>
+function openNewSubscriptionAlert(plan, price, membs){
+    if(parseInt(document.getElementById('registered_membs_count').value) > membs) {
+        showAlert("選択したプランの利用者上限が、現在の社員数を下回っています。登録社員を削除して選択しなおしてください。");
+        return;
+    }
+    var c = document.getElementById('coupon').value;
+
+    if (c.length > 0){
+        checkcoupon(plan, price, membs, c);
+    }else {
+        document.getElementById('plan').value = plan;
+        document.getElementById('price').value = parseInt(price);
+        document.getElementById('members').value = parseInt(membs);
+        document.getElementById('discount').value = 0;
+        document.getElementById("paymentform").style.display = "block";
+        document.getElementById("backgroundOverlay").style.display = "block";
+        document.getElementById("pay-btn").innerHTML = "購入する ¥" + String(parseInt(price)) + "/月";
+    }
+
+}
+
+function checkcoupon(plan, price, membs, code) {
+    document.getElementById("bar").style.display = "block";
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        console.log(xhr.responseText);
+        if (this.readyState == 4 && this.status == 200) {
+            var data = JSON.parse(xhr.responseText);
+            var status = data["status"];
+            document.getElementById("bar").style.display = "none";
+            if(status == "0") {
+                var discount = data["discount"];
+                var coupon_id = data["coupon_id"];
+                swal({
+                    title: "注意",
+                    text: String(discount) + '%割引が受けられます。',
+                    icon: "warning",
+                    button: "OK",
+                    dangerMode: true,
+                })
+                .then((ok) => {
+                    if (ok) {
+                        var calc_price = parseInt(price) * (1 - parseFloat(discount) / 100);
+                        document.getElementById('price').value = parseInt(calc_price);
+                        document.getElementById('plan').value = plan;
+                        document.getElementById('members').value = membs;
+                        document.getElementById('coupon_id').value = coupon_id;
+                        document.getElementById('discount').value = discount;
+                        document.getElementById("paymentform").style.display = "block";
+                        document.getElementById("backgroundOverlay").style.display = "block";
+                        document.getElementById("pay-btn").innerHTML = "購入する ¥" + String(parseInt(calc_price)) + "/月";
+                    }
+                });
+            }else if(status == "1") {
+                showAlert("このクーポンはすでに有効期限が切れています。");
+            }else if(status == "2") {
+                showAlert("このクーポンは存在しません。");
+            }
+        }
+
+    };
+    xhr.open('GET', '/rakubaru/checkcoupon?coupon_code=' + code, true);
+    xhr.send('');
+}
+
+
+function showHistoryBox(){
+    console.log("tapped on history button")
+    document.getElementById("backgroundOverlay").style.display = "block";
+    setTimeout(function(){
+        document.getElementById("payment-history").style.display = "block";
+        document.getElementById("payment-history").setAttribute('class', 'slide-rin');
+    }, 30);
+}
+
+function dismissHistoryBox(){
+    document.getElementById("payment-history").setAttribute('class', 'slide-rout');
+    setTimeout(function() {
+        document.getElementById("payment-history").style.display="none";
+        document.getElementById("backgroundOverlay").style.display = "none";
+    }, 400);
+}
+
+function showAlert(msg) {
+    swal({
+        title: "警告！",
+        text: msg,
+        icon: "warning",
+        button: "OK",
+        dangerMode: true,
+    });
+}
+
+
+function submitNewSubscription(plan, price, members) {
+    document.getElementById("new_price").value = price;
+    document.getElementById("new_plan").value = plan;
+    document.getElementById("new_members").value = members;
+
+    document.getElementById("bar").style.display = "block";
+    var newform = document.getElementById("newform");
+    var formData = new FormData(newform);
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var result = xhr.response;
+            console.log('///////////////' + result)
+            if(result == 'success') {
+                swal(String(price) + "円が無事に支払われました。", {
+                    icon: "success",
+                })
+                .then((ok) => {
+                    if (ok) {
+                        location.reload();
+                    }
+                });
+            }else{
+                showAlert(result);
+            }
+            document.getElementById("bar").style.display = "none";
+        }
+    };
+    xhr.open('POST', newform.getAttribute('action'), true);
+    xhr.send(formData);
+}
+
+
+function changeSubscription(plan, price, members) {
+    if(parseInt(document.getElementById('registered_membs_count').value) > parseInt(members)) {
+        alert('選択したプランの利用者上限が、現在の社員数を下回っています。登録社員を削除して選択しなおしてください。');
+        return;
+    }
+    if(plan == 1){
+        downgradeSubscriptionToFree();
+        return;
+    }
+    var c = document.getElementById('coupon').value;
+    if (c.length > 0){
+        checkcouponfornewsubscription(plan, price, members, c);
+    }else {
+        swal({
+            title: '通知',
+            text: "あなたのカードから" + String(price) + "円が引落としされます。",
+            icon: "warning",
+            button: "OK",
+            dangerMode: true,
+        })
+        .then((ok) => {
+            if (ok) {
+                submitNewSubscription(plan, price, members);
+            }
+        });
+    }
+}
+
+
+function checkcouponfornewsubscription(plan, price, members, code) {
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        console.log(xhr.responseText);
+        if (this.readyState == 4 && this.status == 200) {
+            var data = JSON.parse(xhr.responseText);
+            var status = data["status"];
+            if(status == "0") {
+                var discount = data["discount"];
+                var coupon_id = data["coupon_id"];
+                document.getElementById("new_coupon_id").value = coupon_id;
+                document.getElementById("new_discount").value = discount;
+                var calc_price = parseInt(parseInt(price)  * (1 - parseFloat(discount) / 100));
+                swal({
+                    title: String(discount) + '%割引が受けられます。',
+                    text: "あなたのカードから" + String(calc_price) + "円が引落としされます。",
+                    icon: "warning",
+                    button: "OK",
+                    dangerMode: true,
+                })
+                .then((ok) => {
+                    if (ok) {
+                        submitNewSubscription(plan, calc_price, members);
+                    }
+                });
+            }else if(status == "1") {
+                showAlert("このクーポンはすでに有効期限が切れています。");
+            }else if(status == "2") {
+                showAlert("このクーポンは存在しません。");
+            }
+        }
+
+    };
+    xhr.open('GET', '/rakubaru/checkcoupon?coupon_code=' + code, true);
+    xhr.send('');
+}
+
+
+function downgradeSubscriptionToFree() {
+    document.getElementById("bar").style.display = "block";
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var result = xhr.response;
+            console.log('Response: ' + result);
+            if(result == '0') {
+                swal("ダウングレードが正常にされて！", {
+                    icon: "success",
+                })
+                .then((ok) => {
+                    location.reload();
+                });
+            }else if(result == '1') {
+                showAlert('選択したプランの利用者上限が、現在の社員数を下回っています。登録社員を削除して選択しなおしてください。');
+            }
+            document.getElementById("bar").style.display = "none";
+        }
+    };
+    xhr.open('GET', '/rakubaru/rasubscriptiondelete', true);
+    xhr.send('');
+}
+
+</script>
+
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
