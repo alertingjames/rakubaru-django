@@ -44,8 +44,8 @@ html, body{
     bottom:0;
     left:0;
     right:0;
-    padding-left:20%;
-    padding-right:20%;
+    padding-left:5%;
+    padding-right:5%;
     border-radius: 5px;
     background-color:rgba(255, 255, 204, 0.6);
     /*padding:20px;*/
@@ -114,7 +114,7 @@ a {
   text-align: center;
   width: 100%;
   border:0;
-  padding: 12px 18px;
+  /*padding: 12px 18px;*/
   border-radius: 50px;
   cursor: pointer;
   font-size: 16px;
@@ -251,16 +251,16 @@ a {
 }
 
 #bar {
-    margin: 0;position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);z-index:99999;
+    margin:0;position:fixed;top: 50%;left: 50%;transform: translate(-50%, -50%);z-index:99999;
 }
 
 </style>
 
 <script>
-	history.pushState(null, null, location.href);
-    history.back();
-    history.forward();
-    window.onpopstate = function () { history.go(1); };
+// 	history.pushState(null, null, location.href);
+//     history.back();
+//     history.forward();
+//     window.onpopstate = function () { history.go(1); };
 </script>
 
 <meta charset="UTF-8">
@@ -269,9 +269,14 @@ a {
 <link rel="stylesheet" href="../lib/w3.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
-<div id="title" style="font-size:25px; font-weight:800; color: #F7D479; text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.7); text-align:center;
+<div id="title" style="font-size:30px; font-weight:800; color: #F7D479; text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.7); text-align:center;
 	position:fixed; left:50%; float:middle; transform:translate(-50%, -50%); width:350px; z-index:100; top:92px; display:none;">
     {% if member %}{{member.name}}{% else %}らくばる{% endif %} レポート
+
+    <a href="/rakubaru/reportscsvexport" id="csv-title" style="color:white;font-size:14px;margin-left:10px; text-shadow:none;">
+        <span class="fas fa-file-csv" aria-hidden="true" style="margin-right:5px;"></span>CSV出力
+    </a>
+
 </div>
 
 <div id="bar" style="display:none;"></div>
@@ -280,10 +285,20 @@ a {
 var bar=new RadialProgress(document.getElementById("bar"),{colorBg:"rgba(0,0,0,0)",colorFg:"#0066ff",thick:8,round:true,indeterminate:true,animationSpeed:0.5});
 </script>
 
+
+<a href="/viewreport" target="_blank" style="position:fixed;top:90px;right:15px;color:white;font-size:16px;text-decoration:underline;">バックアップファイルの閲覧</a>
+
+
 {% if reports %}
+
 <div style="width:100%; height:auto; padding-bottom:20px;">
-    <div style="font-size:25px; font-weight:800;
-        color: #F7D479; text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.7); text-align:center; width:100%; margin-top:40px;">{% if member %}{{member.name}}{% else %}らくばる{% endif %} レポート<br>
+    <div style="font-size:30px; font-weight:800; color: #F7D479; text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.7); text-align:center; width:100%; margin-top:40px;">
+        {% if member %}{{member.name}}{% else %}らくばる{% endif %} レポート
+
+        <a href="/rakubaru/reportscsvexport" style="color:white;font-size:14px;margin-left:10px; text-shadow:none;">
+            <span class="fas fa-file-csv" aria-hidden="true" style="margin-right:5px;"></span>CSV出力
+        </a>
+
     </div>
     <br>
     <div style="width:100%; text-align:center; display:inline-block;">
@@ -296,7 +311,11 @@ var bar=new RadialProgress(document.getElementById("bar"),{colorBg:"rgba(0,0,0,0
             <div style="background:white; width:400px; height:2px; margin-top:10px;"></div>
         </div>
     </div>
-    <br>
+    <center>
+        <div style="margin-top:20px;max-width:600px;color:yellow;border:1.5px solid yellow;border-radius:8px;padding:15px;font-size:16px;">
+            ログデータの保管期限は60日間です。60日を超えて必要なログは、バックアップファイルをダウンロードしておいてください。
+        </div>
+    </center>
     <br>
     <div id="list">
         {% for report in reports %}
@@ -323,7 +342,7 @@ var bar=new RadialProgress(document.getElementById("bar"),{colorBg:"rgba(0,0,0,0
                                 {{report.route.start_time}} ~ {{report.route.end_time}}
                             </div>
                             <div style="font-size:16px; margin-left:20px; color:orange;">{{report.route.duration}}</div>
-                            {% if report.route.description %}
+                            {% if report.route.description or report.route.admin_desc %}
                             <div style="font-size:14px; margin-left:20px; color:black;" id="desc">{{report.route.admin_desc}}</div>
                             {% else %}
                             <div style="font-size:14px; margin-left:20px; color:black; display:none;" id="desc"></div>
@@ -350,8 +369,29 @@ var bar=new RadialProgress(document.getElementById("bar"),{colorBg:"rgba(0,0,0,0
                 </div>
                 <div class="form-group" style="display:flex;">
                     <div style="flex-grow:1;">
+                        <button class="bouton-update" style="width:60px;height:60px;text-align:center;font-size:11px;"
+                            onclick="javascript:window.location.href='/rakubaru/csvexport?route_id={{report.route.pk}}';">
+                            CSV<br>出力
+                        </button>
+                    </div>
+
+                    <div style="flex-grow:1;display:none;">
+                        <button class="bouton-update" style="width:60px;height:60px;text-align:center;font-size:11px;"
+                            onclick="javascript:window.location.href='/rakubaru/jsonexport?route_id={{report.route.pk}}';">
+                            JSON<br>出力
+                        </button>
+                    </div>
+
+                    <div style="flex-grow:1;">
+                        <button class="bouton-update" style="width:60px; height:60px; text-align:center;font-size:10px;"
+                            onclick="javascript:window.location.href='/rakubaru/backup?route_id={{report.route.pk}}';">
+                            BACKUP<br>出力
+                        </button>
+                    </div>
+
+                    <div style="flex-grow:1;">
                         <button class="bouton-update" style="width:60px; height:60px; text-align:center;"
-                            onclick="javascript:window.location.href='/rakubaru/raopenroutemap?route_id={{report.route.pk}}'; document.getElementById('bar').style.display = 'block';">
+                            onclick="javascript:window.location.href='/rakubaru/raopenroutemap?route_id={{report.route.pk}}'; if(!detectMob()){ document.getElementById('bar').style.display = 'block'; }">
                             <i class="fas fa-route" style="color:white; font-size:25px;"></i>
                         </button>
                     </div>
@@ -361,7 +401,7 @@ var bar=new RadialProgress(document.getElementById("bar"),{colorBg:"rgba(0,0,0,0
                             onclick="showEditPanel(this);" id="{{report.route.pk}}">
                             <i class="fa fa-pencil" style="color:white; font-size:25px;"></i>
                             <input hidden id="route_name" value="{{report.route.name}}">
-                            <input hidden id="route_desc" value="{{report.route.description}}">
+                            <input hidden id="route_desc" value="{{report.route.admin_desc}}">
                         </button>
                     </div>
 
@@ -390,13 +430,13 @@ var bar=new RadialProgress(document.getElementById("bar"),{colorBg:"rgba(0,0,0,0
         <form action="/rakubaru/raeditroute" method="post" enctype="multipart/form-data"
             style="font-size:16px; font-weight:300; padding:20px; background:white; width:100%; border-radius:5px;" id="editForm">
             {% csrf_token %}
-            <i class="fa fa-pencil-square" style="color:#008CBA; font-size:30px; float:left;"></i>
+            <i class="fa fa-pencil-square" style="color:#008CBA; font-size:30px;"></i><br>
             <div style="font-size:16px; text-align:center; width:100%;" id="rname"></div>
             <div class="form-group">
                 <input type="hidden" name="route_id" id="rid">
                 <input style="height:0.1px; opacity:0;">
                 <script src="https://rawgit.com/jackmoore/autosize/master/dist/autosize.min.js"></script>
-                <textarea name="route_desc" required id="rdesc" placeholder="ここに何か書いてください..."
+                <textarea name="route_desc" id="rdesc" placeholder="ここに何か書いてください..."
                     style="width:100%; height:100px; min-height:100px; max-height:300px; padding:8px 15px; border-radius:5px; border:1px solid gray;"></textarea>
                 <script>autosize(document.getElementById("rdesc"));</script>
             </div>
@@ -487,6 +527,7 @@ function scrollFunction() {
     if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
         document.getElementById("myBtn").style.display = "block";
         document.getElementById("title").style.display = "block";
+        document.getElementById("csv-title").style.color = "red";
     } else {
         document.getElementById("myBtn").style.display = "none";
         document.getElementById("title").style.display = "none";
@@ -499,6 +540,10 @@ function topFunction() {
     document.documentElement.scrollTop = 0;
 }
 
+function detectMob() {
+    return ( ( window.innerWidth <= 800 ) && ( window.innerHeight <= 600 ) );
+}
+
 var modal = document.getElementById("editBox");
 var selectedObj;
 
@@ -508,9 +553,11 @@ function showEditPanel(obj) {
     // document.getElementById('backgroundOverlay').style.display='block';
     modal.style.display='block';
     var route_name = obj.querySelector("#route_name");
-    var route_desc = obj.querySelector("#route_desc");
+    var selector = ".report-form";
+    var parent = findParentBySelector(obj, selector);
+    var route_desc = parent.querySelector("#desc");
     document.getElementById('rname').innerHTML = route_name.value;
-    document.getElementById('rdesc').innerHTML = route_desc.value;
+    document.getElementById('rdesc').value = route_desc.innerHTML;
 }
 
 $("#editBox div").click(function(e) {
@@ -523,9 +570,9 @@ function dismissLayouts(){
 }
 
 function formSubmit(form, gif){
-    if(document.getElementById('rdesc').value == ''){
-        return;
-    }
+    // if(document.getElementById('rdesc').value == ''){
+    //     return;
+    // }
     gif.style.display = "block";
     var formData = new FormData(form);
     var xhr = new XMLHttpRequest();
@@ -539,8 +586,10 @@ function formSubmit(form, gif){
                 var selector = ".report-form";
                 var parent = findParentBySelector(selectedObj, selector);
                 var desc = parent.querySelector("#desc");
-                desc.innerHTML = document.getElementById('rdesc').value;
-                desc.style.display = 'block';
+                if (desc != null) {
+                    desc.innerHTML = document.getElementById('rdesc').value;
+                    desc.style.display = 'block';
+                }
             }else alert('エラー');
 
             gif.style.display = "none";

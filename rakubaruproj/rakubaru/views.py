@@ -5,7 +5,7 @@ from django.core.files.storage import FileSystemStorage
 import json
 
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect, HttpResponseNotAllowed
-from rest_framework import status
+
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 import time
@@ -19,7 +19,7 @@ from random import randint
 from pyfcm import FCMNotification
 import pyrebase
 
-from rakubaru.models import Rmember, Route, Rpoint, Rpin, Paid, Device, Coupon, Area, Sublocality, AreaAssign, Product, Price, Invoice, Plan
+from rakubaru.models import Rmember, Route, Rpoint, Rpin, Paid, Device, Coupon, Area, Sublocality, AreaAssign, Product, Price, Invoice, Plan, PointJsonData, PointData
 from rakubaru.serializers import RmemberSerializer, RouteSerializer, RpointSerializer, RpinSerializer, AreaSerializer, SublocalitySerializer, AreaAssignSerializer
 
 
@@ -76,7 +76,7 @@ def login(request):
                 member.save()
             serializer = RmemberSerializer(member, many=False)
             resp = {'result_code': '0', 'data':serializer.data}
-            return HttpResponse(json.dumps(resp), status=status.HTTP_200_OK)
+            return HttpResponse(json.dumps(resp))
         else:
             members = Rmember.objects.filter(email=email, role='')
             if members.count() > 0:
@@ -233,7 +233,7 @@ def updatemember(request):
             serializer = RmemberSerializer(member, many=False)
 
             resp = {'result_code': '0', 'data':serializer.data}
-            return HttpResponse(json.dumps(resp), status=status.HTTP_200_OK)
+            return HttpResponse(json.dumps(resp))
 
         else:
             resp = {'result_code': '1'}
@@ -272,7 +272,7 @@ def editmember(request):
             serializer = RmemberSerializer(member, many=False)
 
             resp = {'result_code': '0', 'data':serializer.data}
-            return HttpResponse(json.dumps(resp), status=status.HTTP_200_OK)
+            return HttpResponse(json.dumps(resp))
 
         else:
             resp = {'result_code': '1'}
@@ -300,7 +300,7 @@ def passwordupdate(request):
             serializer = RmemberSerializer(member, many=False)
 
             resp = {'result_code': '0', 'data':serializer.data}
-            return HttpResponse(json.dumps(resp), status=status.HTTP_200_OK)
+            return HttpResponse(json.dumps(resp))
         else:
             resp = {'result_code': '1'}
             return HttpResponse(json.dumps(resp))
@@ -323,7 +323,15 @@ def uploadroute(request):
 
         points = request.POST.get('points', '')
 
+        members = Rmember.objects.filter(id=member_id)
+        if members.count() == 0:
+            resp = {'result_code': '-1'}
+            return HttpResponse(json.dumps(resp))
+
+        member = members.first()
+
         route = Route()
+        route.admin_id = member.admin_id
         route.member_id = member_id
         try:
             assign_id = request.POST.get('assign_id', '0')
@@ -370,7 +378,9 @@ def uploadroute(request):
         resp = {'result_code': '0'}
         return HttpResponse(json.dumps(resp))
 
+
 #################################################### From json file ###################################################################
+
 
 @api_view(['GET', 'POST'])
 def upRoute(request):
@@ -393,6 +403,7 @@ def upRoute(request):
             points = points.replace('\\','')
             try:
                 decoded = json.loads(points)
+
                 for data in decoded['points']:
 
                     lat = data['lat']
@@ -401,14 +412,38 @@ def upRoute(request):
                     color = data['color']
                     tm = data['time']
 
-                    pnt = Rpoint()
-                    pnt.route_id = route.pk
-                    pnt.lat = lat
-                    pnt.lng = lng
-                    pnt.comment = comment
-                    pnt.color = color
-                    pnt.time = tm
-                    pnt.save()
+                    pjds = PointData.objects.filter(route_id=route.pk)
+                    if pjds.count() > 0:
+                        pjd = pjds.first()
+                        if pjd.points_json != '':
+                            pointList = json.loads(pjd.points_json)
+                            pnt = Rpoint()
+                            pnt.id = int(pointList[len(pointList) - 1]['id']) + 1
+                            pnt.route_id = route.pk
+                            pnt.lat = lat
+                            pnt.lng = lng
+                            pnt.comment = comment
+                            pnt.color = color
+                            pnt.time = tm
+                            pointList.append(RpointSerializer(pnt, many=False).data)
+                            pjd.points_json = json.dumps(RpointSerializer(pointList, many=True).data)
+                            pjd.save()
+                    else:
+                        pnts = []
+                        pnt = Rpoint()
+                        pnt.id = 1
+                        pnt.route_id = route.pk
+                        pnt.lat = lat
+                        pnt.lng = lng
+                        pnt.comment = comment
+                        pnt.color = color
+                        pnt.time = tm
+                        pnts.append(pnt)
+                        pjd = PointData()
+                        pjd.route_id = route.pk
+                        pjd.points_json = json.dumps(RpointSerializer(pnts, many=True).data)
+                        pjd.save()
+
             except:
                 print('Point data saving error')
                 resp = {'result_code': '1'}
@@ -418,7 +453,9 @@ def upRoute(request):
         return HttpResponse(json.dumps(resp))
 
 
+
 #################################################### Real time #########################################################################################################################################
+
 
 @api_view(['GET', 'POST'])
 def upRTRoute(request):
@@ -435,12 +472,20 @@ def upRTRoute(request):
         pulse = request.POST.get('pulse', '0')
         sts = request.POST.get('status', '')
 
+        members = Rmember.objects.filter(id=member_id)
+        if members.count() == 0:
+            resp = {'result_code': '-1'}
+            return HttpResponse(json.dumps(resp))
+
+        member = members.first()
+
         route = None
         if int(route_id) > 0:
             route = Route.objects.get(id=route_id)
         else:
             route = Route()
 
+        route.admin_id = member.admin_id
         route.member_id = member_id
         try:
             assign_id = request.POST.get('assign_id', '0')
@@ -468,21 +513,87 @@ def upRTRoute(request):
             color = request.POST.get('color', '')
             tm = str(int(round(time.time() * 1000)))
 
-            if pulse == '1':
-                Rpoint.objects.filter(route_id=route.pk).last().delete()
-
-            pnt = Rpoint()
-            pnt.route_id = route.pk
-            pnt.lat = lat
-            pnt.lng = lng
-            pnt.comment = comment
-            pnt.color = color
-            pnt.time = tm
-            pnt.save()
+            pjds = PointData.objects.filter(route_id=route.pk)
+            if pjds.count() > 0:
+                pjd = pjds.first()
+                if pjd.points_json != '':
+                    pointList = json.loads(pjd.points_json)
+                    pnt = Rpoint()
+                    pnt.id = int(pointList[len(pointList) - 1]['id']) + 1
+                    pnt.route_id = route.pk
+                    pnt.lat = lat
+                    pnt.lng = lng
+                    pnt.comment = comment
+                    pnt.color = color
+                    pnt.time = tm
+                    pointList.append(RpointSerializer(pnt, many=False).data)
+                    pjd.points_json = json.dumps(RpointSerializer(pointList, many=True).data)
+                    pjd.save()
+            else:
+                pnts = []
+                pnt = Rpoint()
+                pnt.id = 1
+                pnt.route_id = route.pk
+                pnt.lat = lat
+                pnt.lng = lng
+                pnt.comment = comment
+                pnt.color = color
+                pnt.time = tm
+                pnts.append(pnt)
+                pjd = PointData()
+                pjd.route_id = route.pk
+                pjd.points_json = json.dumps(RpointSerializer(pnts, many=True).data)
+                pjd.save()
 
         resp = {'result_code': '0', 'route_id': str(route.pk)}
         return HttpResponse(json.dumps(resp))
 
+
+
+def temp(request):
+
+    route_id = request.POST.get('route_id', '0')
+
+    lat = request.POST.get('lat', '0')
+    lng = request.POST.get('lng', '0')
+    comment = request.POST.get('comment', '')
+    color = request.POST.get('color', '')
+    tm = str(int(round(time.time() * 1000)))
+
+    folder = settings.MEDIA_ROOT + '/points/'
+    fs = FileSystemStorage(location=folder)
+    file_path = 'route_' + str(route_id) + '.json'
+
+    if fs.exists(file_path) == False:
+        f = fs.open(file_path, 'w+')
+        pnts = []
+        pnt = Rpoint()
+        pnt['id'] = '1'
+        pnt.route_id = route_id
+        pnt.lat = lat
+        pnt.lng = lng
+        pnt.comment = comment
+        pnt.color = color
+        pnt.time = tm
+        pnts.append(pnt)
+        f.write(json.dumps({'points':RpointSerializer(pnts, many=True).data}))
+    else:
+        oldpnts = routefilepoints(route_id)
+
+        pnt = Rpoint()
+        if len(oldpnts) > 0:
+            pnt['id'] = str(int(oldpnts[len(oldpnts) - 1]['id']) + 1)
+        pnt.route_id = route_id
+        pnt.lat = lat
+        pnt.lng = lng
+        pnt.comment = comment
+        pnt.color = color
+        pnt.time = tm
+
+        oldpnts.append(pnt)
+
+        f = fs.open(file_path, 'w')
+        f.write(json.dumps({'points':RpointSerializer(oldpnts, many=True).data}))
 
 
 
@@ -516,7 +627,33 @@ def getmyroutes(request):
 def routedetails(request):
     if request.method == 'POST':
         route_id = request.POST.get('route_id','1')
-        pnts = Rpoint.objects.filter(route_id=route_id)
+        pnts = []
+        pointlist = routefilepoints(route_id)
+        if len(pointlist) > 0:
+            pnts = pointlist
+        else:
+            folder = settings.MEDIA_ROOT + '/points/'
+            fs = FileSystemStorage(location=folder)
+            file_path = 'route_' + str(route_id) + '.json'
+
+            pjds = PointJsonData.objects.filter(route_id=route_id)
+            if pjds.count() > 0:
+                pjd = pjds.first()
+                if pjd.points_json != '':
+                    pnts = pjd.points_json
+                    pnts = json.loads(pnts)
+            else:
+                pjds = PointData.objects.filter(route_id=route_id)
+                if pjds.count() > 0:
+                    pjd = pjds.first()
+                    if pjd.points_json != '':
+                        pnts = pjd.points_json
+                        pnts = json.loads(pnts)
+                else:
+                    pnts = Rpoint.objects.filter(route_id=route_id)
+            f = fs.open(file_path, 'w+')
+            f.write(json.dumps({'points':RpointSerializer(pnts, many=True).data}))
+
         pointser = RpointSerializer(pnts, many=True)
         resp = {'result_code':'0', 'points':pointser.data}
         return HttpResponse(json.dumps(resp))
@@ -753,11 +890,35 @@ def getMyCumulativeDistance(request):
 
 
 
+def parseJson(p_f):
+    pointList = []
+    points = ''
+    for line in p_f:
+        decoded_line = line.decode("utf-8")
+        points += decoded_line
+    if points != '':
+        points = points.replace('\\','')
+        try:
+            decoded = json.loads(points)
+            pointList = decoded['points']
+        except:
+            print('Point data saving error')
+
+    return pointList
 
 
 
-
-
+def routefilepoints(route_id):
+    folder = settings.MEDIA_ROOT + '/points/'
+    fs = FileSystemStorage(location=folder)
+    file_path = 'route_' + str(route_id) + '.json'
+    if fs.exists(file_path) == True:
+        f = fs.open(file_path)
+        # pointList = parseJson(f)
+        pointList = json.loads(f.read())['points']
+        return pointList
+    else:
+        return []
 
 
 
@@ -1133,7 +1294,7 @@ def raallreports(request):
     me = Rmember.objects.get(id=adminID)
 
     routeList = []
-    routes = Route.objects.filter(status='reported').order_by('-id')
+    routes = Route.objects.filter(admin_id=adminID, status='reported').order_by('-id')
     for route in routes:
         members = Rmember.objects.filter(admin_id=adminID, id=int(route.member_id))
         if members.count() > 0:
@@ -1148,7 +1309,7 @@ def raallreports(request):
             routeList.append(route)
 
     reportList = getRouteListData(routeList)
-    return render(request, 'rakubaru/reports.html', {'reports':reportList})
+    return render(request, 'rakubaru/reports.html', {'reports':reportList, 'me':me})
 
 
 def getRouteListData(routes):
@@ -1196,13 +1357,19 @@ def radelroute(request):
     route_id = request.GET['route_id']
     option = request.GET['option']
     route = Route.objects.get(id=int(route_id))
-    points = Rpoint.objects.filter(route_id=route.pk)
-    for pnt in points:
-        pnt.delete()
+    # points = Rpoint.objects.filter(route_id=route.pk)
+    # points.delete()
     pins = Rpin.objects.filter(route_id=route.pk)
-    for pin in pins:
-        pin.delete()
+    pins.delete()
+    pjds = PointJsonData.objects.filter(route_id=route.pk)
+    pjds.delete()
     route.delete()
+
+    folder = settings.MEDIA_ROOT + '/points/'
+    fs = FileSystemStorage(location=folder)
+    file_path = 'route_' + str(route_id) + '.json'
+    if fs.exists(file_path) == True:
+        fs.delete(file_path)
 
     if option == 'all':
         return redirect('/rakubaru/raallreports')
@@ -1214,6 +1381,17 @@ def radelroute(request):
 
 def rauserreports(request):
     import datetime
+
+    try:
+        if request.session['adminID'] == 0 or request.session['adminID'] == '':
+            return render(request, 'rakubaru/admin.html')
+    except KeyError:
+        print('no session')
+        return render(request, 'rakubaru/admin.html')
+
+    adminID = request.session['adminID']
+    me = Rmember.objects.get(id=adminID)
+
     member_id = request.GET['member_id']
     member = Rmember.objects.get(id=int(member_id))
     routes = Route.objects.filter(member_id=member.pk, status='reported').order_by('-id')
@@ -1228,7 +1406,7 @@ def rauserreports(request):
     #     route.name = member.name + '_' + datetime.datetime.fromtimestamp(float(int(route.reported_time)/1000)).strftime("%y%m%d_%H%M")
     reportList = getRouteListData(routes)
 
-    return render(request, 'rakubaru/reports.html', {'reports':reportList, 'member':member})
+    return render(request, 'rakubaru/reports.html', {'reports':reportList, 'member':member, 'me':me})
 
 
 @api_view(['GET', 'POST'])
@@ -1248,7 +1426,7 @@ def rasearchreportbydate(request):
         me = Rmember.objects.get(id=adminID)
 
         if option == 'all':
-            routes = Route.objects.all().order_by('-id')
+            routes = Route.objects.filter(admin_id=adminID).order_by('-id')
             routeList = []
             for route in routes:
                 members = Rmember.objects.filter(id=route.member_id)
@@ -1302,6 +1480,17 @@ def getroutessearchedbydate(routes, keyword):
 
 def raopenroutemap(request):
     import datetime
+
+    try:
+        if request.session['adminID'] == 0 or request.session['adminID'] == '':
+            return render(request, 'rakubaru/admin.html')
+    except KeyError:
+        print('no session')
+        return render(request, 'rakubaru/admin.html')
+
+    adminID = request.session['adminID']
+    me = Rmember.objects.get(id=adminID)
+
     route_id = request.GET['route_id']
     routes = Route.objects.filter(id=route_id)
     if routes.count() > 0:
@@ -1323,7 +1512,34 @@ def raopenroutemap(request):
             route.speed = '0.0'
             # route.duration = '00h 00m 00s'
 
-        pnts = Rpoint.objects.filter(route_id=route.pk)
+        pnts = []
+        pointlist = routefilepoints(route_id)
+        if len(pointlist) > 0:
+            pnts = pointlist
+        else:
+            folder = settings.MEDIA_ROOT + '/points/'
+            fs = FileSystemStorage(location=folder)
+            file_path = 'route_' + str(route_id) + '.json'
+
+            pjds = PointJsonData.objects.filter(route_id=route_id)
+            if pjds.count() > 0:
+                pjd = pjds.first()
+                if pjd.points_json != '':
+                    pnts = pjd.points_json
+                    pnts = json.loads(pnts)
+            else:
+                pjds = PointData.objects.filter(route_id=route_id)
+                if pjds.count() > 0:
+                    pjd = pjds.first()
+                    if pjd.points_json != '':
+                        pnts = pjd.points_json
+                        pnts = json.loads(pnts)
+                else:
+                    pnts = Rpoint.objects.filter(route_id=route_id)
+            f = fs.open(file_path, 'w+')
+            f.write(json.dumps({'points':RpointSerializer(pnts, many=True).data}))
+
+
         pins = Rpin.objects.filter(member_id=route.member_id)
         for pin in pins:
             pin.time = datetime.datetime.fromtimestamp(float(int(pin.time)/1000)).strftime("%m/%d/%y %r").replace('AM', '午前').replace('PM', '午後')
@@ -1355,7 +1571,7 @@ def raopenroutemap(request):
         adminID = request.session['adminID']
         me = Rmember.objects.get(id=adminID)
 
-        return render(request, 'rakubaru/route_real_time.html', {'report':data})
+        return render(request, 'rakubaru/route_real_time.html', {'report':data, 'me':me})
 
 
 
@@ -2449,6 +2665,7 @@ def getallassigns(request):
         return render(request, 'rakubaru/admin.html')
 
     adminID = request.session['adminID']
+    me = Rmember.objects.get(id=adminID)
 
     assigns = []
     forArea = None
@@ -2497,10 +2714,10 @@ def getallassigns(request):
                 }
                 assignList.append(data)
 
-    context = {'assigns':assignList, 'area':forArea}
+    context = {'assigns':assignList, 'area':forArea, 'me':me}
     try:
         assign_id = request.GET['assign_id']
-        context = {'assigns':assignList, 'area':forArea, 'assign_id':assign_id}
+        context = {'assigns':assignList, 'area':forArea, 'assign_id':assign_id, 'me':me}
     except KeyError:
         print('No key')
     return render(request, 'rakubaru/assignlist.html', context)
@@ -2508,12 +2725,22 @@ def getallassigns(request):
 
 
 def assignedworks(request):
+    try:
+        if request.session['adminID'] == 0 or request.session['adminID'] == '':
+            return render(request, 'rakubaru/admin.html')
+    except KeyError:
+        print('no session')
+        return render(request, 'rakubaru/admin.html')
+
+    adminID = request.session['adminID']
+    me = Rmember.objects.get(id=adminID)
+
     assign_id = request.GET['assign_id']
     member_id = request.GET['member_id']
     assign = AreaAssign.objects.get(id=assign_id)
     routes = Route.objects.filter(member_id=member_id, assign_id=assign_id, status='reported').order_by('-id')
     reportList = getRouteListData(routes)
-    return render(request, 'rakubaru/assigned_works.html', {'assign':assign, 'reports':reportList})
+    return render(request, 'rakubaru/assigned_works.html', {'me':me, 'assign':assign, 'reports':reportList})
 
 
 def tomember(request):
@@ -2837,6 +3064,7 @@ def schassignbydate(request):
         return redirect('/rakubaru/getallassigns')
 
 
+@api_view(['GET', 'POST'])
 def broadcast(request):
     try:
         if request.session['adminID'] == 0 or request.session['adminID'] == '':
@@ -2865,12 +3093,129 @@ def broadcast(request):
         return HttpResponse('success')
 
 
+@api_view(['GET', 'POST'])
+def superbroadcast(request):
+    try:
+        if request.session['superAdminID'] == 0 or request.session['superAdminID'] == '':
+            return render(request, 'rakubaru/login.html')
+    except KeyError:
+        print('no session')
+        return render(request, 'rakubaru/login.html')
+
+    superAdminID = request.session['superAdminID']
+    me = Rmember.objects.get(id=superAdminID)
+
+    if request.method == 'POST':
+        message = request.POST.get('broadmessage', '')
+
+        members = Rmember.objects.filter(status='loggedin')
+
+        for member in members:
+            title = 'らくばる スーパー管理者'
+            subject = 'らくばる スーパー管理者から'
+
+            from_email = 'rakubaru2020@gmail.com'
+            to_emails = []
+            to_emails.append(member.email)
+            send_mail_message(from_email, to_emails, title, subject, message)
+
+        return HttpResponse('success')
 
 
 
+def allassignedworks(request):
+    import datetime
+    try:
+        if request.session['adminID'] == 0 or request.session['adminID'] == '':
+            return render(request, 'rakubaru/admin.html')
+    except KeyError:
+        print('no session')
+        return render(request, 'rakubaru/admin.html')
 
+    adminID = request.session['adminID']
+    me = Rmember.objects.get(id=adminID)
 
+    assign_id = request.GET['assign_id']
+    member_id = request.GET['member_id']
+    assign = AreaAssign.objects.get(id=assign_id)
 
+    routes = Route.objects.filter(member_id=member_id, assign_id=assign_id, status='reported')
+    routeList = []
+    speed = 0
+    distance = 0
+    duration = 0
+    for route in routes:
+        pnts = []
+        pointlist = routefilepoints(route.pk)
+        if len(pointlist) > 0:
+            pnts = pointlist
+        else:
+            folder = settings.MEDIA_ROOT + '/points/'
+            fs = FileSystemStorage(location=folder)
+            file_path = 'route_' + str(route.pk) + '.json'
+
+            pjds = PointJsonData.objects.filter(route_id=route.pk)
+            if pjds.count() > 0:
+                pjd = pjds.first()
+                if pjd.points_json != '':
+                    pnts = pjd.points_json
+                    pnts = json.loads(pnts)
+            else:
+                pjds = PointData.objects.filter(route_id=route.pk)
+                if pjds.count() > 0:
+                    pjd = pjds.first()
+                    if pjd.points_json != '':
+                        pnts = pjd.points_json
+                        pnts = json.loads(pnts)
+                else:
+                    pnts = Rpoint.objects.filter(route_id=route.pk)
+            f = fs.open(file_path, 'w+')
+            f.write(json.dumps({'points':RpointSerializer(pnts, many=True).data}))
+
+        data = {
+            'route': route,
+            'points': pnts
+        }
+        routeList.append(data)
+
+        distance += float(route.distance)
+        duration += int(route.duration)
+
+    if duration > 0: speed = float(distance / duration) * 3600 * 1000
+
+    avg_speed = round(speed, 2)
+    total_distance = round(distance, 3)
+    con_sec, con_min, con_hour = convertMillis(duration)
+    total_duration = "{0}h {1}m {2}s".format(str(int(con_hour)).zfill(2), str(int(con_min)).zfill(2), str(int(con_sec)).zfill(2))
+
+    route = routes.first()
+    pins = Rpin.objects.filter(member_id=route.member_id)
+    for pin in pins:
+        pin.time = datetime.datetime.fromtimestamp(float(int(pin.time)/1000)).strftime("%m/%d/%y %r").replace('AM', '午前').replace('PM', '午後')
+
+    area = None
+    sublocs = []
+    if int(route.assign_id) > 0:
+        assign = AreaAssign.objects.get(id=route.assign_id)
+        area = Area.objects.get(id=assign.area_id)
+        sublocs = Sublocality.objects.filter(area_id=area.pk)
+        for subloc in sublocs:
+            subloc.locarr = subloc.locarr.replace("'","")
+
+    context = {
+        'me':me,
+        'assign':assign,
+        'routes':routeList,
+        'pins':pins,
+        'area': area,
+        'sublocs': sublocs,
+        'speed': avg_speed,
+        'distance': total_distance,
+        'duration': total_duration,
+        'option': 'area_works'
+    }
+
+    return render(request, 'rakubaru/assigned_works_2.html', context)
 
 
 
@@ -2985,6 +3330,9 @@ def getplan(plan):
 def superlogin(request):
     if request.method == "POST":
         email = request.POST.get('email', '')
+        if email != 'rakubaru2020@gmail.com' and email != 'alertingjames@gmail.com':
+            return render(request, 'rakubaru/result.html',
+                          {'response': 'Eメールまたはパスワードが間違っています。'})
         # members = Rmember.objects.filter(email=email, id=1)
         members = Rmember.objects.filter(id=1)
         if members.count() > 0:
@@ -3067,6 +3415,17 @@ def allreports(request):
 
 def emroutemap(request):
     import datetime
+
+    try:
+        if request.session['superAdminID'] == 0 or request.session['superAdminID'] == '':
+            return render(request, 'rakubaru/login.html')
+    except KeyError:
+        print('no session')
+        return render(request, 'rakubaru/login.html')
+
+    adminID = request.session['superAdminID']
+    me = Rmember.objects.get(id=adminID)
+
     route_id = request.GET['route_id']
     routes = Route.objects.filter(id=route_id)
     if routes.count() > 0:
@@ -3088,7 +3447,35 @@ def emroutemap(request):
             route.speed = '0.0'
             # route.duration = '00h 00m 00s'
 
-        pnts = Rpoint.objects.filter(route_id=route.pk)
+        # pnts = Rpoint.objects.filter(route_id=route.pk)
+
+        pnts = []
+        pointlist = routefilepoints(route.pk)
+        if len(pointlist) > 0:
+            pnts = pointlist
+        else:
+            folder = settings.MEDIA_ROOT + '/points/'
+            fs = FileSystemStorage(location=folder)
+            file_path = 'route_' + str(route.pk) + '.json'
+
+            pjds = PointJsonData.objects.filter(route_id=route.pk)
+            if pjds.count() > 0:
+                pjd = pjds.first()
+                if pjd.points_json != '':
+                    pnts = pjd.points_json
+                    pnts = json.loads(pnts)
+            else:
+                pjds = PointData.objects.filter(route_id=route.pk)
+                if pjds.count() > 0:
+                    pjd = pjds.first()
+                    if pjd.points_json != '':
+                        pnts = pjd.points_json
+                        pnts = json.loads(pnts)
+                else:
+                    pnts = Rpoint.objects.filter(route_id=route.pk)
+            f = fs.open(file_path, 'w+')
+            f.write(json.dumps({'points':RpointSerializer(pnts, many=True).data}))
+
         pins = Rpin.objects.filter(member_id=route.member_id)
         for pin in pins:
             pin.time = datetime.datetime.fromtimestamp(float(int(pin.time)/1000)).strftime("%m/%d/%y %r").replace('AM', '午前').replace('PM', '午後')
@@ -3120,7 +3507,7 @@ def emroutemap(request):
         adminID = request.session['adminID']
         me = Rmember.objects.get(id=adminID)
 
-        return render(request, 'rakubaru/route_real_time.html', {'report':data})
+        return render(request, 'rakubaru/route_real_time.html', {'report':data, 'me':me})
 
 
 

@@ -5,6 +5,8 @@
 <br>
 <br>
 
+<link rel="stylesheet" type="text/css" href="/static/css/home.css"/>
+
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 <meta charset="utf-8">
@@ -15,335 +17,6 @@ html, body{
   background: #BDB76B no-repeat center center fixed;
   background-size:cover;
 }
-
-#myBtn {
-  display: none;
-  position: fixed;
-  bottom: 20%;
-  right: 15px;
-  z-index: 99;
-  border: none;
-  outline: none;
-  background-color: rgba(0,0,0,0.3);
-  color: white;
-  cursor: pointer;
-  padding: 15px;
-  border-radius: 50%;
-}
-
-#myBtn:hover {
-  background-color: orange;
-}
-
-#admin{
-    display:none;
-}
-
-.userform {
-  border-radius: 15px;
-  max-width:550px;
-  width:auto;
-  margin:auto;
-  overflow: hidden;
-  text-align:center;
-}
-
-.action-menu {
-    position:absolute;
-    bottom:0;
-    left:15%;
-    right:15%;
-    height:auto;
-    border-radius: 50px;
-    background-color:rgba(255,255,255,0.6);
-    /*padding:20px;*/
-    text-align:center;
-    display:none;
-}
-
-.userform:hover .action-menu{
-    display:block;
-}
-
-p span {
-  color: #F00;
-}
-
-p {
-  margin: 0px;
-  font-weight: 200;
-  line-height: 2;
-}
-
-form h1 {
-  font-size: 21px;
-  background: #327a81 none repeat scroll 0% 0%;
-  color: rgb(255, 255, 255);
-  padding: 19px 22px;
-  border-radius: 5px 5px 0px 0px;
-  margin: auto;
-  text-shadow: none;
-  text-align:left
-}
-
-h1 {
-  text-align:center;
-  color: #666;
-  text-shadow: 1px 1px 0px #FFF;
-  margin:50px 0px 0px 0px
-}
-
-.form-group {
-  overflow: hidden;
-  width:100%;
-}
-
-.contentform {
-  padding: 10px 10px;
-}
-
-.centered-and-cropped { object-fit: cover }
-
-#backgroundOverlay{
-    background-color:rgba(0,0,0,0.8);
-    position:fixed;
-    top:0;
-    left:0;
-    right:0;
-    bottom:0;
-    z-index:10000;
-    display:none;
-}
-
-.bouton-update{
-  background-color: #008CBA;
-  color: #FFF;
-  text-align: center;
-  width: 100%;
-  border:0;
-  padding: 12px 18px;
-  border-radius: 50px;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-input {
-  border-radius: 50px;
-  border: 1px solid #eee;
-  margin-bottom: 15px;
-  margin-right:auto;
-  width: 100%;
-  height: 42px;
-  opacity:0.95;
-  float: middle;
-  padding: 0px 15px;
-  color:black;
-  text-align:left;
-}
-
-textarea {
-  width:100%;
-  height:32px;
-  opacity:0.95;
-  color:black;
-  text-align:left;
-  border:0;
-  padding:5px 5px 0px 3px;
-}
-
-select {
-  width: 100%;
-  height: 42px;
-  border-radius: 50px;
-  border: 1px solid #eee;
-  padding: 0px 15px;
-  color:black;
-  text-align-last:center;
-}
-
-label input {
-  display: none;/* <-- hide the default checkbox */
-}
-label span {/* <-- style the artificial checkbox */
-  height: 25px;
-  width: 25px;
-  text-align:center;
-  /*padding-bottom:5px;*/
-  display: inline-block;
-  position: relative;
-  border:0;
-  border-radius:3px;
-}
-[type=checkbox]:checked + span:before {/* <-- style its checked state..with a ticked icon */
-  content: '\2714';
-  position: absolute;
-  top:-10px;
-  font-size:32px;
-  left: 2px;
-}
-
-[type=checkbox]:checked + span:after {/* <-- style its checked state..with a ticked icon */
-  content: '\2714';
-  position: absolute;
-  top:-10px;
-  left: 2px;
-  font-size:32px;
-  color:yellow;
-}
-
-#snackbar {
-    visibility: hidden;
-    min-width: 200px;
-    margin-left: -125px;
-    background-color: #333;
-    color: #fff;
-    text-align: center;
-    border-radius: 2px;
-    padding: 12px;
-    position: fixed;
-    z-index: 1;
-    left: 50%;
-    bottom: 30px;
-    font-size: 17px;
-}
-
-#snackbar.show {
-    visibility: visible;
-    -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
-    animation: fadein 0.5s, fadeout 0.5s 2.5s;
-}
-
-@-webkit-keyframes fadein {
-    from {bottom: 0; opacity: 0;}
-    to {bottom: 30px; opacity: 1;}
-}
-
-@keyframes fadein {
-    from {bottom: 0; opacity: 0;}
-    to {bottom: 30px; opacity: 1;}
-}
-
-@-webkit-keyframes fadeout {
-    from {bottom: 30px; opacity: 1;}
-    to {bottom: 0; opacity: 0;}
-}
-
-@keyframes fadeout {
-    from {bottom: 30px; opacity: 1;}
-    to {bottom: 0; opacity: 0;}
-}
-
-#search::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
-  color: white;
-  opacity: 0.7; /* Firefox */
-}
-
-#search:-ms-input-placeholder { /* Internet Explorer 10-11 */
-  color: white;
-  opacity: 0.7;
-}
-
-#search::-ms-input-placeholder { /* Microsoft Edge */
-  color: white;
-  opacity: 0.7;
-}
-
-label.cameraButton {
-  display: inline-block;
-  /* Styles to make it look like a button */
-  padding: 10px;
-  border: 1.5px solid #666;
-  border-color: #EEE #CCC #CCC #EEE;
-  border-radius:50px;
-  font-size:14px;
-  color:white;
-  font-weight:300;
-  width:auto;
-  height:auto;
-  text-align:center;
-  background-color: green;
-}
-
-/* Look like a clicked/depressed button */
-label.cameraButton:active {
-  border-color: #CCC #EEE #EEE #CCC;
-}
-
-/* This is the part that actually hides the 'Choose file' text box for camera inputs */
-label.cameraButton input[accept*="image"] {
-  display: none;
-}
-
-
-/* The Modal (background) */
-.modal {
-  display: none; /* Hidden by default */
-  position: fixed; /* Stay in place */
-  z-index: 100000; /* Sit on top */
-  padding-top: 150px; /* Location of the box
-  left: 0;
-  top: 0;
-  width: 100%; /* Full width */
-  background-color: rgba(0,0,0,0.8); /* Black w/ opacity */
-}
-
-/* Modal Content (image) */
-.modal-content {
-  margin: auto;
-  display: block;
-  width: 400px;
-}
-
-/* Add Animation */
-.modal-content {
-  -webkit-animation-name: zoom;
-  -webkit-animation-duration: 0.6s;
-  animation-name: zoom;
-  animation-duration: 0.6s;
-}
-
-@-webkit-keyframes zoom {
-  from {-webkit-transform:scale(0)}
-  to {-webkit-transform:scale(1)}
-}
-
-@keyframes zoom {
-  from {transform:scale(0)}
-  to {transform:scale(1)}
-}
-
-/* The Close Button */
-.close {
-  position: absolute;
-  top: 5px;
-  right: 15px;
-  color: gray;
-  font-size: 40px;
-  font-weight: bold;
-  transition: 0.3s;
-}
-
-.close:hover,
-.close:focus {
-  color: black;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-/* 100% Image Width on Smaller Screens */
-@media only screen and (max-width: 500px){
-  .modal-content {
-    width: 100%;
-  }
-}
-
-.profile_image {
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.profile_image:hover {opacity: 0.7;}
-
 
 </style>
 
@@ -360,11 +33,18 @@ label.cameraButton input[accept*="image"] {
 <link rel="stylesheet" href="../lib/w3.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
-<div id="title" style="font-size:25px; font-weight:800; color: #F7D479; text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.7); text-align:center;
-	position:fixed; left:50%; float:middle; transform:translate(-50%, -50%); width:350px; z-index:100; top:92px; display:none;">社員一覧</div>
+<div id="title" style="font-size:30px; font-weight:800; color: #F7D479; text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.7); text-align:center;
+	position:fixed; left:50%; float:middle; transform:translate(-50%, -50%); width:350px; z-index:100; top:92px; display:none;">
+    社員一覧
+
+    <a href="{% if members %}/rakubaru/userscsvexport{% elif reports %}/rakubaru/reportscsvexport{% else %}{% endif %}" style="color:white;font-size:14px;margin-left:10px;">
+        <span class="fas fa-file-csv" aria-hidden="true" style="margin-right:5px;"></span>CSV出力
+    </a>
+
+</div>
 
 
-<div style="font-size:18px; font-weight:600; color:yellow; padding:10px 20px 10px 20px; border:2px solid yellow; position:fixed; left:1%; width:200px; top:92px;">
+<div style="font-size:16px; font-weight:600; color:yellow; padding:5px 15px 5px 15px; border:2px solid yellow; position:relative; left:1%; width:200px; top:4%;">
     <a href="/static/docs/らくポスユーザーマニュアル.pdf" target="_blank" style="color:yellow;">らくポスの使い方</a>
 </div>
 
@@ -372,18 +52,22 @@ label.cameraButton input[accept*="image"] {
 {% if members %}
 <div style="width:100%; height:auto;">
     {% csrf_token %}
-    <div style="font-size:25px; font-weight:800;
-        color: #F7D479; text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.7); text-align:center; width:100%; margin-top:40px;">社員一覧<br>
+    <div style="font-size:30px; font-weight:800; color: #F7D479; text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.7); text-align:center; width:100%; margin-top:60px;">
+        社員一覧
+
+        <a href="{% if members %}/rakubaru/userscsvexport{% elif reports %}/rakubaru/reportscsvexport{% else %}{% endif %}" style="color:white;font-size:14px;margin-left:10px;">
+            <span class="fas fa-file-csv" aria-hidden="true" style="margin-right:5px;"></span>CSV出力
+        </a>
+
     </div>
     <br>
     <div style="width:100%; text-align:center; display:inline-block;">
-        <div style="width:400px; display:inline-block;">
+        <div style="width:300px; display:inline-block;">
             <div style="width:100%;">
                 <i class="fa fa-search" style="font-size:20px; float:left; color:white; margin-top:3px;"></i>
-                <input type="text" placeholder="探す..." autocomplete="off" style="float:left; margin-left:10px; width:90%; background:transparent; border:0; padding:3px 6px; font-size:20px;
-                    color:white; height:auto;" id="search" onkeyup="filter()" onchange="clear()">
+                <input type="text" placeholder="探す..." autocomplete="off" id="search" onkeyup="filter()" onchange="clear()">
             </div><br>
-            <div style="background:white; width:400px; height:2px; margin-top:10px;"></div>
+            <div style="background:white; width:300px; height:2px; margin-top:10px;"></div>
         </div>
     </div>
     <br>

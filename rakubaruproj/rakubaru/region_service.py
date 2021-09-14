@@ -7,7 +7,7 @@ from django.core.files.storage import FileSystemStorage
 import json
 
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect, HttpResponseNotAllowed
-from rest_framework import status
+
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 import time

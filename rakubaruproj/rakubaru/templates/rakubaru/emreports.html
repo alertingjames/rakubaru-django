@@ -44,8 +44,8 @@ html, body{
     bottom:0;
     left:0;
     right:0;
-    padding-left:20%;
-    padding-right:20%;
+    padding-left:5%;
+    padding-right:5%;
     border-radius: 5px;
     background-color:rgba(255, 255, 204, 0.6);
     /*padding:20px;*/
@@ -354,9 +354,31 @@ var bar=new RadialProgress(document.getElementById("bar"),{colorBg:"rgba(0,0,0,0
                 </div>
 
                 <div class="form-group" style="display:flex; display:none;">
+
+                    <div style="flex-grow:1;">
+                        <button class="bouton-update" style="width:60px;height:60px;text-align:center;font-size:11px;"
+                            onclick="javascript:window.location.href='/rakubaru/csvexport?route_id={{report.route.pk}}';">
+                            CSV出力
+                        </button>
+                    </div>
+
+                    <div style="flex-grow:1;display:none;">
+                        <button class="bouton-update" style="width:60px;height:60px;text-align:center;font-size:11px;"
+                            onclick="javascript:window.location.href='/rakubaru/jsonexport?route_id={{report.route.pk}}';">
+                            JSON出力
+                        </button>
+                    </div>
+
+                    <div style="flex-grow:1;">
+                        <button class="bouton-update" style="width:60px; height:60px; text-align:center;font-size:10px;"
+                            onclick="javascript:window.location.href='/rakubaru/backup?route_id={{report.route.pk}}';">
+                            BACKUP<br>出力
+                        </button>
+                    </div>
+
                     <div style="flex-grow:1;">
                         <button class="bouton-update" style="width:60px; height:60px; text-align:center;"
-                            onclick="javascript:window.location.href='/rakubaru/raopenroutemap?route_id={{report.route.pk}}'; document.getElementById('bar').style.display = 'block';">
+                            onclick="javascript:window.location.href='/rakubaru/raopenroutemap?route_id={{report.route.pk}}'; if(!detectMob()){ document.getElementById('bar').style.display = 'block'; }">
                             <i class="fas fa-route" style="color:white; font-size:25px;"></i>
                         </button>
                     </div>
@@ -502,6 +524,10 @@ function scrollFunction() {
 function topFunction() {
     document.body.scrollTop = 0;
     document.documentElement.scrollTop = 0;
+}
+
+function detectMob() {
+    return ( ( window.innerWidth <= 800 ) && ( window.innerHeight <= 600 ) );
 }
 
 var modal = document.getElementById("editBox");

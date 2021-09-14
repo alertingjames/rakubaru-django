@@ -3,7 +3,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from rest_framework.urlpatterns import format_suffix_patterns
-from rakubaru import views, region_service, stripe_webhook
+from rakubaru import views, region_service, stripe_webhook, export, tests
 from rakubaru.views import run_task
 
 urlpatterns = [
@@ -30,6 +30,8 @@ urlpatterns = [
     url(r'^findregions', region_service.findregions, name='findregions'),
     url(r'^stripe_webhook', stripe_webhook.stripe_webhook_view, name='stripe_webhook_view'),
 
+    url(r'broadcast', views.superbroadcast, name='superbroadcast'),
+
     url(r'^test', views.test, name='test'),
     url(r'^regiontest', views.regiontest, name='regiontest'),
 
@@ -40,6 +42,24 @@ urlpatterns = [
     url(r'^modeltest', region_service.modeltest, name='modeltest'),
 
     # url(r'^deltestadmins', views.deltestadmins, name='deltestadmins'),
+
+
+    url(r'^viewreport', export.viewreport, name='viewreport'),
+
+    url(r'^delxxxroutes', export.delxxxroutes, name='delxxxroutes'),
+    url(r'^pntcount', export.pntcount, name='pntcount'),
+
+
+    ################### Test ######################################
+
+    url(r'^jsontest', export.jsontest, name='jsontest'),
+    url(r'^routeadminset', export.routeadminset, name='routeadminset'),
+    url(r'^takescreenshot', export.take_screenshot, name='take_screenshot'),
+    url(r'^toroutemap', export.toroutemap, name='toroutemap'),
+    url(r'^tomapshot', export.tomapshot, name='tomapshot'),
+    url(r'^redistestforroutepoints', export.redistestforroutepoints, name='redistestforroutepoints'),
+
+
 ]
 
 run_task(repeat=43200,repeat_until=None)

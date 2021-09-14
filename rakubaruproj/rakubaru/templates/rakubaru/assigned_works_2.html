@@ -1,0 +1,359 @@
+{% extends 'rakubaru/base_back.html' %}
+{% block title %}All works in {{area.area_name}}{% endblock %}
+{% block body %}
+
+<script src="https://maps.googleapis.com/maps/api/js?v=3&sensor=false&libraries=geometry"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/canvas2image@1.0.5/canvas2image.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.js"></script>
+
+<link rel="stylesheet" type="text/css" href="/static/css/area/route.css"/>
+
+<div style="width:450px; height:auto; margin:40px 0px 0px 10px; overflow:auto; position:fixed; z-index:1000;">
+    <br>
+    <br>
+    <div style="width:100%;">
+        <div style="width:100%;">
+            <div class="form">
+                <div class="contentform">
+                    <div style="width:100%; position:relative;">
+                        <div class="form-group">
+                            <div style="padding-left:8px; float:left; margin-top:5px;">
+                                <div style="color:black; font-size:16px; font-weight:600; text-align:left; word-wrap: break-word;">All works in {{area.area_name}}</div>
+                                <div style="font-size:14px; margin-top:5px;">
+                                    <i class="fa fa-clock-o" style="color:orange; font-size:16px; margin-right:5px; vertical-align:middle;"></i>
+                                    <span id="route-time">{{duration}} h</span>
+                                </div>
+                            </div>
+                            <div style="float:right; margin:5px;">
+                                <div style="font-size:14px;"><i class="fa fa-tachometer" style="color:orange; font-size:16px; margin-right:10px;"></i><span id="route-speed">{{speed}}</span>km/h</div>
+                                <div style="font-size:14px;"><i class="fas fa-route" style="color:orange; font-size:16px; margin-right:10px;"></i><span id="route-distance">{{distance}}</span>km</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<button class="bouton-update" style="position:fixed;top:80px;right:90px;width:60px;height:60px;text-align:center;font-size:11px;z-index:999;"
+    onclick="javascript:window.location.href='/rakubaru/kkkkk?assign_id={{assign.pk}}&member_id={{assign.member_id}}';">JSON<br>出力</button>
+
+<button class="bouton-update" style="position:fixed;top:80px;right:20px;width:60px;height:60px;text-align:center;font-size:11px;z-index:999;" onclick="javascript:exportScreenshot()">JPG<br>出力</button>
+
+<div id="map_canvas" style="width:100%; height:100%; display:block;"><noscript><p>GoogleマップをレンダリングするにはJavaScriptが必要です</p></noscript></div>
+
+<div id="routemap_title">
+    All works in {{area.area_name}}
+</div>
+
+<script>
+  var travelCoordinates = [];
+  var tracingPath = [];
+  var map = null;
+  var bearing = 270;
+  var lastPosn = null;
+  var startMarker;
+  var endMarker;
+
+  var allmarkers = [];
+
+  var symbol = {
+    path: "M62.1,36.5c-0.9-1.2-3.6-1.5-3.6-1.5c0.1-3.5,0.5-6.9,0.7-8.2c1.9-7.3-1.7-11.8-1.7-11.8c-4.8-4.8-9.1-5-12.5-5   c-3.4,0-7.8,0.3-12.5,5c0,0-3.6,4.5-1.7,11.8c0.2,1.2,0.5,4.6,0.7,8.2c0,0-2.7,0.3-3.6,1.5c-0.9,1.2-0.9,1.9,0,1.9   c0.9,0,2.9-2.3,3.6-2.3V35c0,1,0.1,2,0.1,3c0,4.4,0,33.7,0,33.7s-0.3,6.1,5,7.8c1.2,0,4.6,0.4,8.4,0.5c3.8-0.1,7.3-0.5,8.4-0.5   c5.3-1.7,5-7.8,5-7.8s0-29.3,0-33.7c0-1,0-2,0.1-3v1.2c0.7,0,2.7,2.3,3.6,2.3C63,38.5,63,37.7,62.1,36.5z M34.7,66.5   c-0.3,3.3-2.3,4.1-2.3,4.1V37.4c0.8,1.2,2.3,6.8,2.3,6.8S34.9,63.2,34.7,66.5z M54.8,75.2c0,0-4.2,2.3-9.8,2.2   c-5.6,0.1-9.8-2.2-9.8-2.2v-2.8c4.9,2.2,9.8,2.2,9.8,2.2s4.9,0,9.8-2.2V75.2z M35.2,41.1l-1.7-10.2c0,0,4.5-3.2,11.5-3.2   s11.5,3.2,11.5,3.2l-1.7,10.2C51.4,39.2,38.6,39.2,35.2,41.1z M57.7,70.6c0,0-2.1-0.8-2.3-4.1c-0.3-3.3,0-22.4,0-22.4   s1.5-5.6,2.3-6.8V70.6z",
+    fillColor: '#FF0000',
+    fillOpacity: .5,
+    anchor: new google.maps.Point(45, 45),
+    strokeWeight: 1,
+    scale: .5,
+    rotation: bearing
+  }
+
+  function initMap() {
+    // map options
+    var options = {
+        zoom: 5,
+        center: {
+          lat: 39.74608499,
+          lng: -90.26048664
+        },
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        mapTypeControl: true,
+        mapTypeControlOptions: {
+            style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+            position: google.maps.ControlPosition.LEFT_BOTTOM
+        },
+        scaleControl: true,
+        fullscreenControl: true,
+        fullscreenControlOptions: {
+            position: google.maps.ControlPosition.RIGHT_CENTER
+        }
+    }
+    map = new google.maps.Map(document.getElementById('map_canvas'), options);
+
+    console.log('prefecture: ' + '{{area.prefecture}}' + '///city: ' + '{{area.city}}')
+
+    {% if area.prefecture != '' and area.city != '' %}
+    getRegionCoordinates("{{area.prefecture}}", "{{area.city}}", "{{area.region}}");
+    setTimeout(loadSublocData, 3000);
+    {% else %}
+    loadSublocData();
+    {% endif %}
+
+    var bounds = new google.maps.LatLngBounds();
+
+    {% for route in routes %}
+    {% for point in route.points %}
+        {% if point.lat != None %}
+            var position = new google.maps.LatLng( {{point.lat}}, {{point.lng}} );
+        	bounds.extend( position );
+            {% if forloop.last %}
+                addMarker2(position, '終わり');
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+    addMarker2(new google.maps.LatLng( {{route.points.0.lat}}, {{route.points.0.lng}} ), '開始');
+    travelCoordinates = [
+        {% for point in route.points %}
+            {% if point.lat != None %}
+                [{ lat: {{ point.lat }}, lng: {{ point.lng }} }, '{{point.color}}', {{ point.lat }}, {{ point.lng }}, {{ point.id }}],
+            {% endif %}
+        {% endfor %}
+    ];
+    for (var i = 0; i < travelCoordinates.length-1; i++) {
+
+        var flightPath = new google.maps.Polyline({
+            path: [travelCoordinates[i][0], travelCoordinates[i+1][0]],
+            strokeColor: travelCoordinates[i+1][1],
+            strokeOpacity: 1.0,
+            strokeWeight: 3,
+            map: map
+        });
+        flightPath.setMap(map);
+
+    }
+    {% endfor %}
+
+    map.fitBounds( bounds );
+
+    //Add marker
+    var markers = [
+        {% for pin in pins %}
+            {% if pin.lat != None %}
+                {
+                    coords: {
+                      lat: {{ pin.lat }},
+                      lng: {{ pin.lng }}
+                    },
+                    content: '<label style="font-weight:500;">{{pin.comment}}</label><div style="font-weight:300; font-size:14px;">{{pin.time}}</div>',
+                },
+            {% endif %}
+        {% endfor %}
+    ];
+
+    // Loop through markers
+    var gmarkers = [];
+    for (var i = 0; i < markers.length; i++) {
+        gmarkers.push(addMarker(markers[i]));
+    }
+
+    //Add MArker function
+    function addMarker(props) {
+        var marker = new google.maps.Marker({
+            position: props.coords,
+            map: map,
+
+        });
+
+        /* if(props.iconImage){
+            marker.setIcon(props.iconImage);
+        } */
+
+        //Check content
+        if (props.content) {
+            var infoWindow = new google.maps.InfoWindow({
+                content: props.content
+            });
+            marker.addListener('click', function() {
+                infoWindow.open(map, marker);
+            });
+        }
+
+        allmarkers.push(marker);
+
+        return marker;
+    }
+
+    //Add MArker function
+    function addMarker2(latlng, title) {
+        var marker = new google.maps.Marker({
+            position: latlng,
+            map: map,
+        });
+
+        var infoWindow = new google.maps.InfoWindow({
+            content: title
+        });
+        infoWindow.open(map, marker);
+        marker.addListener('click', function() {
+            infoWindow.open(map, marker);
+        });
+
+        if(title == '開始') {
+            startMarker = marker;
+        }else if(title == '終わり') {
+            endMarker = marker;
+        }
+
+        allmarkers.push(marker);
+    }
+
+  }
+
+    function loadSublocData() {
+        {% if sublocs %}
+        var bounds = new google.maps.LatLngBounds();
+        {% for subloc in sublocs %}
+            var jdata = JSON.parse(JSON.stringify({{subloc.locarr}}));
+            var coords = new Array();
+            for(var i=0; i<jdata.length; i++) {
+                coords.push({ lng: jdata[i].lng, lat: jdata[i].lat });
+                var loc = new google.maps.LatLng(jdata[i].lat, jdata[i].lng);
+                bounds.extend(loc);
+            }
+            var shape = new google.maps.Polygon({
+                paths: coords,
+                strokeColor: "{{subloc.color}}",
+                strokeOpacity: 0.8,
+                strokeWeight: 2,
+                fillColor: "{{subloc.color}}",
+                fillOpacity: 0.35,
+                map: map
+            });
+            shape.setMap(map);
+        {% endfor %}
+        // map.fitBounds(bounds);
+        {% endif %}
+    }
+
+
+    function getRegionCoordinates(pref_name, city_name, region_name) {
+
+        if(pref_name.trim().length == 0)return;
+
+        var coords = new Array();
+
+        var url = 'https://www.rakubaru-posting.com/findregions?pref=' + pref_name + '&city=' + city_name + '&sname=' + region_name;
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                var jsondata = JSON.parse(xhr.responseText);
+                // console.log(JSON.stringify(jsondata));
+                if(Array.isArray(jsondata) && jsondata.length > 0) {
+                    var bounds = new google.maps.LatLngBounds();
+                    for (var x=0; x<jsondata.length; x++) {
+                        var pref_name = jsondata[x].pref_name;
+                        var city_name = jsondata[x].city_name;
+                        var s_name = jsondata[x].s_name;
+                        var coordjsonarr = jsondata[x].coordinates;
+                        var coords1 = new Array();
+                        var locs = new Array();
+                        for(var i=0; i<coordjsonarr.length; i++){
+                            for(var j=0; j<coordjsonarr[i].length; j++){
+                                if(coordjsonarr[i][j].length == 2) {
+                                    if(!coords1.includes({ lng: coordjsonarr[i][j][0],  lat: coordjsonarr[i][j][1] })){
+                                        coords1.push({ lng: coordjsonarr[i][j][0],  lat: coordjsonarr[i][j][1] });
+                                        coords.push({ lng: coordjsonarr[i][j][0],  lat: coordjsonarr[i][j][1] });
+                                    }
+                                    var iloc = new google.maps.LatLng(coordjsonarr[i][j][1], coordjsonarr[i][j][0]);
+                                    bounds.extend(iloc);
+                                    locs.push(iloc);
+                                }
+                            }
+                        }
+
+                        if(coords1.length > 0) {
+                            var color = getColor();
+                            var polygon = new google.maps.Polygon({
+                                paths: coords1,
+                                strokeColor: "#0000e6",
+                                strokeOpacity: 1.0,
+                                strokeWeight: 1,
+                                fillColor: color,
+                                fillOpacity: 0.2
+                            });
+                            // Draw the polygon on the desired map instance
+                            polygon.setMap(map);
+                        }
+                    }
+
+                    // map.fitBounds(bounds);
+                }
+
+            }
+
+        };
+
+        xhr.open('GET', url, true);
+        xhr.send('');
+
+    }
+
+    function getColor() {
+        const randomColor = Math.floor(Math.random()*16777215).toString(16);
+        return "#" + randomColor;
+    }
+
+    function exportScreenshot() {
+        html2canvas($("#map_canvas"), {
+            useCORS: true,
+            onrendered: function (canvas) {
+                $("#imgMap").attr("src", canvas.toDataURL("image/png"));
+                // $("#imgMap").show();
+                var filename = "assigned_works.jpg";
+                download(document.getElementById("imgMap").src, filename);
+            }
+        });
+    }
+
+    function download(url, filename) {
+        fetch(url).then(function(t) {
+            return t.blob().then((b)=>{
+                var a = document.createElement("a");
+                a.href = URL.createObjectURL(b);
+                a.setAttribute("download", filename);
+                a.click();
+            });
+        });
+    }
+
+</script>
+
+<img id="imgMap" style="display:none;" />
+
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAD08ggeOQbSPf8_w-8KvqKhqeXWH3GM8s&callback=initMap"></script>
+
+<meta charset="UTF-8">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<div id="backgroundOverlay" onclick="javascript:dismissLayouts();">
+</div>
+
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

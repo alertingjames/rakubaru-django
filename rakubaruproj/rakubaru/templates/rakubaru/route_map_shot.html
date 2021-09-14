@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+    <meta name="description" content="Capture an area on the map">
+    <title>Take a Snapshot of the Map</title>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/canvas2image@1.0.5/canvas2image.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.js"></script>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAD08ggeOQbSPf8_w-8KvqKhqeXWH3GM8s"></script>
+  </head>
+
+  <body>
+
+        <script type="text/javascript">
+            var markers = [{
+                "title": 'CL 3105',
+                "lat": '-46.6913472',
+                "lng": '-67.8249861111111',
+                "description": 'Pozo inyector'
+            }, {
+                "title": 'CL 3046',
+                "lat": '-46.6921',
+                "lng": '-67.82013888888889',
+                "description": 'Productor 1'
+            }, {
+                "title": 'CL 3072',
+                "lat": '-46.6935278',
+                "lng": '-67.81691388888889',
+                "description": 'Productor 2'
+            }, {
+                "title": 'CL 3071',
+                "lat": '-46.6896222222222',
+                "lng": '-67.81862777777778',
+                "description": 'Productor 3'
+            }, {
+                "title": 'CL 3073',
+                "lat": '-46.68713888888889',
+                "lng": '-67.82014166666666',
+                "description": 'Productor 4'
+            }, {
+                "title": 'CL 3079',
+                "lat": '-46.686638888888889',
+                "lng": '-67.816625',
+                "description": 'Productor 5'
+            }, {
+                "title": 'CL 3077',
+                "lat": '-46.6866',
+                "lng": '-67.80874444444444',
+                "description": 'Productor 6'
+            }];
+            window.onload = function () {
+                LoadMap();
+            }
+
+            var map, mapOptions;
+            function LoadMap() {
+                mapOptions = {
+                    center: new google.maps.LatLng(-46.6896222222222, -67.81862777777778),
+                    zoom: 14,
+                    mapTypeId: google.maps.MapTypeId.ROADMAP
+                };
+                map = new google.maps.Map(document.getElementById("dvMap"), mapOptions);
+
+
+                for (var i = 0; i < markers.length; i++) {
+                    var data = markers[i];
+                    var myLatlng = new google.maps.LatLng(data.lat, data.lng);
+                    var marker = new google.maps.Marker({
+                        position: myLatlng,
+                        map: map,
+                        title: data.title
+                    });
+                }
+
+                for (var i = 0; i < markers.length; i++) {
+                    var data = markers[i];
+                    var data_inicio = markers[1];
+                    var colores = ["red", "blue", "green", "yelow", "orange", "olive", "violet", "cyan", "coral", "darkblue"];
+                    var line = new google.maps.Polyline({
+                        path: [
+                            new google.maps.LatLng(data_inicio.lat, data_inicio.lng),
+                            new google.maps.LatLng(data.lat, data.lng)
+                        ],
+                        strokeColor: colores[i],
+                        strokeOpacity: 0.6,
+                        strokeWeight: 1 + i + i,
+                        geodesic: true,
+                        map: map
+                    });
+                }
+            };
+
+            function Export() {
+                html2canvas($("#dvMap"), {
+                    useCORS: true,
+                    onrendered: function (canvas) {
+                        $("#imgMap").attr("src", canvas.toDataURL("image/png"));
+                        $("#imgMap").show();
+                        download(document.getElementById("imgMap").src, "map_screenshot.png");
+                    }
+                });
+            }
+
+            function download(url, filename) {
+                fetch(url).then(function(t) {
+                    return t.blob().then((b)=>{
+                        var a = document.createElement("a");
+                        a.href = URL.createObjectURL(b);
+                        a.setAttribute("download", filename);
+                        a.click();
+                    }
+                    );
+                });
+            }
+
+        </script>
+
+        <table border="0" cellpadding="0" cellspacing="0">
+            <tr>
+                <td>
+                    <div id="dvMap" style="width: 220px; height: 350px">
+                    </div>
+                </td>
+                <td>
+                    &nbsp; &nbsp;
+                </td>
+                <td>
+                    <img id="imgMap" src="" alt="" style="display: none" />
+                </td>
+            </tr>
+        </table>
+        <br />
+        <input type="button" id="btnExport" value="Export" onclick="Export()" />
+
+
+        <!--<script type="text/javascript">-->
+        <!--    var markers = [-->
+        <!--    {-->
+        <!--        "title": 'Aksa Beach',-->
+        <!--        "lat": '19.1759668',-->
+        <!--        "lng": '72.79504659999998',-->
+        <!--        "description": 'Aksa Beach is a popular beach and a vacation spot in Aksa village at Malad, Mumbai.'-->
+        <!--    },-->
+        <!--    {-->
+        <!--        "title": 'Juhu Beach',-->
+        <!--        "lat": '19.0883595',-->
+        <!--        "lng": '72.82652380000002',-->
+        <!--        "description": 'Juhu Beach is one of favourite tourist attractions situated in Mumbai.'-->
+        <!--    },-->
+        <!--    {-->
+        <!--        "title": 'Girgaum Beach',-->
+        <!--        "lat": '18.9542149',-->
+        <!--        "lng": '72.81203529999993',-->
+        <!--        "description": 'Girgaum Beach commonly known as just Chaupati is one of the most famous public beaches in Mumbai.'-->
+        <!--    },-->
+        <!--    {-->
+        <!--        "title": 'Jijamata Udyan',-->
+        <!--        "lat": '18.979006',-->
+        <!--        "lng": '72.83388300000001',-->
+        <!--        "description": 'Jijamata Udyan is situated near Byculla station is famous as Mumbai (Bombay) Zoo.'-->
+        <!--    },-->
+        <!--    {-->
+        <!--        "title": 'Sanjay Gandhi National Park',-->
+        <!--        "lat": '19.2147067',-->
+        <!--        "lng": '72.91062020000004',-->
+        <!--        "description": 'Sanjay Gandhi National Park is a large protected area in the northern part of Mumbai city.'-->
+        <!--    }-->
+        <!--    ];-->
+        <!--    window.onload = function () {-->
+        <!--        LoadMap();-->
+        <!--    }-->
+        <!--    var map, mapOptions;-->
+        <!--    function LoadMap() {-->
+        <!--        mapOptions = {-->
+        <!--            center: new google.maps.LatLng(19.0883595, 72.82652380000002),-->
+        <!--            zoom: 10,-->
+        <!--            mapTypeId: google.maps.MapTypeId.ROADMAP-->
+        <!--        };-->
+        <!--        map = new google.maps.Map(document.getElementById("dvMap"), mapOptions);-->
+
+        <!--        for (var i = 0; i < markers.length; i++) {-->
+        <!--            var data = markers[i];-->
+        <!--            var myLatlng = new google.maps.LatLng(data.lat, data.lng);-->
+        <!--            var marker = new google.maps.Marker({-->
+        <!--                position: myLatlng,-->
+        <!--                map: map,-->
+        <!--                title: data.title-->
+        <!--            });-->
+        <!--        }-->
+        <!--    };-->
+        <!--    function Export() {-->
+                <!--//URL of Google Static Maps.-->
+        <!--        var staticMapUrl = "https://maps.googleapis.com/maps/api/staticmap";-->
+
+                <!--//Set the Google Map Center.-->
+        <!--        staticMapUrl += "?center=" + map.getCenter().lat() + "," + map.getCenter().lng();-->
+
+                <!--// Set the Google Map Size.-->
+        <!--        staticMapUrl += "&size=700x700";-->
+
+                <!--// Set the Google Map Scale.-->
+        <!--        staticMapUrl += "&scale=2";-->
+
+                <!--//Set the Google Map Zoom.-->
+        <!--        staticMapUrl += "&zoom=" + map.getZoom();-->
+
+                <!--//Set the Google Map Type.-->
+        <!--        staticMapUrl += "&maptype=" + mapOptions.mapTypeId;-->
+
+                <!--//Loop and add Markers.-->
+        <!--        for (var i = 0; i < markers.length; i++) {-->
+        <!--            staticMapUrl += "&markers=color:red|" + markers[i].lat + "," + markers[i].lng;-->
+        <!--        }-->
+
+                <!--//Display the Image of Google Map.-->
+        <!--        var imgMap = document.getElementById("imgMap");-->
+        <!--        imgMap.src = staticMapUrl + '&key=AIzaSyAD08ggeOQbSPf8_w-8KvqKhqeXWH3GM8s';-->
+                <!--// imgMap.style.display = "block";-->
+
+        <!--        download(imgMap.src, "map_screenshot.png");-->
+        <!--    }-->
+
+            <!--function download(url, filename) {-->
+            <!--    fetch(url).then(function(t) {-->
+            <!--        return t.blob().then((b)=>{-->
+            <!--            var a = document.createElement("a");-->
+            <!--            a.href = URL.createObjectURL(b);-->
+            <!--            a.setAttribute("download", filename);-->
+            <!--            a.click();-->
+            <!--        }-->
+            <!--        );-->
+            <!--    });-->
+            <!--}-->
+
+        <!--</script>-->
+        <!--<table border="0" cellpadding="0" cellspacing="0">-->
+        <!--    <tr>-->
+        <!--        <td>-->
+        <!--            <div id="dvMap" style="width:500px;height:500px;">-->
+        <!--            </div>-->
+        <!--        </td>-->
+        <!--        <td>-->
+        <!--            &nbsp;-->
+        <!--            &nbsp;-->
+        <!--        </td>-->
+        <!--        <td>-->
+        <!--            <img id="imgMap" style="display:none;" />-->
+        <!--        </td>-->
+        <!--    </tr>-->
+        <!--</table>-->
+        <!--<br />-->
+        <!--<input type="button" id="btnExport" value="Export" onclick="Export()" />-->
+  </body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

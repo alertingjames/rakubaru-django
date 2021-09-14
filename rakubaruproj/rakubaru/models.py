@@ -32,6 +32,7 @@ class Rpoint(models.Model):
     color = models.CharField(max_length=50)
     status = models.CharField(max_length=20)
 
+
 class Rpin(models.Model):
     member_id = models.CharField(max_length=11, default="0")
     route_id = models.CharField(max_length=11, default="0")
@@ -42,6 +43,7 @@ class Rpin(models.Model):
     status = models.CharField(max_length=20)
 
 class Route(models.Model):
+    admin_id = models.CharField(max_length=11, default="0")
     member_id = models.CharField(max_length=11, default="0")
     assign_id = models.CharField(max_length=11, default="0")
     name = models.CharField(max_length=100)
@@ -159,6 +161,16 @@ class Invoice(models.Model):
     invoice_pdf = models.CharField(max_length=200)
     created_time = models.CharField(max_length=50)
     status = models.CharField(max_length=50)
+
+
+class PointJsonData(models.Model):
+    route_id = models.CharField(max_length=11)
+    points_json = models.CharField(max_length=10000000000)
+
+
+class PointData(models.Model):
+    route_id = models.CharField(max_length=11)
+    points_json = models.CharField(max_length=10000000000)
 
 
 

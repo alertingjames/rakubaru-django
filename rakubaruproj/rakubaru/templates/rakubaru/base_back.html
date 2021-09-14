@@ -73,11 +73,19 @@ h4:hover{
 
         <div class="collapse navbar-collapse" id="topNavBar" style="border:0;">
             <ul class="nav navbar-nav">
-                <li style="margin-right:30px;">
-                    <a href="javascript:void(0)" onclick="window.history.back();">
+                {% if option == 'area_works' %}
+                <li style="margin-right:30px;opacity:0;">
+                    <a href="javascript:void(0)" onclick="history.go(-1); event.preventDefault();">
                         <h4 style=""><span class="fa fa-arrow-left" aria-hidden="true" style="margin-right:10px;"></span>バック</h4>
                     </a>
                 </li>
+                {% else %}
+                <li style="margin-right:30px;">
+                    <a href="javascript:void(0)" onclick="history.go(-1); event.preventDefault();">
+                        <h4 style=""><span class="fa fa-arrow-left" aria-hidden="true" style="margin-right:10px;"></span>バック</h4>
+                    </a>
+                </li>
+                {% endif %}
                 <!--<li style="margin-right:30px;">-->
                 <!--    <a href="/superadmin">-->
                 <!--        <h4 style=""><span class="fa fa-home" aria-hidden="true" style="margin-right:10px;"></span>ホーム</h4>-->

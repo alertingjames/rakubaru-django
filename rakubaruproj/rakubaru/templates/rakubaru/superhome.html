@@ -345,6 +345,10 @@ label.cameraButton input[accept*="image"] {
 
 .profile_image:hover {opacity: 0.7;}
 
+#bar {
+    margin:0;position:fixed;top:50%;left:50%;transform:translate(-50%, -50%);z-index:99999;
+}
+
 
 </style>
 
@@ -364,6 +368,13 @@ label.cameraButton input[accept*="image"] {
 
 <div id="title" style="font-size:25px; font-weight:800; color: #F7D479; text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.7); text-align:center;
 	position:fixed; left:50%; float:middle; transform:translate(-50%, -50%); width:350px; z-index:100; top:92px; display:none;">管理者一覧</div>
+
+
+<div id="bar" style="display:none;"></div>
+
+<script>
+var bar=new RadialProgress(document.getElementById("bar"),{colorBg:"rgba(0,0,0,0)",colorFg:"#0066ff",thick:8,round:true,indeterminate:true,animationSpeed:0.5});
+</script>
 
 
 {% if admins %}
@@ -603,6 +614,32 @@ label.cameraButton input[accept*="image"] {
     </div>
 </div>
 
+<div id="broadcastBox" style="font-size:16px; font-weight:300; color: black;
+	position:fixed; left:50%; float:middle; background-color:white; border-radius:10px; padding: 8px 15px 15px 15px; box-shadow: 0px 0px 100px rgba(0, 0, 0, 1.0);
+	transform:translate(-50%, -50%); min-width:300px; max-width:600px; width:auto; z-index:10100; top:40%; display:none;">
+    <img style="border-radius:50%; width:50px; height:50px; float:left;" class="centered-and-cropped" src="/static/images/rakubaru/appicon.jpg">
+    <span class="fa fa-close" style="font-size:20px; float:right; margin-top:5px;"
+        onclick="javascript:document.getElementById('broadcastBox').style.display='none'; document.getElementById('backgroundOverlay').style.display='none';"></span>
+    <div style="width:100%; display:inline-block;">
+        <div style="font-size:18px; font-weight:600; color:black; text-align:center; width:100%; margin-top:-20px;">ブロードキャストメッセージを送信する<br>すべてのマネージャーに</div>
+        <form action="/broadcast" method="post" enctype="multipart/form-data" style="width:100%; margin-top:10px;" id="broadcastform">
+            {% csrf_token %}
+            <div class="form-group">
+                <input style="height:2px; opacity:0;">
+                <script src="https://rawgit.com/jackmoore/autosize/master/dist/autosize.min.js"></script>
+                <textarea rows="8" name="broadmessage" id="broadmessage" placeholder="ここにあなたのメッセージを書いてください..."
+                    style="width:100%; height:150px; min-height:150px; max-height:300px; border:1.5px solid gray; padding:15px; border-radius:5px;"></textarea>
+                <script>autosize(document.getElementById("message"));</script>
+            </div>
+            <center><img src="/static/images/rakubaru/progressbar.gif" style="width:30px; height:30px; display: none;" id="gif3"></center>
+            <center>
+                <button type="button" class="bouton-update" style="width:60%; margin-top:10px; margin-bottom:20px;"
+                    onclick="javascript:sendBroadcast(document.getElementById('broadcastform'), document.getElementById('gif3'), 'Message sent!');">Submit</button>
+            </center>
+        </form>
+    </div>
+</div>
+
 <div id="backgroundOverlay" onclick="javascript:dismissLayouts();">
 </div>
 
@@ -742,6 +779,7 @@ function findParentBySelector(elm, selector) {
 function dismissLayouts(){
     document.getElementById('newMemberForm').style.display='none';
     document.getElementById('messageBox').style.display='none';
+    document.getElementById('broadcastBox').style.display='none';
     document.getElementById('backgroundOverlay').style.display='none';
     modal.style.display = "none";
 }
@@ -855,6 +893,38 @@ function post(path, params, method) {
 
    document.body.appendChild(form);
    form.submit();
+}
+
+function openBroadcastBox(){
+    document.getElementById("broadmessage").value = "";
+    document.getElementById('backgroundOverlay').style.display='block';
+    setTimeout(function(){
+        document.getElementById('broadcastBox').style.display='block';
+    },300);
+}
+
+function sendBroadcast(form, gif, text){
+    if(document.getElementById("broadmessage").value == ""){
+        alert("メッセージを書いてください...");
+        return;
+    }
+    document.getElementById('bar').style.display = 'block';
+    document.getElementById('broadcastBox').style.display='none';
+    var formData = new FormData(form);
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var result = xhr.response;
+            console.log('Response: ' + result);
+            if(result == 'success') {
+                showToast(text);
+            }
+            document.getElementById('bar').style.display = 'none';
+            dismissLayouts();
+        }
+    };
+    xhr.open('POST', form.getAttribute('action'), true);
+    xhr.send(formData);
 }
 
 </script>

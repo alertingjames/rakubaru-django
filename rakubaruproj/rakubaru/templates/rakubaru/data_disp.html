@@ -1,4 +1,4 @@
-{% extends 'rakubaru/base_back.html' %}
+{% extends 'rakubaru/base.html' %}
 {% block title %}{{report.route.name}}{% if report.area is not None %} in {{report.area.area_name}}{% endif %}{% endblock %}
 {% block body %}
 
@@ -9,7 +9,8 @@
 
 <link rel="stylesheet" type="text/css" href="/static/css/area/route.css"/>
 
-<div style="width:450px; height:auto; margin:30px 0px 0px 5px; overflow:auto; position:fixed; z-index:1000;">
+{% if report %}
+<div style="width:450px; height:auto; top:0px; left:30px; overflow:auto; position:fixed; z-index:1000;">
     <br>
     <br>
     <div style="width:100%;">
@@ -95,8 +96,33 @@
     </div>
 </div>
 
+{% endif %}
 
-<button class="bouton-update" style="position:fixed;top:80px;right:20px;width:60px;height:60px;text-align:center;font-size:11px;z-index:999;" onclick="javascript:exportScreenshot()">JPG出力</button>
+
+<form id="json-form" action="/viewreport" method="post">
+    {% csrf_token %}
+    <label class="jsonFileButton">
+        jsonファイルをアップロードする
+        <input type="file" id="jsonfile">
+    </label>
+    <input hidden name="data" id="data">
+</form>
+
+<script>
+  	function onChange(event) {
+        var reader = new FileReader();
+        reader.onload = onReaderLoad;
+        reader.readAsText(event.target.files[0]);
+    }
+
+    function onReaderLoad(event){
+        console.log(event.target.result);
+        var obj = JSON.parse(event.target.result);
+        document.getElementById("data").value = event.target.result;
+        document.getElementById("json-form").submit();
+    }
+    document.getElementById('jsonfile').addEventListener('change', onChange);
+</script>
 
 
 <div id="map_canvas" style="width:100%; height:100%; display:block;"><noscript><p>GoogleマップをレンダリングするにはJavaScriptが必要です</p></noscript></div>
@@ -132,10 +158,10 @@
   function initMap() {
     // map options
     var options = {
-        zoom: 5,
+        zoom: 8,
         center: {
-          lat: 39.74608499,
-          lng: -90.26048664
+          lat: 33.5902,
+          lng: 130.4017
         },
         mapTypeId: google.maps.MapTypeId.ROADMAP,
         mapTypeControl: true,
@@ -150,6 +176,8 @@
         }
     }
     map = new google.maps.Map(document.getElementById('map_canvas'), options);
+
+    {% if report %}
 
     console.log('prefecture: ' + '{{report.area.prefecture}}' + '///city: ' + '{{report.area.city}}')
 
@@ -296,6 +324,8 @@
     });
 
     // getLastPoint();
+
+    {% endif %}
 
   }
 

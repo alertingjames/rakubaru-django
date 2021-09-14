@@ -19,7 +19,7 @@
 <style>
 
 .dropdown-menu{
-    background-color: #fff;
+    background-color:rgba(0,0,0,0.6);
     padding:20px;
     width:220px;
 }
@@ -38,23 +38,23 @@
 }
 
 .menu{
-    color: black;
-}
-
-.menu:hover{
-    background-color:#eee;
-    color:red;
-}
-
-.menu a{
-    color:black;
-}
-
-h4{
     color:white;
 }
 
-h4:hover{
+.menu:hover{
+    background-color:black;
+    color:white;
+}
+
+.menu a{
+    color:white;
+}
+
+h5{
+    color:white;
+}
+
+h5:hover{
     color:white;
     text-decoration:underline;
 }
@@ -79,35 +79,35 @@ h4:hover{
         </div>
 
         <div class="collapse navbar-collapse" id="topNavBar" style="border:0;">
-            <ul class="nav navbar-nav">
-                <li style="margin-right:30px;">
+            <ul class="nav navbar-nav" style="max-height:90vh;overflow-y:auto;">
+                <li style="margin-right:20px;">
                     <a href="/rakubaru/rahome">
-                        <h4 style=""><span class="fa fa-home" aria-hidden="true" style="margin-right:10px;"></span>ホーム</h4>
+                        <h5 style=""><span class="fa fa-home" style="margin-right:10px;"></span>ホーム</h5>
                     </a>
                 </li>
-                <li style="margin-right:30px;">
+                <li style="margin-right:20px;">
                     <a href="javascript:void(0)" onclick="{% if me.subscription_status == '' %}checkSubscription();{% else %}showAlertWarning();{% endif %}">
-                        <h4 style=""><span class="fa fa-user-plus" aria-hidden="true" style="margin-right:10px;"></span>社員追加</h4>
+                        <h5 style=""><span class="fa fa-user-plus" aria-hidden="true" style="margin-right:10px;"></span>社員追加</h5>
                     </a>
                 </li>
-                <li style="margin-right:30px;">
+                <li style="margin-right:20px;">
                     <a href="{% if me.subscription_status == '' %}/rakubaru/raallreports{% else %}javascript:showAlertWarning();{% endif %}">
-                        <h4 style=""><span class="fas fa-route" aria-hidden="true" style="margin-right:10px;"></span>レポート</h4>
+                        <h5 style=""><span class="fas fa-route" aria-hidden="true" style="margin-right:10px;"></span>レポート</h5>
                     </a>
                 </li>
-                <li style="margin-right:30px;">
+                <li style="margin-right:20px;">
                     <a href="{% if me.subscription_status == '' %}/rakubaru/rapinmap?option=all{% else %}javascript:showAlertWarning();{% endif %}">
-                        <h4 style=""><span class="fa fa-map-pin" aria-hidden="true" style="margin-right:10px;"></span>ピン</h4>
+                        <h5 style=""><span class="fa fa-map-pin" aria-hidden="true" style="margin-right:10px;"></span>ピン</h5>
                     </a>
                 </li>
-                <li style="margin-right:30px;">
+                <li style="margin-right:20px;">
                     <a href="{% if me.subscription_status == '' %}/rakubaru/toareas{% else %}javascript:showAlertWarning();{% endif %}">
-                        <h4 style=""><span class="fa fa-area-chart" aria-hidden="true" style="margin-right:10px;"></span>エリア</h4>
+                        <h5 style=""><span class="fa fa-area-chart" aria-hidden="true" style="margin-right:10px;"></span>エリア</h5>
                     </a>
                 </li>
-                <li style="margin-right:30px;">
+                <li style="margin-right:20px;">
                     <a href="{% if me.subscription_status == '' %}/rakubaru/getallassigns{% else %}javascript:showAlertWarning();{% endif %}">
-                        <h4 style=""><span class="fa fa-pie-chart" aria-hidden="true" style="margin-right:10px;"></span>進捗</h4>
+                        <h5 style=""><span class="fa fa-pie-chart" aria-hidden="true" style="margin-right:10px;"></span>進捗</h5>
                     </a>
                 </li>
             </ul>
@@ -116,7 +116,7 @@ h4:hover{
 
                 <li>
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false" style="background-color:transparent;">
-                        <h4 style=""><span class="fa fa-user-circle" aria-hidden="true" style="margin-right:10px;"></span>管理メニュー</h4>
+                        <h5 style=""><span class="fa fa-user-circle" aria-hidden="true" style="margin-right:10px;"></span>管理メニュー</h5>
                     </a>
                     <ul class="dropdown-menu" role="menu">
                         <li class="menu">
@@ -149,6 +149,7 @@ h4:hover{
                         </li>
                     </ul>
                 </li>
+
 
             </ul>
 

@@ -75,7 +75,7 @@ input {
   width: 100%;
   border:0;
   opacity:0.95;
-  padding: 12px 18px;
+  /*padding: 12px 18px;*/
   border-radius: 50px 50px 50px 50px;
   cursor: pointer;
   font-size: 16px;
@@ -120,14 +120,20 @@ input {
     position:fixed; left:50%; float:middle; transform:translate(-50%, -50%); width:350px; z-index:1000000000; top:35px;
 }
 
+button:focus, input:focus { outline:none; }
 
 
 
+label.jsonFileButton {
+    display:inline-block;background-color:#0077b3;color:#FFF;border:0;opacity:0.95;padding:12px 18px;border-radius:50px 50px 50px 50px;cursor:pointer;font-size:16px;
+    position:fixed;top:15px;right:20px;width:300px;height:auto;text-align:center;z-index:999;
+}
 
+/* Look like a clicked/depressed button */
+label.jsonFileButton:active {border-color: #CCC #EEE #EEE #CCC;}
 
-
-
-
+/* This is the part that actually hides the 'Choose file' text box for camera inputs */
+label.jsonFileButton input {display: none;}
 
 
 

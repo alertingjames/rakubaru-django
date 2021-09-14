@@ -44,8 +44,8 @@ html, body{
     bottom:0;
     left:0;
     right:0;
-    padding-left:20%;
-    padding-right:20%;
+    padding-left:5%;
+    padding-right:5%;
     border-radius: 5px;
     background-color:rgba(255, 255, 204, 0.6);
     /*padding:20px;*/
@@ -114,7 +114,6 @@ a {
   text-align: center;
   width: 100%;
   border:0;
-  padding: 12px 18px;
   border-radius: 50px;
   cursor: pointer;
   font-size: 16px;
@@ -266,14 +265,31 @@ a {
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <div id="title" style="font-size:25px; font-weight:800; color: #F7D479; text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.7); text-align:center;
-	position:fixed; left:50%; float:middle; transform:translate(-50%, -50%); width:350px; z-index:100; top:92px; display:none;">
+	position:fixed; left:50%; float:middle; transform:translate(-50%, -50%); width:450px; z-index:100; top:92px; display:none;">
     {% if assign %}{{assign.title}}{% else %}らくばる{% endif %} レポート
+    <a href="/rakubaru/qqqqq?member_id={{assign.member_id}}&assign_id={{assign.pk}}" id="csv-title" style="color:white;font-size:14px;margin-left:10px; text-shadow:none;">
+        <span class="fas fa-file-csv" aria-hidden="true" style="margin-right:5px;"></span>CSV出力
+    </a>
 </div>
 
+
+<a href="/viewreport" target="_blank" style="position:fixed;top:90px;right:15px;color:white;font-size:16px;text-decoration:underline;">バックアップファイルの閲覧</a>
+
+
 {% if reports %}
+
+<div style="font-size:16px; font-weight:600; padding:5px 15px 5px 15px; position:relative; left:1%; top:5%;">
+    <a href="/rakubaru/raallworksinarea?assign_id={{assign.pk}}&member_id={{assign.member_id}}" target="_blank" style="color:white;">すべての作品を見る</a>
+</div>
+
 <div style="width:100%; height:auto; padding-bottom:20px;">
-    <div style="font-size:25px; font-weight:800;
-        color: #F7D479; text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.7); text-align:center; width:100%; margin-top:40px;">{% if assign %}{{assign.title}}{% else %}らくばる{% endif %} レポート<br>
+    <div style="font-size:25px; font-weight:800; color: #F7D479; text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.7); text-align:center; width:100%; margin-top:40px;">
+        {% if assign %}{{assign.title}}{% else %}らくばる{% endif %} レポート
+
+        <a href="/rakubaru/qqqqq?member_id={{assign.member_id}}&assign_id={{assign.pk}}" id="csv-title" style="color:white;font-size:14px;margin-left:10px; text-shadow:none;">
+            <span class="fas fa-file-csv" aria-hidden="true" style="margin-right:5px;"></span>CSV出力
+        </a>
+
     </div>
     <br>
     <div style="width:100%; text-align:center; display:inline-block;">
@@ -286,7 +302,11 @@ a {
             <div style="background:white; width:400px; height:2px; margin-top:10px;"></div>
         </div>
     </div>
-    <br>
+    <center>
+        <div style="margin-top:20px;max-width:600px;color:yellow;border:1.5px solid yellow;border-radius:8px;padding:15px;font-size:16px;">
+            ログデータの保管期限は60日間です。60日を超えて必要なログは、バックアップファイルをダウンロードしておいてください。
+        </div>
+    </center>
     <br>
     <div id="list">
         {% for report in reports %}
@@ -333,6 +353,28 @@ a {
                     <label style="color:#008CBA; font-size:14px; font-weight:600; padding:3px 8px 3px 8px; background-color:white;">{{report.member.name}}</label>
                 </div>
                 <div class="form-group" style="display:flex;">
+
+                    <div style="flex-grow:1;">
+                        <button class="bouton-update" style="width:60px;height:60px;text-align:center;font-size:11px;"
+                            onclick="javascript:window.location.href='/rakubaru/csvexport?route_id={{report.route.pk}}';">
+                            CSV出力
+                        </button>
+                    </div>
+
+                    <div style="flex-grow:1;display:none;">
+                        <button class="bouton-update" style="width:60px;height:60px;text-align:center;font-size:11px;"
+                            onclick="javascript:window.location.href='/rakubaru/jsonexport?route_id={{report.route.pk}}';">
+                            JSON出力
+                        </button>
+                    </div>
+
+                    <div style="flex-grow:1;">
+                        <button class="bouton-update" style="width:60px; height:60px; text-align:center;font-size:10px;"
+                            onclick="javascript:window.location.href='/rakubaru/backup?route_id={{report.route.pk}}';">
+                            BACKUP<br>出力
+                        </button>
+                    </div>
+
                     <div style="flex-grow:1;">
                         <button class="bouton-update" style="width:60px; height:60px; text-align:center;"
                             onclick="javascript:window.location.href='/rakubaru/raopenroutemap?route_id={{report.route.pk}}';">
@@ -471,6 +513,7 @@ function scrollFunction() {
     if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
         document.getElementById("myBtn").style.display = "block";
         document.getElementById("title").style.display = "block";
+        document.getElementById("csv-title").style.color = "red";
     } else {
         document.getElementById("myBtn").style.display = "none";
         document.getElementById("title").style.display = "none";

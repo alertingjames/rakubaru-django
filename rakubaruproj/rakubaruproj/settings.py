@@ -32,18 +32,18 @@ EMAIL_USE_TLS = True
 EMAIL_HOST = 'mail.smtp2go.com'
 EMAIL_PORT = 2525
 EMAIL_HOST_USER = 'nac-om.com'
-EMAIL_HOST_PASSWORD = 'CtLobtnCud9G'
+EMAIL_HOST_PASSWORD = 'Rakubaru!@#$%^&*'
 
 # Application definition
 
 INSTALLED_APPS = [
+    'rest_framework',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
     'rakubaru.apps.RakubaruConfig',
     'fcm_django',
     'background_task',

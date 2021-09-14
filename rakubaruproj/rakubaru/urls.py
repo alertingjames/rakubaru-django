@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from . import views, payment
+from . import views, payment, export, tests
 
 app_name='rakubaru'
 
@@ -68,6 +68,8 @@ urlpatterns=[
     # url(r'rasubscriptiondelete', views.rasubscriptiondelete, name='rasubscriptiondelete'),
 
     url(r'getmysubscriptions', views.getmysubscriptions, name='getmysubscriptions'),
+    url(r'raallworksinarea', views.allassignedworks, name='allassignedworks'),
+    url(r'kkkkk', export.exportassignedworksjson, name='exportassignedworksjson'),
 
 
     ######################### User #################################################################################################################
@@ -106,6 +108,32 @@ urlpatterns=[
     url(r'routearea', views.routearea, name='routearea'),
 
     url(r'rmroute', views.rmroute, name='rmroute'),
+
+
+    ########################################################### Server Maintenance #############################################################################
+
+    url(r'startorendreporting', tests.startorendreporting, name='startorendreporting'),
+    url(r'updatereportdatainrealtime', tests.updatereportdatainrealtime, name='updatereportdatainrealtime'),
+    url(r'jsonfiletest', tests.jsonfiletest, name='jsonfiletest'),
+
+
+    ############################################################ Export Files ######################################################################
+
+    url(r'userscsvexport', export.userscsvexport, name='userscsvexport'),
+    url(r'reportscsvexport', export.reportscsvexport, name='reportscsvexport'),
+    url(r'assignscsvexport', export.assignscsvexport, name='assignscsvexport'),
+    url(r'csvexport', export.csvexport, name='csvexport'),
+    url(r'jsonexport', export.jsonexport, name='jsonexport'),
+    url(r'qqqqq', export.assignreportscsvexport, name='assignreportscsvexport'),
+    url(r'backup', export.data_backup, name='data_backup'),
+
+
+
+
+    ########################################################## Test ############################################################################################
+
+    url(r'ttttt', tests.points_count, name='tests_points_count'),
+    url(r'kkkkk', tests.save_route, name='tests_save_route'),
 
 ]
 

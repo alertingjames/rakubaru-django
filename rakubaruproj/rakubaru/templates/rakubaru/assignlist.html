@@ -40,17 +40,28 @@
     社員が割り当てられていません ...
 </div>
 
-<div id="title0" style="font-size:40px; font-weight:800; color:white; text-align:center;
-	position:fixed; left:50%; float:middle; padding: 10px 15px 10px 15px;
-	transform:translate(-50%, -50%); width:auto; top:130px; display:block;">
+<div id="title0" style="font-size:30px; font-weight:800; color:white; text-align:center; position:fixed; left:50%; float:middle; padding: 10px 15px 10px 15px; transform:translate(-50%, -50%); width:auto; top:120px; display:block;">
     配布エリアのアサイン
     {% if area %}<div style="font-size:18px;">( {{area.area_name}} )</div>{% endif %}
 </div>
 
+
+<a href="/rakubaru/assignscsvexport" id="csv-title" style="position:fixed;left:50%;transform:translate(-50%, -50%);top:170px;color:white;font-size:20px;text-shadow:none;z-index:100090">
+    <span class="fas fa-file-csv" aria-hidden="true" style="margin-right:5px;"></span>CSV出力
+</a>
+
+
 {% if assigns %}
 
 <div id="title" style="font-size:20px; font-weight:600; color:white; text-align:center; border-radius:50px; padding:8px 20px 8px 20px; background-color:black; display:none;
-	        position:fixed; left:50%; float:middle; transform:translate(-50%, -50%); width:auto; z-index:100000; top:35px;">配布エリアのアサイン</div>
+	        position:fixed; left:50%; float:middle; transform:translate(-50%, -50%); width:auto; z-index:100000; top:35px;">
+    配布エリアのアサイン
+
+    <a href="/rakubaru/assignscsvexport" id="csv-title" style="color:white;font-size:14px;margin-left:10px; text-shadow:none;">
+        <span class="fas fa-file-csv" aria-hidden="true" style="margin-right:5px;"></span>CSV出力
+    </a>
+
+</div>
 
 <button onclick="topFunction()" id="top-scroll"><i class="glyphicon glyphicon-menu-up" style="color:white; font-size:14px;"></i></button>
 
@@ -352,11 +363,13 @@ function scrollFunction() {
         document.getElementById("top-scroll").style.display = "block";
         document.getElementById("title").style.display = "block";
         document.getElementById("title0").style.display = "none";
+        document.getElementById("csv-title").style.display = "none";
     }else {
         document.getElementById("header").style.display = "none";
         document.getElementById("top-scroll").style.display = "none";
         document.getElementById("title").style.display = "none";
         document.getElementById("title0").style.display = "block";
+        document.getElementById("csv-title").style.display = "block";
     }
 }
 
