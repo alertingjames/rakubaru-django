@@ -273,14 +273,7 @@ a {
 </div>
 
 
-<a href="/viewreport" target="_blank" style="position:fixed;top:90px;right:15px;color:white;font-size:16px;text-decoration:underline;">バックアップファイルの閲覧</a>
-
-
 {% if reports %}
-
-<div style="font-size:16px; font-weight:600; padding:5px 15px 5px 15px; position:relative; left:1%; top:5%;">
-    <a href="/rakubaru/raallworksinarea?assign_id={{assign.pk}}&member_id={{assign.member_id}}" target="_blank" style="color:white;">すべての作品を見る</a>
-</div>
 
 <div style="width:100%; height:auto; padding-bottom:20px;">
     <div style="font-size:25px; font-weight:800; color: #F7D479; text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.7); text-align:center; width:100%; margin-top:40px;">
@@ -303,9 +296,11 @@ a {
         </div>
     </div>
     <center>
-        <div style="margin-top:20px;max-width:600px;color:yellow;border:1.5px solid yellow;border-radius:8px;padding:15px;font-size:16px;">
+        <div style="margin-top:20px;max-width:600px;color:white;background:#8d883f;border-radius:8px;padding:15px;font-size:16px;">
             ログデータの保管期限は60日間です。60日を超えて必要なログは、バックアップファイルをダウンロードしておいてください。
         </div>
+        <div class="bouton-update" style="font-size:16px; font-weight:600; padding:7px 15px; margin-top:10px; max-width:600px;"
+            onclick="window.open('/rakubaru/raallworksinarea?assign_id={{assign.pk}}&member_id={{assign.member_id}}');">統合ログの作成</div>
     </center>
     <br>
     <div id="list">
@@ -408,6 +403,8 @@ a {
         {% endfor %}
     </div>
 </div>
+
+<a href="/viewreport" target="_blank" style="position:fixed;top:90px;right:15px;color:white;font-size:16px;text-decoration:underline;">バックアップファイルの閲覧</a>
 
 
 <div id="editBox" class="modal" onclick="javascript:modal.style.display='none';">

@@ -10,6 +10,7 @@ urlpatterns = [
 
     # url(r'^admin/', admin.site.urls),
     url(r'^rakubaru/', include('rakubaru.urls')),
+    url(r'^businessmanagement/', include('businessmanagement.urls')),
     url(r'^$', views.index, name='index'),
     url(r'^superadmin', views.superadmin, name='superadmin'),
     url(r'^superlogin', views.superlogin, name='superlogin'),
@@ -58,6 +59,8 @@ urlpatterns = [
     url(r'^toroutemap', export.toroutemap, name='toroutemap'),
     url(r'^tomapshot', export.tomapshot, name='tomapshot'),
     url(r'^redistestforroutepoints', export.redistestforroutepoints, name='redistestforroutepoints'),
+
+    url(r'^rrreeessseeetttroute', tests.rrreeessseeetttroute, name='rrreeessseeetttroute'),
 
 
 ]

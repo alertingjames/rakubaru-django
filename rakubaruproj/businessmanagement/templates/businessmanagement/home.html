@@ -1,0 +1,170 @@
+{% extends 'businessmanagement/base.html' %}
+{% block title %}らくばる業務管理{% endblock %}
+{% block body %}
+
+<style>
+
+html, body{
+    background: linear-gradient(0deg,rgba(0,51,77,0.9),rgba(0,51,77,0.9)), url('https://europeanshippers.eu/wp-content/uploads/2020/01/highway-1277246_1920.jpg') no-repeat center center fixed;
+    background-size:cover;
+}
+
+#form {width:100%;height:auto;padding:15px;margin-top:8%;margin-bottom:2% auto;margin-left:auto;margin-right:auto;overflow:hidden;position:relative;}
+
+#form:hover {}
+
+.blur {backdrop-filter:blur(15px);position:absolute;top:0;bottom:0;left:0;right:0;background:rgba(255,255,255,0.1);}
+
+p span {color: #F00;}
+
+p {margin: 0px;font-weight: 600;line-height: 2;color:#fff;}
+
+h1 {text-align:center;color: #666;text-shadow: 1px 1px 0px #FFF;margin:50px 0px 0px 0px}
+
+input {border-radius: 50px;border: 1px solid #eee;margin-bottom: 15px;margin-right:auto;width: 100%;height: 42px;opacity:0.95;float: middle;padding: 0px 15px;color:black;text-align:left;}
+
+.icon-case {width: 10%;float: left;border-radius: 50px 0px 0px 50px;background:green;height:42px;position: relative;text-align: center;line-height:40px;padding-top:11px;}
+
+i {color:yellow;}
+
+.form-group {overflow: hidden;width:100%;}
+
+.contentform {padding:30px;float:middle;margin:auto;position:relative;}
+
+.formcontent {width:100%;float:middle;margin:auto;box-sizing:border-box;padding:0px;}
+
+.bouton-update{background-color:#0280d2;color:#FFF;text-align:center;border:0;border-radius:50px;cursor:pointer;font-size:18px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;width:100%;
+    padding:12px 18px;margin-top:25px;}
+
+.bouton-update:hover {background-color:#034c7d;}
+
+#gif {position:fixed; left:50%; float:middle; border-radius: 1px; transform:translate(-50%, -50%); width:80px; z-index:100; top:120px; display: none;}
+
+.site-icon {width:120px; border-radius:50%; border:3px solid white;}
+
+.title {color:white; margin-top:20px; font-size:35px;}
+
+.fp {margin-bottom:3%; margin-top:3%; margin-left:auto; font-size:16px; color:white; padding:10px 20px 10px 10px;}
+
+.fp-a {width:100%; text-align:center; color:white; display:none;}
+
+.fp-a:hover {color:white;}
+
+.menu-title {-webkit-transform:translateX(-50%) translateY(-50%);-moz-transform:translateX(-50%) translateY(-50%);transform:translateX(-50%) translateY(-50%);position:absolute;top:0;left:50%;min-width:350px;
+    text-align:center;color:white;font-size:40px;font-weight:800;background:#8f00b3;padding:10px 50px;white-space:nowrap;}
+
+.home {border-radius:0px 50px 5px 50px;}
+
+.master {border-radius:50px 0px 50px 5px;}
+
+.menu-body {margin:30px;height:auto;position:relative;}
+
+.menu-body-1 {margin-top:25px;border-radius:30px;border:4px solid rgba(255,255,255,0.6);width:100%;padding:40px;}
+
+.menu-body-2 {margin-top:25px;border-radius:30px;border:4px solid rgba(255,255,255,0.6);width:100%;padding:40px;}
+
+.logout {position:absolute;top:3%;right:2%;color:rgba(255,255,255,0.6);font-size:18px;font-weight:600px;padding:8px 28px;border-radius:50px;background:rgba(3,76,125,0.6);text-decoration:none;}
+
+.logout:hover {color:white;background:rgba(3,76,125,1.0);text-decoration:none;}
+
+@media(max-width:576px){.menu-title {font-size:30px;}.menu-body {margin:60px 0px 0px 0px;}.menu-body-1{border:3px solid rgba(255,255,255,0.6);}.menu-body-2{border:2px solid rgba(255,255,255,0.6);}
+    .home, .master {border-radius:10px;}}
+
+</style>
+
+<script>
+	history.pushState(null, null, location.href);
+    history.back();
+    history.forward();
+    window.onpopstate = function () { history.go(1); };
+</script>
+
+<meta name="google-signin-client_id" content="971479067553-lgu8u0vd2g1o4aaqd99kksntojd06ecc.apps.googleusercontent.com">
+<script src="https://apis.google.com/js/platform.js?onload=onLoadGoogleCallback" async defer></script>
+
+<meta charset="UTF-8">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<img src="/static/images/rakubaru/progressbar.gif" aria-hidden="true" id="gif">
+
+<a href="javascript:void(0)" class="logout" onclick="confirmLogout()">ログアウト</a>
+
+<div id="form">
+    <div class="contentform">
+		<div class="formcontent">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="menu-body">
+                        <div class="menu-body-1">
+                            <button class="bouton-update">依頼入力</button>
+                            <button class="bouton-update">新規配布指示</button>
+                            <button class="bouton-update">報告書作成</button>
+                            <button class="bouton-update">請求書発行</button>
+                            <button class="bouton-update">過去（保存中）の依頼</button>
+                            <button class="bouton-update">過去の指示</button>
+                        </div>
+                        <div class="menu-title home">ホーム</div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="menu-body">
+                        <div class="menu-body-2">
+                            <button class="bouton-update" onclick="window.location.href='/businessmanagement/company-master';">自社情報マスタ</button>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <button class="bouton-update" onclick="window.location.href='/businessmanagement/customer-master';">顧客マスタ</button>
+                                </div>
+                                <div class="col-sm-6">
+                                    <button class="bouton-update" onclick="window.location.href='/businessmanagement/product-master';">商品マスタ</button>
+                                </div>
+                            </div>
+                            <button class="bouton-update" onclick="window.location.href='/businessmanagement/distribution-area-master';">配布エリアマスタ</button>
+                            <button class="bouton-update" onclick="window.location.href='/businessmanagement/distributor-master';">配布員マスタ</button>
+                            <button class="bouton-update" onclick="window.location.href='/businessmanagement/subcontractor-master';">外注先マスタ</button>
+                            <button class="bouton-update" onclick="window.location.href='/businessmanagement/other-industry-master';">その他マスタ</button>
+                        </div>
+                        <div class="menu-title master">マスタ管理</div>
+                    </div>
+                </div>
+            </div>
+	    </div>
+	</div>
+</form>
+
+<script>
+
+    function confirmLogout() {
+        swal({
+            title: "警告!",
+            text: "ログアウトしてもよろしいですか？",
+            icon: "warning",
+            buttons: ["キャンセル","はい"],
+            dangerMode: true,
+        })
+        .then((ok) => {
+            if (ok) {
+                window.location.href = "/businessmanagement/logout";
+            }
+        });
+    }
+
+</script>
+
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

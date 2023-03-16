@@ -21,14 +21,7 @@ body, div, p {
     color: red;
 }
 
-.navbar{
-     position: fixed;
-     top: 0;
-     left: 0;
-     z-index: 9999;
-     width: 100%;
-     border-radius: 0px;
-}
+.navbar{position:fixed;top:0;left:0;z-index:555;width:100%;border-radius:0px;background:rgba(0,0,0,0.7);}
 
 .jumbotron {
   margin-bottom: 0px;

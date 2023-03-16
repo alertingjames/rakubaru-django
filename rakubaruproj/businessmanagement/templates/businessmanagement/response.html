@@ -1,0 +1,68 @@
+{% extends 'businessmanagement/base.html' %}
+{% block title %}応答のメッセージ{% endblock %}
+{% block body %}
+
+<br>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<meta charset="utf-8">
+<meta content="stuff, to, help, search, engines, not" name="keywords">
+<meta content="What this page is about." name="description">
+<style>
+
+html, body{background:#006699;}
+
+#edit {max-width:1000px;width:auto;height:auto;margin-top: 2% auto;margin-bottom: auto;margin-left:auto;margin-right:auto;opacity:0.9;overflow: hidden;}
+
+.formcontent {width:100%;float:middle;margin:auto;box-sizing: border-box;padding: 0px;}
+
+.contentform {padding:20px;float:middle;margin:auto;}
+
+#response {margin-top:20%;font-size:30px;font-weight:540;color:yellow;}
+
+#back {position:fixed;top:2%;left:2%;font-size:50px;color:white;cursor:pointer;}
+
+.fa-times-thin:before {content:'\00d7';}
+
+</style>
+
+<meta charset="UTF-8">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../lib/w3.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<span id="back" class="fa fa-times-thin" onclick="window.history.back();"></span>
+
+<div id="edit">
+    <div class="contentform">
+		<div class="formcontent">
+          <center>
+            <div id="response">
+                {{message}}
+            </div>
+          </center>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

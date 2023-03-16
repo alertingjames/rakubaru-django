@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from . import views, payment, export, tests
+from . import views, payment, export, tests, routesave
 
 app_name='rakubaru'
 
@@ -113,8 +113,15 @@ urlpatterns=[
     ########################################################### Server Maintenance #############################################################################
 
     url(r'startorendreporting', tests.startorendreporting, name='startorendreporting'),
+    url(r'updatereportofflinedata', tests.updatereportofflinedata, name='updatereportofflinedata'),
     url(r'updatereportdatainrealtime', tests.updatereportdatainrealtime, name='updatereportdatainrealtime'),
+
+    url(r'xxxsaveroutexxx', tests.xxxsaveroutexxx, name='xxxsaveroutexxx'),
     url(r'jsonfiletest', tests.jsonfiletest, name='jsonfiletest'),
+
+    url(r'zzzzzsaveroutezzz', tests.zzzzzsaveroutezzz, name='zzzzzsaveroutezzz'),
+
+    # url(r'delduplicates', tests.delduplicates, name='delduplicates'),
 
 
     ############################################################ Export Files ######################################################################
@@ -134,6 +141,13 @@ urlpatterns=[
 
     url(r'ttttt', tests.points_count, name='tests_points_count'),
     url(r'kkkkk', tests.save_route, name='tests_save_route'),
+
+
+    ########################################################## Route Save Test ############################################################################################
+
+    url(r'iiistartreporting', routesave.startreporting, name='startreporting'),
+    url(r'kkkendreporting', routesave.endreporting, name='endreporting'),
+    url(r'jjjupdateroutepoints', routesave.updateroutepoints, name='updateroutepoints'),
 
 ]
 

@@ -31,8 +31,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'mail.smtp2go.com'
 EMAIL_PORT = 2525
-EMAIL_HOST_USER = 'nac-om.com'
-EMAIL_HOST_PASSWORD = 'Rakubaru!@#$%^&*'
+EMAIL_HOST_USER = 'yamamoto123'
+EMAIL_HOST_PASSWORD = 'aWxmNGFveXo3NXEw'
 
 # Application definition
 
@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'rakubaru.apps.RakubaruConfig',
     'fcm_django',
     'background_task',
+    'businessmanagement.apps.BusinessmanagementConfig',
 ]
 
 MIDDLEWARE = [
@@ -163,12 +164,8 @@ URL = 'https://www.rakubaru-posting.com'
 RAKUBARU_ADMIN_EMAIL = 'rakubaru2020@gmail.com'
 
 
-STRIPE_LIVE_SECRET_KEY = ''
-STRIPE_TEST_SECRET_KEY = ''
-
-
-# STRIPE_LIVE_SECRET_KEY = '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'
-# STRIPE_TEST_SECRET_KEY = 'sk_test_51Hr8pdECq8YGopGg3WmI3JLKqlDju1tdT3f4vAL8y5vmOMXMjz9SBrsr6gZVWsfFUBAiwVXf80SU1jqZaDlO8Pe700Utvh0BGU'
+STRIPE_LIVE_SECRET_KEY = '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'
+STRIPE_TEST_SECRET_KEY = 'sk_test_51Hr8pdECq8YGopGg3WmI3JLKqlDju1tdT3f4vAL8y5vmOMXMjz9SBrsr6gZVWsfFUBAiwVXf80SU1jqZaDlO8Pe700Utvh0BGU'
 
 #   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
 

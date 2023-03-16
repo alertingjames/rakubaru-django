@@ -1,0 +1,209 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}らくばるポスティング{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link href='https://fonts.googleapis.com/css?family=Satisfy' rel="stylesheet" type="text/css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/style.css"/>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.1/css/all.css">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="shortcut icon" href="/static/images/rakubaru/bmicon.jpg" type="image/jpg">
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script type="text/javascript" src="/static/js/area/radialprogress.js"></script>
+
+<style>
+
+.dropdown-menu{background-color:rgba(0,0,0,0.6);padding:20px;width:220px;}
+
+#m{background-color: #fff;padding:15px;width:300px;}
+
+#n{background-color: #fff;padding:15px;min-width:200px;width:auto;}
+
+.menu{color:white;}
+
+.menu:hover{background-color:black;color:white;}
+
+.menu a{color:white;}
+
+h5{color:white;}
+
+h5:hover{color:white;text-decoration:underline;}
+
+</style>
+
+</head>
+
+<body>
+
+<nav id="navbar" class="navbar navbar-inverse" style="background:rgba(0,0,0,0.7);">
+
+    <div class="container-fluid">
+
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar" aria-expanded="false" aria-label="Toggle navigation" onclick="javascript:changeNavbarBackgroundColor();">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+        </div>
+
+        <div class="collapse navbar-collapse" id="topNavBar" style="border:0;">
+            <ul class="nav navbar-nav" style="max-height:90vh;overflow-y:auto;">
+                <li style="margin-right:20px;">
+                    <a href="/businessmanagement/">
+                        <h5 style="">依頼入力</h5>
+                    </a>
+                </li>
+                <li style="margin-right:20px;">
+                    <a href="/businessmanagement/">
+                        <h5 style="">新規配布指示</h5>
+                    </a>
+                </li>
+                <li style="margin-right:20px;">
+                    <a href="/businessmanagement/">
+                        <h5 style="">報告書作成</h5>
+                    </a>
+                </li>
+                <li style="margin-right:20px;">
+                    <a href="/businessmanagement/">
+                        <h5 style="">請求書発行</h5>
+                    </a>
+                </li>
+                <li style="margin-right:20px;">
+                    <a href="/businessmanagement/">
+                        <h5 style="">過去の依頼</h5>
+                    </a>
+                </li>
+                <li style="margin-right:20px;">
+                    <a href="/businessmanagement/">
+                        <h5 style="">過去の指示</h5>
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+
+                <li>
+                    <a href="/businessmanagement/">
+                        <h5 style="">マスタ管理</h5>
+                    </a>
+                </li>
+
+
+            </ul>
+
+        </div>
+
+    </div>
+</nav>
+
+
+<script>
+
+    var openF = false;
+
+    function changeNavbarBackgroundColor(){
+        console.log("Clicked on nav button");
+        var navbar = document.getElementById('navbar');
+        if(!openF) {
+            navbar.style.backgroundColor = "rgba(0,0,0,0.7)";
+            openF = true;
+        }else{
+            // navbar.style.backgroundColor = "transparent";
+            openF = false;
+        }
+    }
+
+</script>
+
+<script>
+    $(document).click(function(){
+        // hideMenuBar();
+    });
+
+    function hideMenuBar(){
+        // $(".dropdown-menu").hide();
+        $('.navbar-collapse').collapse('hide');
+    }
+
+</script>
+
+
+
+{% block body %}
+{% endblock %}
+
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

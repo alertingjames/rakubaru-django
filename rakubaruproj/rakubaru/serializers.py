@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Rmember, Route, Rpoint, Rpin, Area, Sublocality, AreaAssign
+from .models import Rmember, Route, Rpoint, Rpin, Area, Sublocality, AreaAssign, CompanyInfo, CustomerInfo, ProductInfo, DistributionAreaInfo, DistributionAreaGroupInfo, DistributionAreaGroup, DistributorInfo, LeaderInfo
+from .models import DistributorGroupInfo, SubcontractorInfo, IndustryInfo
 
 class RmemberSerializer(serializers.ModelSerializer):
     class Meta:
@@ -36,6 +37,104 @@ class AreaAssignSerializer(serializers.ModelSerializer):
     class Meta:
         model = AreaAssign
         fields = ('__all__')
+
+
+class CompanyInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CompanyInfo
+        fields = ('__all__')
+
+class CustomerInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomerInfo
+        fields = ('__all__')
+
+
+class ProductInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductInfo
+        fields = ('__all__')
+
+
+class DistributionAreaInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DistributionAreaInfo
+        fields = ('__all__')
+
+
+class DistributionAreaGroupInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DistributionAreaGroupInfo
+        fields = ('__all__')
+
+
+class DistributionAreaGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DistributionAreaGroup
+        fields = ('__all__')
+
+
+class DistributorInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DistributorInfo
+        fields = ('__all__')
+
+
+class LeaderInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LeaderInfo
+        fields = ('__all__')
+
+
+class DistributorGroupInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DistributorGroupInfo
+        fields = ('__all__')
+
+
+
+class SubcontractorInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubcontractorInfo
+        fields = ('__all__')
+
+
+
+class IndustryInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IndustryInfo
+        fields = ('__all__')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

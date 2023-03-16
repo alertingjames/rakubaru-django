@@ -1,0 +1,263 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}らくばる業務管理{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link href='https://fonts.googleapis.com/css?family=Satisfy' rel="stylesheet" type="text/css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/style.css"/>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.1/css/all.css">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="shortcut icon" href="/static/images/rakubaru/bmicon.jpg" type="image/jpg">
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script type="text/javascript" src="/static/js/area/radialprogress.js"></script>
+
+<style>
+
+.dropdown-menu{background-color:rgba(0,0,0,0.6);padding:20px;width:220px;}
+
+#m{background-color: #fff;padding:15px;width:300px;}
+
+#n{background-color: #fff;padding:15px;min-width:200px;width:auto;}
+
+.menu{color:white;}
+
+.menu:hover{background-color:black;color:white;}
+
+.menu a{color:white;}
+
+.active {color:rgba(255,255,255,0.6);}
+
+.inactive {color:white;}
+
+.inactive:hover{color:white;text-decoration:underline;}
+
+</style>
+
+</head>
+
+<body>
+
+<nav id="navbar" class="navbar navbar-inverse">
+
+    <div class="container-fluid">
+
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar" aria-expanded="false" aria-label="Toggle navigation" onclick="javascript:changeNavbarBackgroundColor();">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+        </div>
+
+        <div class="collapse navbar-collapse" id="topNavBar" style="border:0;">
+            <ul class="nav navbar-nav" style="max-height:90vh;overflow-y:auto;">
+                <li style="margin-right:50px;">
+                    <a href="/businessmanagement/">
+                        <h4 class="inactive">ホーム</h4>
+                    </a>
+                </li>
+                <li style="margin-right:20px;">
+                    <a href="{% if page != 'company_master' %}/businessmanagement/company-master{% endif %}">
+                        <h4 class="{% if page == 'company_master' %}active{% else %}inactive{% endif %}">自社情報</h4>
+                    </a>
+                </li>
+                <li style="margin-right:20px;">
+                    <a href="{% if page != 'customer_master' %}/businessmanagement/customer-master{% endif %}">
+                        <h4 class="{% if page == 'customer_master' %}active{% else %}inactive{% endif %}">顧客マスタ</h4>
+                    </a>
+                </li>
+                <script>console.log("{{page}}")</script>
+                <li style="margin-right:20px;">
+                    <a href="{% if page != 'product_master' %}/businessmanagement/product-master{% endif %}">
+                        <h4 class="{% if page == 'product_master' %}active{% else %}inactive{% endif %}">商品マスタ</h4>
+                    </a>
+                </li>
+                <li style="margin-right:20px;">
+                    <a href="{% if page != 'distribution_area_master' %}/businessmanagement/distribution-area-master{% endif %}">
+                        <h4 class="{% if page == 'distribution_area_master' %}active{% else %}inactive{% endif %}">配布エリアマスタ</h4>
+                    </a>
+                </li>
+                {% if page == 'distribution_area_master' %}
+                <li style="margin-right:20px;">
+                    <a href="{% if page != 'distribution_area_group_master' %}/businessmanagement/distribution-area-group-master{% endif %}">
+                        <h4 class="{% if page == 'distribution_area_group_master' %}active{% else %}inactive{% endif %}">配布エリアグループマスタ</h4>
+                    </a>
+                </li>
+                {% endif %}
+                <li style="margin-right:20px;">
+                    <a href="{% if page != 'distributor_master' %}/businessmanagement/distributor-master{% endif %}">
+                        <h4 class="{% if page == 'distributor_master' %}active{% else %}inactive{% endif %}">配布員マスタ</h4>
+                    </a>
+                </li>
+                {% if page == 'distributor_master' %}
+                <li style="margin-right:20px;">
+                    <a href="{% if page != 'leader_master' %}/businessmanagement/leader-master{% endif %}">
+                        <h4 class="{% if page == 'leader_master' %}active{% else %}inactive{% endif %}">リーダーマスタ</h4>
+                    </a>
+                </li>
+                <li style="margin-right:20px;">
+                    <a href="{% if page != 'distributor_group_master' %}/businessmanagement/distributor-group-master{% endif %}">
+                        <h4 class="{% if page == 'distributor_group_master' %}active{% else %}inactive{% endif %}">配布員グループマスタ</h4>
+                    </a>
+                </li>
+                {% endif %}
+                {% if page != 'distributor_master' %}
+                <li style="margin-right:20px;">
+                    <a href="{% if page != 'subcontractor_master' %}/businessmanagement/subcontractor-master{% endif %}">
+                        <h4 class="{% if page == 'subcontractor_master' %}active{% else %}inactive{% endif %}">外注先マスタ</h4>
+                    </a>
+                </li>
+                <li style="margin-right:20px;">
+                    <a href="{% if page != 'other_industry_master' %}/businessmanagement/other-industry-master{% endif %}">
+                        <h4 class="{% if page == 'other_industry_master' %}active{% else %}inactive{% endif %}">
+                            {% if page == 'other_industry_master' or page == 'other_distribution_type_master' %}業種マスタ{% else %}その他マスタ{% endif %}
+                        </h4>
+                    </a>
+                </li>
+                {% if page == 'other_industry_master' or page == 'other_distribution_type_master' %}
+                <li style="margin-right:20px;">
+                    <a href="{% if page != 'other_distribution_type_master' %}/businessmanagement/other-distribution-type-master{% endif %}">
+                        <h4 class="{% if page == 'other_distribution_type_master' %}active{% else %}inactive{% endif %}">配布形態マスタ</h4>
+                    </a>
+                </li>
+                {% endif %}
+                {% endif %}
+            </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+
+                <li>
+                    <a href="/businessmanagement/logout">
+                        <h4 class="inactive">ログアウト</h4>
+                    </a>
+                </li>
+
+
+            </ul>
+
+        </div>
+
+    </div>
+</nav>
+
+
+<script>
+
+    function randomString(length, chars) {
+        var result = '';
+        for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
+        return result;
+    }
+
+    function code() {
+        return randomString(15, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
+    }
+
+    var openF = false;
+
+    function changeNavbarBackgroundColor(){
+        console.log("Clicked on nav button");
+        var navbar = document.getElementById('navbar');
+        if(!openF) {
+            navbar.style.backgroundColor = "rgba(0,0,0,0.7)";
+            openF = true;
+        }else{
+            // navbar.style.backgroundColor = "transparent";
+            openF = false;
+        }
+    }
+
+</script>
+
+<script>
+    $(document).click(function(){
+        // hideMenuBar();
+    });
+
+    function hideMenuBar(){
+        jQuery.noConflict();
+        // $(".dropdown-menu").hide();
+        $('.navbar-collapse').collapse('hide');
+    }
+
+</script>
+
+
+
+{% block body %}
+{% endblock %}
+
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

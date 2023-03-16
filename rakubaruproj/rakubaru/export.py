@@ -337,6 +337,34 @@ def viewreport(request):
         except:
             print('Data parsing error')
 
+        try:
+            decoded = json.loads(jsonstr)
+            assign = decoded['assign']
+            routes = decoded['routes']
+            pins = decoded['pins']
+            area = decoded['area']
+            sublocs = decoded['sublocs']
+            speed = decoded['speed']
+            distance = decoded['distance']
+            duration = decoded['duration']
+
+            context = {
+                'assign':assign,
+                'routes':routes,
+                'pins':pins,
+                'area': area,
+                'sublocs': sublocs,
+                'speed': speed,
+                'distance': distance,
+                'duration': duration,
+            }
+
+            return render(request, 'rakubaru/data_assigns_disp.html', context)
+
+        except:
+
+            print('Data parsing error')
+
     return render(request, 'rakubaru/data_disp.html')
 
 
@@ -374,27 +402,19 @@ def data_backup(request):
             if len(pointlist) > 0:
                 pnts = pointlist
             else:
-                folder = settings.MEDIA_ROOT + '/points/'
-                fs = FileSystemStorage(location=folder)
-                file_path = 'route_' + str(route_id) + '.json'
-
                 pjds = PointJsonData.objects.filter(route_id=route_id)
                 if pjds.count() > 0:
                     pjd = pjds.first()
                     if pjd.points_json != '':
-                        pnts = pjd.points_json
-                        pnts = json.loads(pnts)
+                        pnts = json.loads(pjd.points_json)
                 else:
                     pjds = PointData.objects.filter(route_id=route_id)
                     if pjds.count() > 0:
                         pjd = pjds.first()
                         if pjd.points_json != '':
-                            pnts = pjd.points_json
-                            pnts = json.loads(pnts)
+                            pnts = json.loads(pjd.points_json)
                     else:
                         pnts = Rpoint.objects.filter(route_id=route_id)
-                f = fs.open(file_path, 'w+')
-                f.write(json.dumps({'points':RpointSerializer(pnts, many=True).data}))
 
             pins = Rpin.objects.filter(member_id=route.member_id)
             for pin in pins:
@@ -466,9 +486,13 @@ def routefilepoints(route_id):
     fs = FileSystemStorage(location=folder)
     file_path = 'route_' + str(route_id) + '.json'
     if fs.exists(file_path) == True:
-        f = fs.open(file_path)
+        f = fs.open(file_path, 'r')
         # pointList = parseJson(f)
-        pointList = json.loads(f.read())['points']
+        fread = f.read()
+        if fread.endswith(']}') == False or fread.count(']}') > 1:
+            indx = fread.find(']}')
+            fread = fread[0: indx + 2]
+        pointList = json.loads(fread)['points']
         return pointList
     else:
         return []
@@ -503,27 +527,19 @@ def exportassignedworksjson(request):
         if len(pointlist) > 0:
             pnts = pointlist
         else:
-            folder = settings.MEDIA_ROOT + '/points/'
-            fs = FileSystemStorage(location=folder)
-            file_path = 'route_' + str(route.pk) + '.json'
-
             pjds = PointJsonData.objects.filter(route_id=route.pk)
             if pjds.count() > 0:
                 pjd = pjds.first()
                 if pjd.points_json != '':
-                    pnts = pjd.points_json
-                    pnts = json.loads(pnts)
+                    pnts = json.loads(pjd.points_json)
             else:
                 pjds = PointData.objects.filter(route_id=route.pk)
                 if pjds.count() > 0:
                     pjd = pjds.first()
                     if pjd.points_json != '':
-                        pnts = pjd.points_json
-                        pnts = json.loads(pnts)
+                        pnts = json.loads(pjd.points_json)
                 else:
                     pnts = Rpoint.objects.filter(route_id=route.pk)
-            f = fs.open(file_path, 'w+')
-            f.write(json.dumps({'points':RpointSerializer(pnts, many=True).data}))
 
         data = {
             'route': RouteSerializer(route, many=False).data,

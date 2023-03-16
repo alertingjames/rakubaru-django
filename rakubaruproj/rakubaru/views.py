@@ -227,6 +227,8 @@ def updatemember(request):
                 filename = fs.save(f.name, f)
                 uploaded_url = fs.url(filename)
                 if i == 1:
+                    if member.picture_url != '':
+                        fs.delete(member.picture_url.replace(settings.URL + '/media/',''))
                     member.picture_url = settings.URL + uploaded_url
                     member.save()
 
@@ -479,11 +481,16 @@ def upRTRoute(request):
 
         member = members.first()
 
+        if int(route_id) == 0:
+            resp = {'result_code': '1'}
+            return HttpResponse(json.dumps(resp))
+
         route = None
-        if int(route_id) > 0:
-            route = Route.objects.get(id=route_id)
-        else:
-            route = Route()
+        route = Route.objects.get(id=route_id)
+
+        if route is None:
+            resp = {'result_code': '1'}
+            return HttpResponse(json.dumps(resp))
 
         route.admin_id = member.admin_id
         route.member_id = member_id
@@ -506,14 +513,15 @@ def upRTRoute(request):
         if sts == 'report': route.status = 'reported'
         route.save()
 
-        if description == '':
-            lat = request.POST.get('lat', '0')
-            lng = request.POST.get('lng', '0')
-            comment = request.POST.get('comment', '')
-            color = request.POST.get('color', '')
-            tm = str(int(round(time.time() * 1000)))
+        lat = request.POST.get('lat', '0')
+        lng = request.POST.get('lng', '0')
+        comment = request.POST.get('comment', '')
+        color = request.POST.get('color', '')
+        tm = str(int(round(time.time() * 1000)))
 
-            pjds = PointData.objects.filter(route_id=route.pk)
+        if lat != '' and lng != '':
+            pjds = PointJsonData.objects.filter(route_id=route.pk)
+            pjd = None
             if pjds.count() > 0:
                 pjd = pjds.first()
                 if pjd.points_json != '':
@@ -540,10 +548,24 @@ def upRTRoute(request):
                 pnt.color = color
                 pnt.time = tm
                 pnts.append(pnt)
-                pjd = PointData()
+                pjd = PointJsonData()
                 pjd.route_id = route.pk
                 pjd.points_json = json.dumps(RpointSerializer(pnts, many=True).data)
                 pjd.save()
+
+            if pulse == '1':
+                if pjd is not None:
+
+                    folder = settings.MEDIA_ROOT + '/points/'
+                    fs = FileSystemStorage(location=folder)
+                    file_path = 'route_' + str(route_id) + '.json'
+
+                    pointList = json.loads(pjd.points_json)
+                    f = fs.open(file_path, 'w+')
+                    f.write(json.dumps({'points':RpointSerializer(pointList, many=True).data}))
+
+                    pjd.delete()
+
 
         resp = {'result_code': '0', 'route_id': str(route.pk)}
         return HttpResponse(json.dumps(resp))
@@ -632,27 +654,19 @@ def routedetails(request):
         if len(pointlist) > 0:
             pnts = pointlist
         else:
-            folder = settings.MEDIA_ROOT + '/points/'
-            fs = FileSystemStorage(location=folder)
-            file_path = 'route_' + str(route_id) + '.json'
-
             pjds = PointJsonData.objects.filter(route_id=route_id)
             if pjds.count() > 0:
                 pjd = pjds.first()
                 if pjd.points_json != '':
-                    pnts = pjd.points_json
-                    pnts = json.loads(pnts)
+                    pnts = json.loads(pjd.points_json)
             else:
                 pjds = PointData.objects.filter(route_id=route_id)
                 if pjds.count() > 0:
                     pjd = pjds.first()
                     if pjd.points_json != '':
-                        pnts = pjd.points_json
-                        pnts = json.loads(pnts)
+                        pnts = json.loads(pjd.points_json)
                 else:
                     pnts = Rpoint.objects.filter(route_id=route_id)
-            f = fs.open(file_path, 'w+')
-            f.write(json.dumps({'points':RpointSerializer(pnts, many=True).data}))
 
         pointser = RpointSerializer(pnts, many=True)
         resp = {'result_code':'0', 'points':pointser.data}
@@ -913,9 +927,13 @@ def routefilepoints(route_id):
     fs = FileSystemStorage(location=folder)
     file_path = 'route_' + str(route_id) + '.json'
     if fs.exists(file_path) == True:
-        f = fs.open(file_path)
+        f = fs.open(file_path, 'r')
         # pointList = parseJson(f)
-        pointList = json.loads(f.read())['points']
+        fread = f.read()
+        if fread.endswith(']}') == False or fread.count(']}') > 1:
+            indx = fread.find(']}')
+            fread = fread[0: indx + 2]
+        pointList = json.loads(fread)['points']
         return pointList
     else:
         return []
@@ -1293,8 +1311,29 @@ def raallreports(request):
     adminID = request.session['adminID']
     me = Rmember.objects.get(id=adminID)
 
-    routeList = []
-    routes = Route.objects.filter(admin_id=adminID, status='reported').order_by('-id')
+    page = 1
+    try:
+        page = request.GET['page']
+    except:
+        print('no key')
+
+    try:
+        prev = request.GET['prev']
+        page = int(prev) - 1
+    except:
+        print('no key')
+
+    try:
+        next = request.GET['next']
+        page = int(next) + 1
+    except:
+        print('no key')
+
+
+    reportList = []
+    totals = Route.objects.filter(admin_id=adminID, status='reported').order_by('-id')
+    routes = totals[(int(page)-1)*30 : int(page)*30]
+    if totals.count() < 30: routes = totals
     for route in routes:
         members = Rmember.objects.filter(admin_id=adminID, id=int(route.member_id))
         if members.count() > 0:
@@ -1304,12 +1343,65 @@ def raallreports(request):
                 area = Area.objects.get(id=assign.area_id)
                 route.area_name = area.area_name
                 route.assign_title = assign.title
-            # member = members[0]
-            # route.name = member.name + '_' + datetime.datetime.fromtimestamp(float(int(route.reported_time)/1000)).strftime("%y%m%d_%H%M")
-            routeList.append(route)
 
-    reportList = getRouteListData(routeList)
-    return render(request, 'rakubaru/reports.html', {'reports':reportList, 'me':me})
+            member = members[0]
+
+            if route.name == '':
+                route.name = member.name + '_' + datetime.datetime.fromtimestamp(float(int(route.reported_time)/1000)).strftime("%y%m%d_%H%M")
+
+            route.start_time = datetime.datetime.fromtimestamp(float(int(route.start_time)/1000)).strftime("%m/%d/%y %H:%M")
+            route.end_time = datetime.datetime.fromtimestamp(float(int(route.end_time)/1000)).strftime("%m/%d/%y %H:%M")
+            route.reported_time = datetime.datetime.fromtimestamp(float(int(route.reported_time)/1000)).strftime("%m/%d/%y %H:%M")
+            route.speed = round(float(route.speed), 2)
+            route.distance = round(float(route.distance), 3)
+            con_sec, con_min, con_hour = convertMillis(int(route.duration))
+            route.duration = "{0}h {1}m {2}s".format(str(int(con_hour)).zfill(2), str(int(con_min)).zfill(2), str(int(con_sec)).zfill(2))
+
+            if float(route.distance) == 0:
+                route.speed = '0.0'
+                # route.duration = '00h 00m 00s'
+
+            data = {
+                'member':member,
+                'route':route,
+            }
+            reportList.append(data)
+
+    totalpages = 0
+    if len(totals) % 30 > 0:
+        totalpages = int(len(totals) / 30) + 1
+    else:
+        totalpages = int(len(totals) / 30)
+
+    currentpage = int(page)
+    totalrecords = len(totals)
+
+    page_data = {
+        'totalpages': totalpages,
+        'currentpage': currentpage,
+        'totalrecords': totalrecords,
+    }
+
+    last_page = totalpages
+    range_end_page = currentpage + 7
+    if currentpage < last_page:
+        range_end_page = currentpage + 7
+        if range_end_page > last_page: range_end_page = last_page
+    else:
+        range_end_page = currentpage
+        currentpage -= 7
+        if currentpage < 1: currentpage = 1
+
+    context = {
+        'reports': reportList,
+        'me': me,
+        'page_data': page_data,
+        'range': range(currentpage, range_end_page + 1),
+    }
+
+    return render(request, 'rakubaru/reports.html', context)
+
+
 
 
 def getRouteListData(routes):
@@ -1345,6 +1437,8 @@ def convertMillis(millis):
      minutes=(millis/(1000*60))%60
      hours=(millis/(1000*60*60))%24
      return seconds, minutes, hours
+
+
 
 import math
 def round_down(n, decimals=0):
@@ -1392,9 +1486,32 @@ def rauserreports(request):
     adminID = request.session['adminID']
     me = Rmember.objects.get(id=adminID)
 
+
+    page = 1
+    try:
+        page = request.GET['page']
+    except:
+        print('no key')
+
+    try:
+        prev = request.GET['prev']
+        page = int(prev) - 1
+    except:
+        print('no key')
+
+    try:
+        next = request.GET['next']
+        page = int(next) + 1
+    except:
+        print('no key')
+
+
+    reportList = []
     member_id = request.GET['member_id']
     member = Rmember.objects.get(id=int(member_id))
-    routes = Route.objects.filter(member_id=member.pk, status='reported').order_by('-id')
+    totals = Route.objects.filter(member_id=member.pk, status='reported').order_by('-id')
+    routes = totals[(int(page)-1)*30 : int(page)*30]
+    if totals.count() < 30: routes = totals
     for route in routes:
         assigns = AreaAssign.objects.filter(id=route.assign_id)
         if assigns.count() > 0:
@@ -1402,11 +1519,65 @@ def rauserreports(request):
             area = Area.objects.get(id=assign.area_id)
             route.area_name = area.area_name
             route.assign_title = assign.title
-    # for route in routes:
-    #     route.name = member.name + '_' + datetime.datetime.fromtimestamp(float(int(route.reported_time)/1000)).strftime("%y%m%d_%H%M")
-    reportList = getRouteListData(routes)
 
-    return render(request, 'rakubaru/reports.html', {'reports':reportList, 'member':member, 'me':me})
+        if route.name == '':
+            route.name = member.name + '_' + datetime.datetime.fromtimestamp(float(int(route.reported_time)/1000)).strftime("%y%m%d_%H%M")
+
+        route.start_time = datetime.datetime.fromtimestamp(float(int(route.start_time)/1000)).strftime("%m/%d/%y %H:%M")
+        route.end_time = datetime.datetime.fromtimestamp(float(int(route.end_time)/1000)).strftime("%m/%d/%y %H:%M")
+        route.reported_time = datetime.datetime.fromtimestamp(float(int(route.reported_time)/1000)).strftime("%m/%d/%y %H:%M")
+        route.speed = round(float(route.speed), 2)
+        route.distance = round(float(route.distance), 3)
+        con_sec, con_min, con_hour = convertMillis(int(route.duration))
+        route.duration = "{0}h {1}m {2}s".format(str(int(con_hour)).zfill(2), str(int(con_min)).zfill(2), str(int(con_sec)).zfill(2))
+
+        if float(route.distance) == 0:
+            route.speed = '0.0'
+            # route.duration = '00h 00m 00s'
+
+        data = {
+            'member':member,
+            'route':route,
+        }
+        reportList.append(data)
+
+
+    totalpages = 0
+    if len(totals) % 30 > 0:
+        totalpages = int(len(totals) / 30) + 1
+    else:
+        totalpages = int(len(totals) / 30)
+
+    currentpage = int(page)
+    totalrecords = len(totals)
+
+    page_data = {
+        'totalpages': totalpages,
+        'currentpage': currentpage,
+        'totalrecords': totalrecords,
+    }
+
+    last_page = totalpages
+    range_end_page = currentpage + 7
+    if currentpage < last_page:
+        range_end_page = currentpage + 7
+        if range_end_page > last_page: range_end_page = last_page
+    else:
+        range_end_page = currentpage
+        currentpage -= 7
+        if currentpage < 1: currentpage = 1
+
+
+    context = {
+        'reports': reportList,
+        'me': me,
+        'member': member,
+        'page_data': page_data,
+        'range': range(currentpage, range_end_page + 1),
+    }
+
+    return render(request, 'rakubaru/reports.html', context)
+
 
 
 @api_view(['GET', 'POST'])
@@ -1425,9 +1596,29 @@ def rasearchreportbydate(request):
         adminID = request.session['adminID']
         me = Rmember.objects.get(id=adminID)
 
+        page = 1
+        try:
+            page = request.GET['page']
+        except:
+            print('no key')
+
+        try:
+            prev = request.GET['prev']
+            page = int(prev) - 1
+        except:
+            print('no key')
+
+        try:
+            next = request.GET['next']
+            page = int(next) + 1
+        except:
+            print('no key')
+
         if option == 'all':
-            routes = Route.objects.filter(admin_id=adminID).order_by('-id')
-            routeList = []
+            totals = Route.objects.filter(admin_id=adminID).order_by('-id')
+            routes = totals[(int(page)-1)*30 : int(page)*30]
+            if totals.count() < 30: routes = totals
+            reportList = []
             for route in routes:
                 members = Rmember.objects.filter(id=route.member_id)
                 if members.count() > 0:
@@ -1439,13 +1630,64 @@ def rasearchreportbydate(request):
                             area = Area.objects.get(id=assign.area_id)
                             route.area_name = area.area_name
                             route.assign_title = assign.title
-                        routeList.append(route)
-            routeList = getroutessearchedbydate(routeList, key)
-            return render(request, 'rakubaru/reports.html', {'reports':getRouteListData(routeList)})
+
+                        if key.isdigit():
+                            from datetime import datetime
+                            keyDateObj = datetime.fromtimestamp(int(key)/1000)
+                            routeDateObj = datetime.fromtimestamp(int(route.reported_time)/1000)
+                            if keyDateObj.year == routeDateObj.year and keyDateObj.month == routeDateObj.month and keyDateObj.day == routeDateObj.day:
+                                reportList.append(routedata(route, member))
+                            else:
+                                routeDateObj = datetime.fromtimestamp(int(route.start_time)/1000)
+                                if keyDateObj.year == routeDateObj.year and keyDateObj.month == routeDateObj.month and keyDateObj.day == routeDateObj.day:
+                                    reportList.append(routedata(route, member))
+                                else:
+                                    routeDateObj = datetime.fromtimestamp(int(route.end_time)/1000)
+                                    if keyDateObj.year == routeDateObj.year and keyDateObj.month == routeDateObj.month and keyDateObj.day == routeDateObj.day:
+                                        reportList.append(routedata(route, member))
+
+            totalpages = 0
+            if len(totals) % 30 > 0:
+                totalpages = int(len(totals) / 30) + 1
+            else:
+                totalpages = int(len(totals) / 30)
+
+            currentpage = int(page)
+            totalrecords = len(totals)
+
+            page_data = {
+                'totalpages': totalpages,
+                'currentpage': currentpage,
+                'totalrecords': totalrecords,
+            }
+
+            last_page = totalpages
+            range_end_page = currentpage + 7
+            if currentpage < last_page:
+                range_end_page = currentpage + 7
+                if range_end_page > last_page: range_end_page = last_page
+            else:
+                range_end_page = currentpage
+                currentpage -= 7
+                if currentpage < 1: currentpage = 1
+
+
+            context = {
+                'reports': reportList,
+                'me': me,
+                'page_data': page_data,
+                'range': range(currentpage, range_end_page + 1),
+            }
+
+            return render(request, 'rakubaru/reports.html', context)
+
         elif option == 'user':
             member_id = request.GET['member_id']
             member = Rmember.objects.get(id=int(member_id))
-            routes = Route.objects.filter(member_id=member_id).order_by('-id')
+            totals = Route.objects.filter(member_id=member_id).order_by('-id')
+            routes = totals[(int(page)-1)*30 : int(page)*30]
+            if totals.count() < 30: routes = totals
+            reportList = []
             for route in routes:
                 assigns = AreaAssign.objects.filter(id=route.assign_id)
                 if assigns.count() > 0:
@@ -1453,8 +1695,82 @@ def rasearchreportbydate(request):
                     area = Area.objects.get(id=assign.area_id)
                     route.area_name = area.area_name
                     route.assign_title = assign.title
-            routeList = getroutessearchedbydate(routes, key)
-            return render(request, 'rakubaru/reports.html', {'reports':getRouteListData(routeList), 'member':member})
+
+                if key.isdigit():
+                    from datetime import datetime
+                    keyDateObj = datetime.fromtimestamp(int(key)/1000)
+                    routeDateObj = datetime.fromtimestamp(int(route.reported_time)/1000)
+                    if keyDateObj.year == routeDateObj.year and keyDateObj.month == routeDateObj.month and keyDateObj.day == routeDateObj.day:
+                        reportList.append(routedata(route, member))
+                    else:
+                        routeDateObj = datetime.fromtimestamp(int(route.start_time)/1000)
+                        if keyDateObj.year == routeDateObj.year and keyDateObj.month == routeDateObj.month and keyDateObj.day == routeDateObj.day:
+                            reportList.append(routedata(route, member))
+                        else:
+                            routeDateObj = datetime.fromtimestamp(int(route.end_time)/1000)
+                            if keyDateObj.year == routeDateObj.year and keyDateObj.month == routeDateObj.month and keyDateObj.day == routeDateObj.day:
+                                reportList.append(routedata(route, member))
+
+            totalpages = 0
+            if len(totals) % 30 > 0:
+                totalpages = int(len(totals) / 30) + 1
+            else:
+                totalpages = int(len(totals) / 30)
+
+            currentpage = int(page)
+            totalrecords = len(totals)
+
+            page_data = {
+                'totalpages': totalpages,
+                'currentpage': currentpage,
+                'totalrecords': totalrecords,
+            }
+
+            last_page = totalpages
+            range_end_page = currentpage + 7
+            if currentpage < last_page:
+                range_end_page = currentpage + 7
+                if range_end_page > last_page: range_end_page = last_page
+            else:
+                range_end_page = currentpage
+                currentpage -= 7
+                if currentpage < 1: currentpage = 1
+
+
+            context = {
+                'reports': reportList,
+                'me': me,
+                'member': member,
+                'page_data': page_data,
+                'range': range(currentpage, range_end_page + 1),
+            }
+            return render(request, 'rakubaru/reports.html', context)
+
+
+
+def routedata(route, member):
+    import datetime
+    if route.name == '':
+        route.name = member.name + '_' + datetime.datetime.fromtimestamp(float(int(route.reported_time)/1000)).strftime("%y%m%d_%H%M")
+
+    route.start_time = datetime.datetime.fromtimestamp(float(int(route.start_time)/1000)).strftime("%m/%d/%y %H:%M")
+    route.end_time = datetime.datetime.fromtimestamp(float(int(route.end_time)/1000)).strftime("%m/%d/%y %H:%M")
+    route.reported_time = datetime.datetime.fromtimestamp(float(int(route.reported_time)/1000)).strftime("%m/%d/%y %H:%M")
+    route.speed = round(float(route.speed), 2)
+    route.distance = round(float(route.distance), 3)
+    con_sec, con_min, con_hour = convertMillis(int(route.duration))
+    route.duration = "{0}h {1}m {2}s".format(str(int(con_hour)).zfill(2), str(int(con_min)).zfill(2), str(int(con_sec)).zfill(2))
+
+    if float(route.distance) == 0:
+        route.speed = '0.0'
+        # route.duration = '00h 00m 00s'
+
+    data = {
+        'member':member,
+        'route':route,
+    }
+    return data
+
 
 
 def getroutessearchedbydate(routes, keyword):
@@ -1517,31 +1833,23 @@ def raopenroutemap(request):
         if len(pointlist) > 0:
             pnts = pointlist
         else:
-            folder = settings.MEDIA_ROOT + '/points/'
-            fs = FileSystemStorage(location=folder)
-            file_path = 'route_' + str(route_id) + '.json'
-
             pjds = PointJsonData.objects.filter(route_id=route_id)
             if pjds.count() > 0:
                 pjd = pjds.first()
                 if pjd.points_json != '':
-                    pnts = pjd.points_json
-                    pnts = json.loads(pnts)
+                    pnts = json.loads(pjd.points_json)
             else:
                 pjds = PointData.objects.filter(route_id=route_id)
                 if pjds.count() > 0:
                     pjd = pjds.first()
                     if pjd.points_json != '':
-                        pnts = pjd.points_json
-                        pnts = json.loads(pnts)
+                        pnts = json.loads(pjd.points_json)
                 else:
                     pnts = Rpoint.objects.filter(route_id=route_id)
-            f = fs.open(file_path, 'w+')
-            f.write(json.dumps({'points':RpointSerializer(pnts, many=True).data}))
-
 
         pins = Rpin.objects.filter(member_id=route.member_id)
         for pin in pins:
+            pin.comment = pin.comment.replace('\n', ' ')
             pin.time = datetime.datetime.fromtimestamp(float(int(pin.time)/1000)).strftime("%m/%d/%y %r").replace('AM', '午前').replace('PM', '午後')
 
         area = None
@@ -3150,27 +3458,19 @@ def allassignedworks(request):
         if len(pointlist) > 0:
             pnts = pointlist
         else:
-            folder = settings.MEDIA_ROOT + '/points/'
-            fs = FileSystemStorage(location=folder)
-            file_path = 'route_' + str(route.pk) + '.json'
-
             pjds = PointJsonData.objects.filter(route_id=route.pk)
             if pjds.count() > 0:
                 pjd = pjds.first()
                 if pjd.points_json != '':
-                    pnts = pjd.points_json
-                    pnts = json.loads(pnts)
+                    pnts = json.loads(pjd.points_json)
             else:
                 pjds = PointData.objects.filter(route_id=route.pk)
                 if pjds.count() > 0:
                     pjd = pjds.first()
                     if pjd.points_json != '':
-                        pnts = pjd.points_json
-                        pnts = json.loads(pnts)
+                        pnts = json.loads(pjd.points_json)
                 else:
                     pnts = Rpoint.objects.filter(route_id=route.pk)
-            f = fs.open(file_path, 'w+')
-            f.write(json.dumps({'points':RpointSerializer(pnts, many=True).data}))
 
         data = {
             'route': route,
@@ -3356,9 +3656,31 @@ def employees(request):
 
 def emreports(request):
     import datetime
+
+    page = 1
+    try:
+        page = request.GET['page']
+    except:
+        print('no key')
+
+    try:
+        prev = request.GET['prev']
+        page = int(prev) - 1
+    except:
+        print('no key')
+
+    try:
+        next = request.GET['next']
+        page = int(next) + 1
+    except:
+        print('no key')
+
+    reportList = []
     member_id = request.GET['member_id']
     member = Rmember.objects.get(id=int(member_id))
-    routes = Route.objects.filter(member_id=member.pk, status='reported').order_by('-id')
+    totals = Route.objects.filter(member_id=member.pk, status='reported').order_by('-id')
+    routes = totals[(int(page)-1)*30 : int(page)*30]
+    if totals.count() < 30: routes = totals
     for route in routes:
         assigns = AreaAssign.objects.filter(id=route.assign_id)
         if assigns.count() > 0:
@@ -3366,16 +3688,92 @@ def emreports(request):
             area = Area.objects.get(id=assign.area_id)
             route.area_name = area.area_name
             route.assign_title = assign.title
-    reportList = getRouteListData(routes)
 
-    return render(request, 'rakubaru/emreports.html', {'reports':reportList, 'member':member})
+        if route.name == '':
+            route.name = member.name + '_' + datetime.datetime.fromtimestamp(float(int(route.reported_time)/1000)).strftime("%y%m%d_%H%M")
+
+        route.start_time = datetime.datetime.fromtimestamp(float(int(route.start_time)/1000)).strftime("%m/%d/%y %H:%M")
+        route.end_time = datetime.datetime.fromtimestamp(float(int(route.end_time)/1000)).strftime("%m/%d/%y %H:%M")
+        route.reported_time = datetime.datetime.fromtimestamp(float(int(route.reported_time)/1000)).strftime("%m/%d/%y %H:%M")
+        route.speed = round(float(route.speed), 2)
+        route.distance = round(float(route.distance), 3)
+        con_sec, con_min, con_hour = convertMillis(int(route.duration))
+        route.duration = "{0}h {1}m {2}s".format(str(int(con_hour)).zfill(2), str(int(con_min)).zfill(2), str(int(con_sec)).zfill(2))
+
+        if float(route.distance) == 0:
+            route.speed = '0.0'
+            # route.duration = '00h 00m 00s'
+
+        data = {
+            'member':member,
+            'route':route,
+        }
+        reportList.append(data)
+
+
+    totalpages = 0
+    if len(totals) % 30 > 0:
+        totalpages = int(len(totals) / 30) + 1
+    else:
+        totalpages = int(len(totals) / 30)
+
+    currentpage = int(page)
+    totalrecords = len(totals)
+
+    page_data = {
+        'totalpages': totalpages,
+        'currentpage': currentpage,
+        'totalrecords': totalrecords,
+    }
+
+    last_page = totalpages
+    range_end_page = currentpage + 7
+    if currentpage < last_page:
+        range_end_page = currentpage + 7
+        if range_end_page > last_page: range_end_page = last_page
+    else:
+        range_end_page = currentpage
+        currentpage -= 7
+        if currentpage < 1: currentpage = 1
+
+    context = {
+        'reports': reportList,
+        'member': member,
+        'page_data': page_data,
+        'range': range(currentpage, range_end_page + 1),
+    }
+
+    return render(request, 'rakubaru/emreports.html', context)
+
 
 
 def adminreports(request):
+    import datetime
+
+    page = 1
+    try:
+        page = request.GET['page']
+    except:
+        print('no key')
+
+    try:
+        prev = request.GET['prev']
+        page = int(prev) - 1
+    except:
+        print('no key')
+
+    try:
+        next = request.GET['next']
+        page = int(next) + 1
+    except:
+        print('no key')
+
     admin_id = request.GET['admin_id']
     admin = Rmember.objects.get(id=int(admin_id))
-    routeList = []
-    routes = Route.objects.filter(status='reported').order_by('-id')
+    reportList = []
+    totals = Route.objects.filter(admin_id=admin_id, status='reported').order_by('-id')
+    routes = totals[(int(page)-1)*30 : int(page)*30]
+    if totals.count() < 30: routes = totals
     for route in routes:
         members = Rmember.objects.filter(admin_id=admin.pk, id=int(route.member_id))
         if members.count() > 0:
@@ -3385,17 +3783,90 @@ def adminreports(request):
                 area = Area.objects.get(id=assign.area_id)
                 route.area_name = area.area_name
                 route.assign_title = assign.title
-            # member = members[0]
-            # route.name = member.name + '_' + datetime.datetime.fromtimestamp(float(int(route.reported_time)/1000)).strftime("%y%m%d_%H%M")
-            routeList.append(route)
 
-    reportList = getRouteListData(routeList)
-    return render(request, 'rakubaru/emreports.html', {'reports':reportList, 'admin':admin})
+            member = members[0]
+
+            if route.name == '':
+                route.name = member.name + '_' + datetime.datetime.fromtimestamp(float(int(route.reported_time)/1000)).strftime("%y%m%d_%H%M")
+
+            route.start_time = datetime.datetime.fromtimestamp(float(int(route.start_time)/1000)).strftime("%m/%d/%y %H:%M")
+            route.end_time = datetime.datetime.fromtimestamp(float(int(route.end_time)/1000)).strftime("%m/%d/%y %H:%M")
+            route.reported_time = datetime.datetime.fromtimestamp(float(int(route.reported_time)/1000)).strftime("%m/%d/%y %H:%M")
+            route.speed = round(float(route.speed), 2)
+            route.distance = round(float(route.distance), 3)
+            con_sec, con_min, con_hour = convertMillis(int(route.duration))
+            route.duration = "{0}h {1}m {2}s".format(str(int(con_hour)).zfill(2), str(int(con_min)).zfill(2), str(int(con_sec)).zfill(2))
+
+            if float(route.distance) == 0:
+                route.speed = '0.0'
+                # route.duration = '00h 00m 00s'
+
+            data = {
+                'member':member,
+                'route':route,
+            }
+            reportList.append(data)
+
+    totalpages = 0
+    if len(totals) % 30 > 0:
+        totalpages = int(len(totals) / 30) + 1
+    else:
+        totalpages = int(len(totals) / 30)
+
+    currentpage = int(page)
+    totalrecords = len(totals)
+
+    page_data = {
+        'totalpages': totalpages,
+        'currentpage': currentpage,
+        'totalrecords': totalrecords,
+    }
+
+    last_page = totalpages
+    range_end_page = currentpage + 7
+    if currentpage < last_page:
+        range_end_page = currentpage + 7
+        if range_end_page > last_page: range_end_page = last_page
+    else:
+        range_end_page = currentpage
+        currentpage -= 7
+        if currentpage < 1: currentpage = 1
+
+    context = {
+        'admin':admin,
+        'reports': reportList,
+        'page_data': page_data,
+        'range': range(currentpage, range_end_page + 1),
+    }
+
+    return render(request, 'rakubaru/emreports.html', context)
 
 
 def allreports(request):
-    routeList = []
-    routes = Route.objects.filter(status='reported').order_by('-id')
+    import datetime
+
+    page = 1
+    try:
+        page = request.GET['page']
+    except:
+        print('no key')
+
+    try:
+        prev = request.GET['prev']
+        page = int(prev) - 1
+    except:
+        print('no key')
+
+    try:
+        next = request.GET['next']
+        page = int(next) + 1
+    except:
+        print('no key')
+
+    reportList = []
+    totals = Route.objects.filter(status='reported').order_by('-id')
+    routes = totals[(int(page)-1)*30 : int(page)*30]
+    if totals.count() < 30: routes = totals
     for route in routes:
         members = Rmember.objects.filter(id=int(route.member_id))
         if members.count() > 0:
@@ -3405,12 +3876,64 @@ def allreports(request):
                 area = Area.objects.get(id=assign.area_id)
                 route.area_name = area.area_name
                 route.assign_title = assign.title
-            # member = members[0]
-            # route.name = member.name + '_' + datetime.datetime.fromtimestamp(float(int(route.reported_time)/1000)).strftime("%y%m%d_%H%M")
-            routeList.append(route)
 
-    reportList = getRouteListData(routeList)
-    return render(request, 'rakubaru/emreports.html', {'reports':reportList})
+            member = members[0]
+
+            if route.name == '':
+                route.name = member.name + '_' + datetime.datetime.fromtimestamp(float(int(route.reported_time)/1000)).strftime("%y%m%d_%H%M")
+
+            route.start_time = datetime.datetime.fromtimestamp(float(int(route.start_time)/1000)).strftime("%m/%d/%y %H:%M")
+            route.end_time = datetime.datetime.fromtimestamp(float(int(route.end_time)/1000)).strftime("%m/%d/%y %H:%M")
+            route.reported_time = datetime.datetime.fromtimestamp(float(int(route.reported_time)/1000)).strftime("%m/%d/%y %H:%M")
+            route.speed = round(float(route.speed), 2)
+            route.distance = round(float(route.distance), 3)
+            con_sec, con_min, con_hour = convertMillis(int(route.duration))
+            route.duration = "{0}h {1}m {2}s".format(str(int(con_hour)).zfill(2), str(int(con_min)).zfill(2), str(int(con_sec)).zfill(2))
+
+            if float(route.distance) == 0:
+                route.speed = '0.0'
+                # route.duration = '00h 00m 00s'
+
+            data = {
+                'member':member,
+                'route':route,
+            }
+            reportList.append(data)
+
+    totalpages = 0
+    if len(totals) % 30 > 0:
+        totalpages = int(len(totals) / 30) + 1
+    else:
+        totalpages = int(len(totals) / 30)
+
+    currentpage = int(page)
+    totalrecords = len(totals)
+
+    page_data = {
+        'totalpages': totalpages,
+        'currentpage': currentpage,
+        'totalrecords': totalrecords,
+    }
+
+    last_page = totalpages
+    range_end_page = currentpage + 7
+    if currentpage < last_page:
+        range_end_page = currentpage + 7
+        if range_end_page > last_page: range_end_page = last_page
+    else:
+        range_end_page = currentpage
+        currentpage -= 7
+        if currentpage < 1: currentpage = 1
+
+    context = {
+        'reports': reportList,
+        'page_data': page_data,
+        'range': range(currentpage, range_end_page + 1),
+    }
+
+    return render(request, 'rakubaru/emreports.html', context)
+
+
 
 
 def emroutemap(request):
@@ -3454,27 +3977,19 @@ def emroutemap(request):
         if len(pointlist) > 0:
             pnts = pointlist
         else:
-            folder = settings.MEDIA_ROOT + '/points/'
-            fs = FileSystemStorage(location=folder)
-            file_path = 'route_' + str(route.pk) + '.json'
-
             pjds = PointJsonData.objects.filter(route_id=route.pk)
             if pjds.count() > 0:
                 pjd = pjds.first()
                 if pjd.points_json != '':
-                    pnts = pjd.points_json
-                    pnts = json.loads(pnts)
+                    pnts = json.loads(pjd.points_json)
             else:
                 pjds = PointData.objects.filter(route_id=route.pk)
                 if pjds.count() > 0:
                     pjd = pjds.first()
                     if pjd.points_json != '':
-                        pnts = pjd.points_json
-                        pnts = json.loads(pnts)
+                        pnts = json.loads(pjd.points_json)
                 else:
                     pnts = Rpoint.objects.filter(route_id=route.pk)
-            f = fs.open(file_path, 'w+')
-            f.write(json.dumps({'points':RpointSerializer(pnts, many=True).data}))
 
         pins = Rpin.objects.filter(member_id=route.member_id)
         for pin in pins:

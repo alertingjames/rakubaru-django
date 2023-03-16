@@ -514,6 +514,209 @@ class ZPref47(models.Model):
 
 
 
+############################################################################## Business Management ####################################################################################
+
+
+class CompanyInfo(models.Model):
+    member_id = models.CharField(max_length=11)
+    company_name = models.CharField(max_length=100)
+    manager = models.CharField(max_length=100)
+    phone_number = models.CharField(max_length=50)
+    fax_number = models.CharField(max_length=50)
+    email = models.CharField(max_length=80)
+    postal_code = models.CharField(max_length=30)
+    address = models.CharField(max_length=300)
+    bank_name = models.CharField(max_length=100)
+    branch_name = models.CharField(max_length=100)
+    account_type = models.CharField(max_length=50)
+    account_number = models.CharField(max_length=50)
+    invoice_issuer_number = models.CharField(max_length=50)
+    invoice_number = models.CharField(max_length=1000)
+    note = models.CharField(max_length=1000)
+    created_on = models.CharField(max_length=50)
+    status = models.CharField(max_length=50)
+
+
+
+class CustomerInfo(models.Model):
+    member_id = models.CharField(max_length=11)
+    code = models.CharField(max_length=100)
+    customer_name = models.CharField(max_length=100)
+    industry = models.CharField(max_length=100)
+    note = models.CharField(max_length=1000)
+    phone_number = models.CharField(max_length=50)
+    fax_number = models.CharField(max_length=50)
+    emails = models.CharField(max_length=1000)
+    postal_code = models.CharField(max_length=30)
+    address = models.CharField(max_length=300)
+    url = models.CharField(max_length=1000)
+    report_password = models.CharField(max_length=50)
+    created_on = models.CharField(max_length=50)
+    status = models.CharField(max_length=50)
+
+
+
+class ProductInfo(models.Model):
+    member_id = models.CharField(max_length=11)
+    code = models.CharField(max_length=100)
+    product_name = models.CharField(max_length=100)
+    contract_unit_price = models.CharField(max_length=50)
+    payment_unit_price_all = models.CharField(max_length=50)
+    payment_unit_price_eaves = models.CharField(max_length=50)
+    payment_unit_price_set = models.CharField(max_length=50)
+    payment_unit_price_detached = models.CharField(max_length=50)
+    customers = models.CharField(max_length=1000)
+    note = models.CharField(max_length=1000)
+    leader_work_unit_price = models.CharField(max_length=50)
+    created_on = models.CharField(max_length=50)
+    status = models.CharField(max_length=50)
+
+
+
+class DistributionAreaInfo(models.Model):
+    member_id = models.CharField(max_length=11)
+    code = models.CharField(max_length=100)
+    area_name = models.CharField(max_length=100)
+    copies = models.CharField(max_length=50)
+    payment_unit_price_all = models.CharField(max_length=50)
+    payment_unit_price_eaves = models.CharField(max_length=50)
+    payment_unit_price_set = models.CharField(max_length=50)
+    payment_unit_price_detached = models.CharField(max_length=50)
+    allowance_all = models.CharField(max_length=50)
+    allowance_eaves = models.CharField(max_length=50)
+    allowance_set = models.CharField(max_length=50)
+    allowance_detached = models.CharField(max_length=50)
+    amount_all = models.CharField(max_length=50)
+    amount_eaves = models.CharField(max_length=50)
+    amount_set = models.CharField(max_length=50)
+    amount_detached = models.CharField(max_length=50)
+    distance_all = models.CharField(max_length=50)
+    distance_eaves = models.CharField(max_length=50)
+    distance_set = models.CharField(max_length=50)
+    distance_detached = models.CharField(max_length=50)
+    note = models.CharField(max_length=1000)
+    created_on = models.CharField(max_length=50)
+    status = models.CharField(max_length=50)
+
+
+
+class DistributionAreaGroupInfo(models.Model):
+    member_id = models.CharField(max_length=11)
+    code = models.CharField(max_length=100)
+    area_group_name = models.CharField(max_length=100)
+    areas = models.CharField(max_length=3000)
+    note = models.CharField(max_length=1000)
+    created_on = models.CharField(max_length=50)
+    status = models.CharField(max_length=50)
+
+
+class DistributionAreaGroup(models.Model):
+    area_group_id = models.CharField(max_length=11)
+    area_info_id = models.CharField(max_length=11)
+
+
+class DistributorInfo(models.Model):
+    member_id = models.CharField(max_length=11)
+    code = models.CharField(max_length=100)
+    name = models.CharField(max_length=100)
+    phone_number = models.CharField(max_length=50)
+    email = models.CharField(max_length=80)
+    areas = models.CharField(max_length=3000)
+    postal_code = models.CharField(max_length=30)
+    address = models.CharField(max_length=300)
+    note = models.CharField(max_length=1000)
+    bank_name = models.CharField(max_length=100)
+    branch_name = models.CharField(max_length=100)
+    account_type = models.CharField(max_length=50)
+    account_number = models.CharField(max_length=50)
+    invoice_issuer_number = models.CharField(max_length=50)
+    invoice_number = models.CharField(max_length=1000)
+    is_leader = models.CharField(max_length=1000)
+    created_on = models.CharField(max_length=50)
+    status = models.CharField(max_length=50)
+
+
+
+
+class LeaderInfo(models.Model):
+    member_id = models.CharField(max_length=11)
+    code = models.CharField(max_length=100)
+    name = models.CharField(max_length=100)
+    areas = models.CharField(max_length=3000)
+    note = models.CharField(max_length=1000)
+    created_on = models.CharField(max_length=50)
+    status = models.CharField(max_length=50)
+
+
+
+class DistributorGroupInfo(models.Model):
+    member_id = models.CharField(max_length=11)
+    code = models.CharField(max_length=100)
+    group_name = models.CharField(max_length=100)
+    distributors = models.CharField(max_length=3000)
+    note = models.CharField(max_length=1000)
+    created_on = models.CharField(max_length=50)
+    status = models.CharField(max_length=50)
+
+
+
+class SubcontractorInfo(models.Model):
+    member_id = models.CharField(max_length=11)
+    code = models.CharField(max_length=100)
+    company_name = models.CharField(max_length=100)
+    industry = models.CharField(max_length=100)
+    note = models.CharField(max_length=1000)
+    phone_number = models.CharField(max_length=50)
+    fax_number = models.CharField(max_length=50)
+    emails = models.CharField(max_length=1000)
+    postal_code = models.CharField(max_length=30)
+    address = models.CharField(max_length=300)
+    url = models.CharField(max_length=1000)
+    areas = models.CharField(max_length=3000)
+    created_on = models.CharField(max_length=50)
+    status = models.CharField(max_length=50)
+
+
+
+class IndustryInfo(models.Model):
+    member_id = models.CharField(max_length=11)
+    code = models.CharField(max_length=100)
+    industry_name = models.CharField(max_length=100)
+    note = models.CharField(max_length=1000)
+    created_on = models.CharField(max_length=50)
+    status = models.CharField(max_length=50)
+
+
+
+class DistributionTypeInfo(models.Model):
+    member_id = models.CharField(max_length=11)
+    all = models.CharField(max_length=50)
+    eaves = models.CharField(max_length=50)
+    set = models.CharField(max_length=50)
+    detached = models.CharField(max_length=50)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -17,42 +17,12 @@
 
 <style>
 
-.dropdown-menu{
-    background-color: #fff;
-    padding:10px;
-    width:220px;
-}
+h4{color:rgba(255,255,255,0.8);}
 
-#m{
-    background-color: #fff;
-    padding:15px;
-    width:300px;
-}
-
-.menu{
-    color: black;
-}
-
-.menu:hover{
-    background-color:#eee;
-    color:red;
-}
-
-.menu a{
-    color:black;
-}
-
-h4{
-    color:white;
-}
-
-h4:hover{
-    color:white;
-    text-decoration:underline;
-}
+h4:hover{color:white;}
 
 </style>
-    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js"></script>-->
+
 </head>
 
 <body>
@@ -73,24 +43,11 @@ h4:hover{
 
         <div class="collapse navbar-collapse" id="topNavBar" style="border:0;">
             <ul class="nav navbar-nav">
-                {% if option == 'area_works' %}
-                <li style="margin-right:30px;opacity:0;">
-                    <a href="javascript:void(0)" onclick="history.go(-1); event.preventDefault();">
-                        <h4 style=""><span class="fa fa-arrow-left" aria-hidden="true" style="margin-right:10px;"></span>バック</h4>
+                <li>
+                    <a href="javascript:void(0)" onclick="window.history.back();">
+                        <h4 style=""><span class="fa fa-arrow-left" aria-hidden="true"></span>&nbsp;バック</h4>
                     </a>
                 </li>
-                {% else %}
-                <li style="margin-right:30px;">
-                    <a href="javascript:void(0)" onclick="history.go(-1); event.preventDefault();">
-                        <h4 style=""><span class="fa fa-arrow-left" aria-hidden="true" style="margin-right:10px;"></span>バック</h4>
-                    </a>
-                </li>
-                {% endif %}
-                <!--<li style="margin-right:30px;">-->
-                <!--    <a href="/superadmin">-->
-                <!--        <h4 style=""><span class="fa fa-home" aria-hidden="true" style="margin-right:10px;"></span>ホーム</h4>-->
-                <!--    </a>-->
-                <!--</li>-->
             </ul>
 
             <ul class="nav navbar-nav navbar-right">

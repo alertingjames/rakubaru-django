@@ -9,12 +9,10 @@
 
 <link rel="stylesheet" type="text/css" href="/static/css/area/route.css"/>
 
-<div style="width:450px; height:auto; margin:30px 0px 0px 5px; overflow:auto; position:fixed; z-index:1000;">
-    <br>
-    <br>
+<div class="route-panel">
     <div style="width:100%;">
         <div style="width:100%;">
-            <div class="form">
+            <div>
                 <div class="contentform">
                     <div style="width:100%; position:relative;">
                         <div class="form-group">
@@ -181,13 +179,33 @@
 
     map.fitBounds( bounds );
 
-    travelCoordinates = [
+    var tcs = [
         {% for point in report.points %}
             {% if point.lat != None %}
                 [{ lat: {{ point.lat }}, lng: {{ point.lng }} }, '{{point.color}}', {{ point.lat }}, {{ point.lng }}, {{ point.id }}],
             {% endif %}
         {% endfor %}
     ];
+
+    for(var c=0; c<tcs.length; c++){
+        var tc = tcs[c];
+        travelCoordinates.push(tc);
+        if(travelCoordinates.length > 1) {
+            var lastLoc1 = travelCoordinates[travelCoordinates.length - 2][0];
+            var lastLoc2 = tc[0];
+            if(travelCoordinates.length > 2) {
+                var lastLoc0 = travelCoordinates[travelCoordinates.length - 3][0];
+
+                var dist0 = hdistance(lastLoc0, lastLoc1);
+                var dist1 = hdistance(lastLoc1, lastLoc2);
+                var dist2 = hdistance(lastLoc0, lastLoc2);
+
+                if(dist2 < dist0 || dist2 < dist1){
+                    removeItem(travelCoordinates, travelCoordinates[travelCoordinates.length - 2])
+                }
+            }
+        }
+    }
 
     tracingPath = travelCoordinates;
 
@@ -297,6 +315,13 @@
 
     // getLastPoint();
 
+  }
+
+  function removeItem(arr, value) {
+      var index = arr.indexOf(value);
+      if (index > -1) {
+          arr.splice(index, 1);
+      }
   }
 
   function hdistance(loc1, loc2) {

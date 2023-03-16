@@ -1,0 +1,190 @@
+{% extends 'businessmanagement/base_master.html' %}
+{% block title %}その他マスタ（配布形態マスタ） | らくばる業務管理{% endblock %}
+
+{% block body %}
+
+<link rel="stylesheet" type="text/css" href="/static/css/radiobutton.css"/>
+
+<style>
+
+html, body{background:#006699;}
+
+#top-scroll {display: none;position: fixed;bottom: 20%;right: 15px;z-index: 99;border: none;outline: none;background-color: rgba(0,0,0,0.3);color: white;cursor: pointer;padding: 15px;border-radius: 50%;}
+
+#top-scroll:hover {background-color: orange;}
+
+.form-group {overflow:hidden;width:100%;}
+
+input, select {margin-bottom:15px;margin-right:auto;width:100%;height:36px;opacity:0.95;float:middle;padding:0px 15px;color:black;text-align:left;border:2px solid gray;border-radius: 50px;}
+
+input:focus, select:focus {outline:0;border:2px solid red;}
+
+label input {display: none;}
+
+label span {height: 25px;width: 25px;text-align:center;padding-bottom:5px;display: inline-block;position: relative;border:0;border-radius:3px;}
+
+[type=checkbox]:checked + span:before {content: '\2714';position: absolute;top:0;font-size:20px;left: 3px;}
+
+[type=checkbox]:checked + span:after {/* <-- style its checked state..with a ticked icon */content: '\2714';position: absolute;top:0;left: 3px;font-size:20px;color:red;}
+
+#title0 {font-size:30px; font-weight:800; color:white; text-align:center;position:fixed; left:50%; float:middle; padding:10px 15px 10px 15px;transform:translate(-50%, -50%); width:auto;
+    top:130px; z-index:333; display:block;}
+
+#form {max-width:600px;width:auto;height:auto;padding:15px;margin-top:150px;margin-bottom:2% auto;margin-left:auto;margin-right:auto;overflow:hidden;position:relative;}
+
+.contentform {padding: 30px;float:middle;margin:auto;position:relative;}
+
+.formcontent {width:100%;float:middle;margin:auto;box-sizing: border-box;padding: 0px;}
+
+.divider {width:100%;height:2px;background:white;}
+
+.thin-divider {width:100%;height:1px;background:white;}
+
+.d-row {display:flex;padding-top:15px;padding-bottom:15px;}
+
+.d-cell {flex-grow:1;text-align:center;color:white;font-size:21px;}
+
+.d-cell > input { width:25px;height:25px; }
+
+
+</style>
+
+<script>
+	history.pushState(null, null, location.href);
+    history.back();
+    history.forward();
+    window.onpopstate = function () { history.go(1); };
+</script>
+
+<meta charset="UTF-8">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+<link rel="stylesheet" href="../lib/w3.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+<div id="title0">
+    配布形態マスタ
+    <div style="font-size:14px;">（その他マスタ）</div>
+</div>
+
+
+<div id="form">
+    <div class="contentform">
+		<div class="formcontent">
+		    <div class="d-row">
+		        <div class="d-cell">
+		            配布形態コード
+		        </div>
+		        <div class="d-cell">
+		            配布形態名称
+		        </div>
+		        <div class="d-cell">
+		            使用チェック
+		        </div>
+		    </div>
+		    <div class="divider"></div>
+		    <div class="d-row">
+		        <div class="d-cell">
+		            001
+		        </div>
+		        <div class="d-cell">
+		            全戸
+		        </div>
+		        <div class="d-cell">
+		            <input type="checkbox" name="all" id="chx_all" value="yes" {% if info.all == 'yes' %}checked{% endif %} onchange="changeDistributionType(this)">
+		        </div>
+		    </div>
+		    <div class="thin-divider"></div>
+		    <div class="d-row">
+		        <div class="d-cell">
+		            002
+		        </div>
+		        <div class="d-cell">
+		            軒並
+		        </div>
+		        <div class="d-cell">
+		            <input type="checkbox" name="eaves" id="chx_eaves" value="yes" {% if info.eaves == 'yes' %}checked{% endif %} onchange="changeDistributionType(this)">
+		        </div>
+		    </div>
+		    <div class="thin-divider"></div>
+		    <div class="d-row">
+		        <div class="d-cell">
+		            003
+		        </div>
+		        <div class="d-cell">
+		            集合
+		        </div>
+		        <div class="d-cell">
+		            <input type="checkbox" name="set" id="chx_set" value="yes" {% if info.set == 'yes' %}checked{% endif %} onchange="changeDistributionType(this)">
+		        </div>
+		    </div>
+		    <div class="thin-divider"></div>
+		    <div class="d-row">
+		        <div class="d-cell">
+		            004
+		        </div>
+		        <div class="d-cell">
+		            戸建
+		        </div>
+		        <div class="d-cell">
+		            <input type="checkbox" name="detached" id="chx_detached" value="yes" {% if info.detached == 'yes' %}checked{% endif %} onchange="changeDistributionType(this)">
+		        </div>
+		    </div>
+        </div>
+	</div>
+</div>
+
+
+<script>
+    function changeDistributionType(obj){
+        var val = obj.value;
+        if(obj.checked == false) val = "";
+        window.location.href = "/businessmanagement/distributiontypeinfosave?type=" + obj.name + "&val=" + val;
+    }
+</script>
+
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,528 @@
+{% extends 'businessmanagement/base_master.html' %}
+{% block title %}その他マスタ（業種マスタ） | らくばる業務管理{% endblock %}
+
+{% block body %}
+
+<link rel="stylesheet" type="text/css" href="/static/css/radiobutton.css"/>
+
+<style>
+
+html, body{background:#006699;}
+
+.dropdown {position: relative;display: inline-block;}
+
+.dropdown-content {display: none;position: absolute;background-color: #f9f9f9;min-width: 160px;box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);z-index: 1;}
+
+.dropdown:hover .dropdown-content {display: block;}
+
+.header {height:70px;}
+
+.header1 {text-align:left;height:200px;}
+
+.header2 {position:relative;background-color:#004466;color:white;font-size:1.5em;padding: 2rem;text-align:center;border-top:1px solid white;}
+
+.manage {border-radius: 10%;}
+
+.table-owner {width:100%;background:transparent;overflow-x:auto;}
+
+.table-owner1 {width:100%;overflow-x:auto;position:relative;margin-top:0;z-index:1;background:transparent;display:none;}
+
+table {border:0;}
+
+table td, table th {color:#2b686e;padding:10px;text-align:center;}
+
+table td {font-size:13px;color:white;border:1px solid rgba(255,255,255,0.4);}
+
+table td > .text-left {font-size:13px;}
+
+table td:last-child {font-size:0.95em;line-height:1.4;}
+
+table th {background-color:#004466;font-weight:520;color:white;border:1px solid #006699;text-align:center;}
+
+table tr {background-color:transparent;border:0;}
+
+table tr:nth-child(2n) {background-color:transparent;}
+
+table tr:nth-child(2n+1) {background-color:rgba(237,247,248,0.2);}
+
+.subloc_name {font-size: 12px;margin-left: 10px;list-style-type: square;}
+
+#top-scroll {display: none;position: fixed;bottom: 20%;right: 15px;z-index: 99;border: none;outline: none;background-color: rgba(0,0,0,0.3);color: white;cursor: pointer;padding: 15px;border-radius: 50%;}
+
+#top-scroll:hover {background-color: orange;}
+
+.owneraddress{color:black;}
+
+.owneraddress:hover{color:blue;}
+
+.hyperlink{color:black;font-size:25px;}
+
+.hint0{color:blue;font-size:12px;display:block;}
+
+.hint{color:blue;font-size:12px;display:none;}
+
+.hyperlink:hover .hint0 {display:none;}
+
+.hyperlink:hover .hint {display:inline-block;}
+
+.subscription {
+    color:black;
+    white-space: pre-wrap;      /* CSS3 */
+    white-space: -moz-pre-wrap; /* Firefox */
+    white-space: -pre-wrap;     /* Opera <7 */
+    white-space: -o-pre-wrap;   /* Opera 7 */
+    word-wrap: break-word;      /* IE */
+}
+
+.btn-subscr {color:black;text-decoration: underline;font-size:12px;}
+
+.btn-subscr:hover {color:red;}
+
+.centered-and-cropped { object-fit:cover }
+
+.show {z-index:1000;position: absolute;background-color:#ffffff;border: 2px solid orange;box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.25);padding:10px;border-radius:20px;display: block;font-size:20px;margin: 0;
+    list-style-type: none;list-style: none;}
+
+.hide {display: none;}
+
+.show li{ list-style: none; }
+.show a { border: 0 !important; text-decoration: none; }
+.show a:hover { text-decoration: underline !important; }
+
+label input {display: none;}
+
+label span {height: 15px;width: 15px;border-radius:50%;border: 1px solid black;background-color:transparent;margin-right:3px;display: inline-block;position: relative;}
+
+[type=checkbox]:checked + span:before {content: '\2714';color:white;position: absolute;top: -5px;left: 0;}
+
+#backgroundOverlay{background-color:rgba(0,0,0,0.4);position:fixed;top:0;left:0;right:0;bottom:0;z-index:888;display:none;}
+
+.bouton-update{background-color: #008CBA;color: #FFF;text-align: center;width: 100%;border:0;padding: 12px 18px;border-radius: 50px;cursor: pointer;font-size: 16px;}
+
+.form-group {overflow:hidden;width:100%;}
+
+input, select {margin-bottom:15px;margin-right:auto;width:100%;height:36px;opacity:0.95;float:middle;padding:0px 15px;color:black;text-align:left;border:2px solid gray;border-radius: 50px;}
+
+input:focus, select:focus {outline:0;border:2px solid red;}
+
+label input {display: none;}
+
+label span {height: 25px;width: 25px;text-align:center;padding-bottom:5px;display: inline-block;position: relative;border:0;border-radius:3px;}
+
+[type=checkbox]:checked + span:before {content: '\2714';position: absolute;top:0;font-size:20px;left: 3px;}
+
+[type=checkbox]:checked + span:after {/* <-- style its checked state..with a ticked icon */content: '\2714';position: absolute;top:0;left: 3px;font-size:20px;color:red;}
+
+.cropping{object-fit:cover;}
+
+.slide-in {animation: slide-in 0.5s forwards;-webkit-animation: slide-in 0.5s forwards;}
+
+.slide-out {animation: slide-out 0.5s forwards;-webkit-animation: slide-out 0.5s forwards;}
+
+@keyframes slide-in {100% { transform: translateY(0%); }}
+
+@-webkit-keyframes slide-in {100% { -webkit-transform: translateY(0%); }}
+
+@keyframes slide-out {0% { transform: translateY(0%); }100% { transform: translateY(100%); }}
+
+@-webkit-keyframes slide-out {0% { -webkit-transform: translateY(0%); }100% { -webkit-transform: translateY(100%); }}
+
+#btn-assign {font-size:16px; width:120px; position:absolute; right:3%; top:20%; background-color:#006699; display:none;}
+
+#regform {font-size:16px; font-weight:300; color: black; z-index:999; box-shadow: 0px 0px 100px rgba(0, 0, 0, 1.0);position:fixed; left:50%; float:middle; background-color:white;
+    border-radius:10px; padding: 8px 15px 15px 15px;transform:translate(-50%, -50%); width:500px; top:400px; display:none;}
+
+.formcontent {padding-left:10px;padding-right:10px;}
+
+#info-form {width:100%; display:inline-block;}
+
+#submit-button {margin-top:15px;background-color:#0077b3;color:white;font-size:14px;padding:12px 18px;width:100%;border-radius:50px;border:0;}
+
+@media (max-width: 600px) {
+    #regform {width:90vw; min-width:350px; height:auto; margin-top:50px; overflow:auto; scrollbar:none; }
+    #regform::-webkit-scrollbar{width:0;}
+    .table-owner, .table-owner1 {width:160%;}
+}
+
+.manage-btn {font-size:16px;color:rgba(255,255,255,0.6);}
+
+.manage-btn:hover {font-size:18px;color:rgba(255,255,255,1.0);}
+
+.text-left {text-align:left;}
+
+.pan {max-width:600px;width:auto;height:auto;margin-bottom: auto;margin-left:auto;margin-right:0;opacity:0.9;overflow: hidden;}
+
+.pan2 {max-width:600px;width:auto;height:auto;margin-bottom: auto;margin-left:0;margin-right:auto;opacity:0.9;overflow: hidden;}
+
+#no_result {font-size:16px; font-weight:300; color:rgba(255,255,255,0.4); text-align:center;position:fixed; left:50%; float:middle; padding: 10px 15px 10px 15px;transform:translate(-50%, -50%);
+    width:auto; z-index:100; top:450px; display:none;}
+
+#title0 {font-size:30px; font-weight:800; color:white; text-align:center;position:fixed; left:50%; float:middle; padding:10px 15px 10px 15px;transform:translate(-50%, -50%); width:auto;
+    top:130px; z-index:333; display:block;}
+
+#title {font-size:16px; font-weight:800; color:white; text-align:center; border-radius:50px 5px 50px 5px; padding:5px 40px 5px 40px; background-color:rgba(0,0,0,0.1); display:none; position:fixed; left:50%;
+    float:middle; transform:translate(-50%, -50%); width:auto; z-index:100000; top:140px;}
+
+.comp-add {color:rgba(255,255,255,0.6);font-size:16px;margin-left:10px;}
+
+.comp-add:hover {color:white;}
+
+.n-ttl {font-size:18px; font-weight:600; color:black; text-align:center;}
+
+.n-close {width:25px; height:25px; float:right; cursor:pointer;}
+
+.field {text-align:center; width:100%;}
+
+.progressbar {width:30px; height:30px; display:none;}
+
+.csv-export {position:absolute;top:80px;right:15px;color:rgba(255,255,255,0.6);z-index:222;}
+
+.csv-export:hover {color:rgba(255,255,255,1.0);}
+
+.ast {color:red;}
+
+#arealistsection {position:fixed; float:bottom; z-index:1000; bottom:0; width:100%; height:83%; display:none; background:#006699; transform:translateY(100%);-webkit-transform: translateY(100%);}
+
+.arealistclose {position:absolute;width:25px;height:25px;top:10px;right:10px;cursor:pointer;}
+
+.arealisttitle {font-size:12px; margin-right:25px;}
+
+.areaselection {display:inline-block; border-radius:50px; background-color:#e6f7ff;}
+
+.areaselection > label {margin-left:10px; color: #04a2be;}
+
+.areaselection > label > input {width:10px; height:10px;}
+
+.areaselection > label > i {color:#005580; font-size:18px; margin-right:10px;}
+
+#total-copies {color:yellow;font-size:14px;text-align:center;display:none;}
+
+#total-dist-copies { font-size:16px;margin-top:15px;display:none; }
+
+#is_leader { width:25px;height:25px;margin-left:8px; }
+
+.lbl-leader {margin-left:10px;margin-top:5px;font-size:18px;color:black;font-weight:600px;}
+
+
+</style>
+
+<script>
+	history.pushState(null, null, location.href);
+    history.back();
+    history.forward();
+    window.onpopstate = function () { history.go(1); };
+</script>
+
+<meta charset="UTF-8">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+<link rel="stylesheet" href="../lib/w3.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<div id="no_result">
+    業種が登録されていません...
+</div>
+
+<div id="title0">
+    業種マスタ<a href="javascript:void(0)" onclick="openRegBox()"><i class="fa fa-plus-circle comp-add" aria-hidden="true"></i></a>
+    <div style="font-size:14px;">（その他マスタ）</div>
+</div>
+
+{% if industryinfos %}
+
+<a href="javascript:void(0)" onclick="exportCSV()" class="csv-export">
+    <i class="fas fa-file-export" aria-hidden="true"></i>&nbsp;CSV取込
+</a>
+
+<div id="title">その他マスタ（業種マスタ）</div>
+
+<button onclick="topFunction()" id="top-scroll"><i class="glyphicon glyphicon-menu-up" style="color:white; font-size:14px;"></i></button>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<div class="table-owner1" id="header" align="top">
+    <div class="header" id="header"></div>
+    <table cellspacing="0" class="table table-fit">
+        <tr>
+            <th style="width:3%;">id</th>
+            <th style="width:20%;">業種コード</th>
+            <th style="width:30%;">業種名</th>
+            <th style="width:30%;">メモ</th>
+            <th style="width:15%;">編集 / 削除</th>
+        </tr>
+    </table>
+</div>
+
+<div class="table-owner">
+    <div class="header1" id="header1" style="position:relative;"></div>
+    <table cellspacing="0" class="table table-fit">
+        <tr>
+            <th style="width:3%;">id</th>
+            <th style="width:20%;">業種コード</th>
+            <th style="width:30%;">業種名</th>
+            <th style="width:30%;">メモ</th>
+            <th style="width:15%;">編集 / 削除</th>
+        </tr>
+
+        {% for info in industryinfos %}
+
+        <tr class="test" id="{{info.id}}">
+            <td><label>{{forloop.counter}}</label></td>
+            <td>{{info.code}}</td>
+            <td><div class="text-left">{{info.industry_name}}</div></td>
+            <td><div class="text-left">{{info.note}}</div></td>
+            <td>
+                <div style="font-size:16px;">
+                    <a href="javascript:void(0)" style="margin-right:15px;" onclick="openEditInfoBox(this)">
+                        <i class="fa fa-pencil manage-btn"></i>
+                        <input hidden id="edit_info_id" value="{{info.id}}">
+                        <input hidden id="edit_code" value="{{info.code}}">
+                        <input hidden id="edit_industry_name" value="{{info.industry_name}}">
+                        <input hidden id="edit_note" value="{{info.note}}">
+                    </a>
+                    <a href="javascript:void(0)" onclick="confirmDeletion('{{info.id}}')">
+                        <i class="fa fa-trash manage-btn"></i>
+                    </a>
+                </div>
+            </td>
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+</div>
+
+{% else %}
+    <script>document.getElementById('no_result').style.display = 'block';</script>
+{% endif %}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script>
+    $(window).on('scroll', function () {
+        var $w = $(window);
+        $('.position-fixed-x').css('left', $w.scrollLeft());
+        $('.table-owner1').css('top', $w.scrollTop());
+    });
+</script>
+
+
+<div id="regform">
+    {% csrf_token %}
+    <img src="/static/images/rakubaru/cancel.png" class="n-close" onclick="javascript:dismissLayouts()">
+    <br>
+    <div style="width:100%;">
+        <div class="n-ttl">業種情報の登録</div>
+    </div>
+    <br>
+    <form action="/businessmanagement/industryinforegister" method="post" enctype="multipart/form-data" id="info-form" autocomplete="off">
+        {% csrf_token %}
+        <div class="contentform">
+        	<div class="formcontent">
+        		<div class="form-group">
+                    <p>業種コード <span class="ast">*</span></p>
+                    <div class="field">
+                        <input type="text" name="code" id="code">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <p>業種名 <span class="ast">*</span></p>
+                    <div class="field">
+                        <input type="text" name="industry_name" id="industry_name">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <p>メモ </p>
+                    <div class="field">
+                        <input type="text" name="note" id="note">
+                    </div>
+                </div>
+                <input hidden name="info_id" id="info_id" value="0">
+                <center>
+                    <button type="button" id="submit-button" onclick="registerIndustryInfo()">送信</button>
+                </center>
+                <br>
+        	</div>
+        </div>
+    </div>
+</div>
+
+<div id="backgroundOverlay"></div>
+
+<script>
+
+// When the user scrolls down 20px from the top of the document, show the button
+window.onscroll = function() {scrollFunction()};
+
+function scrollFunction() {
+    if (document.body.scrollTop > 150 || document.documentElement.scrollTop > 150) {
+        document.getElementById("header").style.display = "block";
+        document.getElementById("top-scroll").style.display = "block";
+        document.getElementById("title").style.display = "block";
+        document.getElementById("title0").style.display = "none";
+    }else {
+        document.getElementById("header").style.display = "none";
+        document.getElementById("top-scroll").style.display = "none";
+        document.getElementById("title").style.display = "none";
+        document.getElementById("title0").style.display = "block";
+    }
+}
+
+
+// When the user clicks on the button, scroll to the top of the document
+function topFunction() {
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+}
+
+var regform = document.getElementById("regform");
+var darkbg = document.getElementById("backgroundOverlay");
+
+function openRegBox() {
+    document.getElementById("info_id").value = "0";
+    document.getElementById("code").value = code();
+    document.getElementById("code").readOnly = false;
+    document.getElementById("industry_name").value = "";
+    document.getElementById("note").value = "";
+    regform.style.display = "block";
+    darkbg.style.display = "block";
+}
+
+function dismissLayouts(){
+    regform.style.display = "none";
+    darkbg.style.display = "none";
+}
+
+function openEditInfoBox(obj) {
+    document.getElementById("info_id").value = obj.querySelector("#edit_info_id").value;
+    document.getElementById("code").value = obj.querySelector("#edit_code").value;
+    document.getElementById("code").readOnly = true;
+    document.getElementById("industry_name").value = obj.querySelector("#edit_industry_name").value;
+    document.getElementById("note").value = obj.querySelector("#edit_note").value;
+    regform.style.display = "block";
+    darkbg.style.display = "block";
+}
+
+</script>
+
+<script>
+
+function ScrollTo(name) {
+    //init thread
+    ScrollToResolver(document.getElementById(name));
+}
+
+function ScrollToResolver(elem) {
+    elem.style.backgroundColor = "#ffccff";
+    var jump = parseInt(elem.getBoundingClientRect().top * .2);
+    document.body.scrollTop += jump - 50;
+    document.documentElement.scrollTop += jump - 50;
+    //lastjump detects anchor unreachable, also manual scrolling to cancel animation if scroll > jump
+    if (!elem.lastjump || elem.lastjump > Math.abs(jump)) {
+        elem.lastjump = Math.abs(jump);
+        setTimeout(function() {
+            ScrollToResolver(elem);
+        }, "100");
+    } else {
+        elem.lastjump = null;
+    }
+}
+
+function showSuccessAlert(msg) {
+    swal({
+        title: "成功！",
+        text: msg,
+        icon: "success",
+        button: "OK",
+    });
+}
+
+function showFailureAlert(msg) {
+    swal({
+        title: "おっとっと！ 問題が発生しました。",
+        text: msg,
+        icon: "warning",
+        button: "OK",
+        dangerMode: true,
+    });
+}
+
+function isValidEmail(email) {
+    const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
+}
+
+function registerIndustryInfo() {
+    if(document.getElementById("code").value.length == 0){
+        showFailureAlert("業種コードを入力してください。");
+        return;
+    }
+    if(document.getElementById("industry_name").value.length == 0){
+        showFailureAlert("業種名を入力してください。");
+        return;
+    }
+    document.getElementById("info-form").submit();
+}
+
+function confirmDeletion(infoid) {
+    swal({
+        title: "この業種情報を削除してもよろしいですか？",
+        text: "一度削除すると、この情報を復元することはできません。",
+        icon: "warning",
+        buttons: ["いいえ","はい"],
+        dangerMode: true,
+    })
+    .then((ok) => {
+        if (ok) {
+            window.location.href='/businessmanagement/delindustryinfo?info_id=' + infoid;
+        }
+    });
+
+}
+
+
+</script>
+
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

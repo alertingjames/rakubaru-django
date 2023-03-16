@@ -8,253 +8,8 @@
 <meta charset="utf-8">
 <meta content="stuff, to, help, search, engines, not" name="keywords">
 <meta content="What this page is about." name="description">
-<style>
 
-html, body{
-  background: #BDB76B no-repeat center center fixed;
-  background-size:cover;
-}
-
-#myBtn {
-  display: none;
-  position: fixed;
-  bottom: 20%;
-  right: 15px;
-  z-index: 99;
-  border: none;
-  outline: none;
-  background-color: rgba(0,0,0,0.3);
-  color: white;
-  cursor: pointer;
-  padding: 15px;
-  border-radius: 50%;
-}
-
-#myBtn:hover {
-  background-color: orange;
-}
-
-#admin{
-    display:none;
-}
-
-.action-menu {
-    position:absolute;
-    top:0;
-    bottom:0;
-    left:0;
-    right:0;
-    padding-left:5%;
-    padding-right:5%;
-    border-radius: 5px;
-    background-color:rgba(255, 255, 204, 0.6);
-    /*padding:20px;*/
-    text-align:center;
-    display:none;
-}
-
-form h1 {
-  font-size: 21px;
-  background: #327a81 none repeat scroll 0% 0%;
-  color: rgb(255, 255, 255);
-  padding: 19px 22px;
-  border-radius: 5px 5px 0px 0px;
-  margin: auto;
-  text-shadow: none;
-  text-align:left
-}
-
-.report-form {
-  max-width:600px;
-  width:auto;
-  margin:auto;
-  border-radius:5px;
-  margin-bottom:3px;
-  background:white;
-  background-size:cover;
-  overflow: hidden;
-}
-
-.report-form:hover {
-  background:#ffffcc;
-  background-size:cover;
-}
-
-.report-form:hover .action-menu{
-    display:block;
-}
-
-p span {
-  color: #F00;
-}
-
-p {
-  margin: 0px;
-  font-weight: 200;
-  line-height: 2;
-  color:#fff;
-}
-
-a {
-  text-decoration:inherit
-}
-
-.form-group {
-  overflow: hidden;
-  width:100%;
-}
-
-.contentform {
-  padding: 10px 10px;
-}
-
-.bouton-update{
-  background-color: #008CBA;
-  color: #FFF;
-  text-align: center;
-  width: 100%;
-  border:0;
-  /*padding: 12px 18px;*/
-  border-radius: 50px;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-#search::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
-  color: white;
-  opacity: 0.7; /* Firefox */
-}
-
-#search:-ms-input-placeholder { /* Internet Explorer 10-11 */
-  color: white;
-  opacity: 0.7;
-}
-
-#search::-ms-input-placeholder { /* Microsoft Edge */
-  color: white;
-  opacity: 0.7;
-}
-
-#backgroundOverlay{
-  background-color:rgba(0,0,0,0.5);
-  position:fixed;
-  top:0;
-  left:0;
-  right:0;
-  bottom:0;
-  z-index:10000;
-  display:none;
-}
-
-#snackbar {
-    visibility: hidden;
-    min-width: 200px;
-    margin-left: -125px;
-    background-color: #333;
-    color: #fff;
-    text-align: center;
-    border-radius: 2px;
-    padding: 12px;
-    position: fixed;
-    z-index: 1;
-    left: 50%;
-    bottom: 30px;
-    font-size: 17px;
-}
-
-#snackbar.show {
-    visibility: visible;
-    -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
-    animation: fadein 0.5s, fadeout 0.5s 2.5s;
-}
-
-@-webkit-keyframes fadein {
-    from {bottom: 0; opacity: 0;}
-    to {bottom: 30px; opacity: 1;}
-}
-
-@keyframes fadein {
-    from {bottom: 0; opacity: 0;}
-    to {bottom: 30px; opacity: 1;}
-}
-
-@-webkit-keyframes fadeout {
-    from {bottom: 30px; opacity: 1;}
-    to {bottom: 0; opacity: 0;}
-}
-
-@keyframes fadeout {
-    from {bottom: 30px; opacity: 1;}
-    to {bottom: 0; opacity: 0;}
-}
-
-/* The Modal (background) */
-.modal {
-  display: none; /* Hidden by default */
-  position: fixed; /* Stay in place */
-  z-index: 100000; /* Sit on top */
-  padding-top: 150px; /* Location of the box
-  left: 0;
-  top: 0;
-  width: 100%; /* Full width */
-  background-color: rgba(0,0,0,0.8); /* Black w/ opacity */
-}
-
-/* Modal Content (image) */
-.modal-content {
-  margin: auto;
-  display: block;
-  width: 400px;
-}
-
-/* Add Animation */
-.modal-content {
-  -webkit-animation-name: zoom;
-  -webkit-animation-duration: 0.6s;
-  animation-name: zoom;
-  animation-duration: 0.6s;
-}
-
-@-webkit-keyframes zoom {
-  from {-webkit-transform:scale(0)}
-  to {-webkit-transform:scale(1)}
-}
-
-@keyframes zoom {
-  from {transform:scale(0)}
-  to {transform:scale(1)}
-}
-
-/* The Close Button */
-.close {
-  position: absolute;
-  top: 5px;
-  right: 15px;
-  color: gray;
-  font-size: 40px;
-  font-weight: bold;
-  transition: 0.3s;
-}
-
-.close:hover,
-.close:focus {
-  color: black;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-/* 100% Image Width on Smaller Screens */
-@media only screen and (max-width: 500px){
-  .modal-content {
-    width: 100%;
-  }
-}
-
-#bar {
-    margin:0;position:fixed;top: 50%;left: 50%;transform: translate(-50%, -50%);z-index:99999;
-}
-
-</style>
+<link rel="stylesheet" href="/static/css/reports.css">
 
 <script>
 // 	history.pushState(null, null, location.href);
@@ -270,8 +25,8 @@ a {
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <div id="title" style="font-size:30px; font-weight:800; color: #F7D479; text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.7); text-align:center;
-	position:fixed; left:50%; float:middle; transform:translate(-50%, -50%); width:350px; z-index:100; top:92px; display:none;">
-    {% if member %}{{member.name}}{% else %}らくばる{% endif %} レポート
+	position:fixed; left:50%; float:middle; transform:translate(-50%, -50%); width:400px; z-index:100; top:140px; display:none;">
+    {% if member %}{{member.name}}{% else %}らくばる{% endif %} レポート<br>
 
     <a href="/rakubaru/reportscsvexport" id="csv-title" style="color:white;font-size:14px;margin-left:10px; text-shadow:none;">
         <span class="fas fa-file-csv" aria-hidden="true" style="margin-right:5px;"></span>CSV出力
@@ -312,7 +67,7 @@ var bar=new RadialProgress(document.getElementById("bar"),{colorBg:"rgba(0,0,0,0
         </div>
     </div>
     <center>
-        <div style="margin-top:20px;max-width:600px;color:yellow;border:1.5px solid yellow;border-radius:8px;padding:15px;font-size:16px;">
+        <div style="margin-top:20px;max-width:600px;color:white;background:#8d883f;border-radius:8px;padding:15px;font-size:16px;">
             ログデータの保管期限は60日間です。60日を超えて必要なログは、バックアップファイルをダウンロードしておいてください。
         </div>
     </center>
@@ -391,7 +146,7 @@ var bar=new RadialProgress(document.getElementById("bar"),{colorBg:"rgba(0,0,0,0
 
                     <div style="flex-grow:1;">
                         <button class="bouton-update" style="width:60px; height:60px; text-align:center;"
-                            onclick="javascript:window.location.href='/rakubaru/raopenroutemap?route_id={{report.route.pk}}'; if(!detectMob()){ document.getElementById('bar').style.display = 'block'; }">
+                            onclick="javascript:window.location.href='/rakubaru/raopenroutemap?route_id={{report.route.pk}}';">
                             <i class="fas fa-route" style="color:white; font-size:25px;"></i>
                         </button>
                     </div>
@@ -421,6 +176,26 @@ var bar=new RadialProgress(document.getElementById("bar"),{colorBg:"rgba(0,0,0,0
         </div>
         {% endfor %}
     </div>
+
+    {% load tag_library %}
+    <div class="center">
+        <div class="pagination">
+            <a href="{% if page_data.currentpage|to_int > 1 %}{% if member %}/rakubaru/rauserreports?member_id={{member.pk}}&page=1{% else %}/rakubaru/raallreports?page=1{% endif %}{% else %}javascript:void(0){% endif %}">&laquo;&laquo;</a>
+            <a href="{% if page_data.currentpage|to_int > 1 %}{% if member %}/rakubaru/rauserreports?member_id={{member.pk}}&prev={{page_data.currentpage}}{% else %}/rakubaru/raallreports?prev={{page_data.currentpage}}{% endif %}{% else %}javascript:void(0){% endif %}">&laquo;</a>
+            {% for i in range %}
+        	{% if i >= 1 %}
+            {% if page_data.currentpage|to_int == i %}
+            <a href="#" class="active">{{i}}</a>
+            {% else %}
+            <a href="{% if member %}/rakubaru/rauserreports?member_id={{member.pk}}&page={{i}}{% else %}/rakubaru/raallreports?page={{i}}{% endif %}">{{i}}</a>
+            {% endif %}
+        	{% endif %}
+        	{% endfor %}
+            <a href="{% if page_data.currentpage|to_int < page_data.totalpages|to_int %}{% if member %}/rakubaru/rauserreports?member_id={{member.pk}}&next={{page_data.currentpage}}{% else %}/rakubaru/raallreports?next={{page_data.currentpage}}{% endif %}{% else %}javascript:void(0){% endif %}">&raquo;</a>
+            <a href="{% if page_data.currentpage|to_int < page_data.totalpages|to_int %}{% if member %}/rakubaru/rauserreports?member_id={{member.pk}}&page={{page_data.totalpages}}{% else %}/rakubaru/raallreports?page={{page_data.totalpages}}{% endif %}{% else %}javascript:void(0){% endif %}">&raquo;&raquo;</a>
+        </div>
+    </div>
+
 </div>
 
 

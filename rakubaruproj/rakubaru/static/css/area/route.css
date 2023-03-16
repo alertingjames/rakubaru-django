@@ -13,9 +13,7 @@ html, body{
   background-color:rgba(255,255,255,0.9);
 }
 
-#form:hover {
-
-}
+.route-panel {width:450px; margin:80px 0px 0px 10px; overflow:auto; position:fixed; z-index:1000;background:rgba(255,255,255,0.8);padding:10px;border-radius:8px;}
 
 p span {
   color: #F00;
